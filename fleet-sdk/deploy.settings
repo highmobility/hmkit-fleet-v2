@@ -1,0 +1,6 @@
+siteUrl = https://github.com/highmobility/fleet-sdk
+gitUrl = https://github.com/highmobility/fleet-sdk
+groupId = com.highmobility
+licenseName = MIT
+licenseUrl = https://opensource.org/licenses/MIT
+id = fleet-sdk

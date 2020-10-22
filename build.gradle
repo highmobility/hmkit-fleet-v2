@@ -1,0 +1,29 @@
+buildscript {
+    ext.kotlinVersion = "1.4.10"
+
+    dependencies {
+        // needed for auto-api-java only
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0"
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+}
+
+allprojects {
+    repositories {
+        jcenter()
+
+        if (project.hasProperty('devReadUser')) {
+            maven {
+                url "http://jfrog.high-mobility.com/artifactory/gradle-dev-local/"
+                credentials {
+                    username devReadUser
+                    password devReadPassword
+                }
+            }
+        }
+    }
+}
