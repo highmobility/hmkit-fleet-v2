@@ -26,38 +26,57 @@ import com.highmobility.hmkit.HMKit
 import io.mockk.*
 import network.WebService
 import org.junit.Rule
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.koin.core.context.startKoin
+import org.koin.core.context.loadKoinModules
 import org.koin.dsl.module
 import org.koin.test.KoinTest
-import org.koin.test.KoinTestRule
 import org.koin.test.inject
+import org.koin.test.mock.MockProviderRule
+import org.koin.test.mock.declareMock
 import org.slf4j.Logger
+
+val modules = module {
+    single { WebService(getProperty("apiKey")) }
+    single { HMKit.getInstance() }
+    single { mockk<Logger>() }
+}
+
+val testApiKey = "apiKey"
 
 open class BaseTest : KoinTest {
     val mockLogger by inject<Logger>()
-//    val logger:Logger = LoggerFactory.getLogger(FleetSdk::class.java)
 
-    val modules = module {
-        single { WebService(getProperty("apiKey")) }
-        single { HMKit.getInstance() }
-        single { mockk<Logger>() }
-    }
+    /*
+        @get:Rule
+        val mockProvider = MockProviderRule.create { clazz ->
+            mockk(clazz.java.toString())
+        }
+    */
+    companion object {
+        lateinit var fleetSdk: FleetSdk
 
-    @get:Rule
-    val koinTestRule = KoinTestRule.create {
-        properties(values = mapOf("apiKey" to "apiKey"))
-        printLogger()
-        modules(modules)
-    }
+        @JvmStatic @BeforeAll
+        fun beforeAll() {
+            fleetSdk = FleetSdk.getInstance(testApiKey)
+            loadKoinModules(modules)
 
-    @Test fun asd() {
-        val fleetSdk = FleetSdk.getInstance("apiKey")
+            /*
+            stopKoin()
+
+            startKoin {
+                properties(values = mapOf("apiKey" to "apiKey"))
+                modules
+            }
+             */
+        }
     }
 
     @BeforeEach
     fun before() {
+        clearAllMocks()
+
         // mockk the logs
         every { mockLogger.warn(allAny()) } just Runs
 
@@ -66,8 +85,17 @@ open class BaseTest : KoinTest {
             println(capturedDebugLog.captured)
         }
 
+        every { mockLogger.info(capture(capturedDebugLog)) } answers {
+            println(capturedDebugLog.captured)
+        }
+
         every { mockLogger.error(allAny()) } just Runs
         every { mockLogger.error(any(), any<Throwable>()) } just Runs
+    }
+
+    @AfterEach
+    fun after() {
+
     }
 
     fun errorLogExpected(runnable: Runnable) {

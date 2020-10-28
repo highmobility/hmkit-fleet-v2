@@ -1,10 +1,12 @@
 buildscript {
     ext.kotlinVersion = "1.4.10"
+    ext.koin_version = '2.1.6'
 
     dependencies {
         // needed for auto-api-java only
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.13.0"
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath "org.koin:koin-gradle-plugin:$koin_version"
     }
 }
 
@@ -27,3 +29,7 @@ allprojects {
         }
     }
 }
+
+ext.ver = [
+    "fleet-sdk" : "0"
+]
