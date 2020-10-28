@@ -22,18 +22,43 @@
  * THE SOFTWARE.
  */
 
+import com.highmobility.hmkit.HMKit
 import io.mockk.*
+import network.WebService
+import org.junit.Rule
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.inject
+import org.slf4j.Logger
 
-open class BaseTest {
-    lateinit var mockLogger:org.slf4j.Logger
+open class BaseTest : KoinTest {
+    val mockLogger by inject<Logger>()
+//    val logger:Logger = LoggerFactory.getLogger(FleetSdk::class.java)
+
+    val modules = module {
+        single { WebService(getProperty("apiKey")) }
+        single { HMKit.getInstance() }
+        single { mockk<Logger>() }
+    }
+
+    @get:Rule
+    val koinTestRule = KoinTestRule.create {
+        properties(values = mapOf("apiKey" to "apiKey"))
+        printLogger()
+        modules(modules)
+    }
+
+    @Test fun asd() {
+        val fleetSdk = FleetSdk.getInstance("apiKey")
+    }
 
     @BeforeEach
     fun before() {
-        mockLogger = mockk()
-        mockkStatic(Logger::class)
-        every { Logger.getLogger() } returns mockLogger
-
+        // mockk the logs
         every { mockLogger.warn(allAny()) } just Runs
 
         val capturedDebugLog = CapturingSlot<String>()
