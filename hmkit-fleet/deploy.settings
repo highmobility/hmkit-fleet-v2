@@ -3,4 +3,4 @@ gitUrl = https://github.com/highmobility/fleet-sdk
 groupId = com.highmobility
 licenseName = MIT
 licenseUrl = https://opensource.org/licenses/MIT
-id = fleet-sdk
+id = hmkit-fleet

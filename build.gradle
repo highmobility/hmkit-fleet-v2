@@ -32,5 +32,5 @@ allprojects {
 }
 
 ext.ver = [
-    "fleet-sdk" : "0"
+    "hmkit-fleet" : "0"
 ]
