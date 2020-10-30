@@ -25,7 +25,7 @@
 import com.highmobility.hmkit.HMKit
 import io.mockk.*
 import network.WebService
-import org.junit.Rule
+import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -33,12 +33,11 @@ import org.koin.core.context.loadKoinModules
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
-import org.koin.test.mock.MockProviderRule
-import org.koin.test.mock.declareMock
 import org.slf4j.Logger
 
 val modules = module {
-    single { WebService(getProperty("apiKey")) }
+    single { mockk<OkHttpClient>() }
+    single { WebService(getProperty("apiKey"), get()) }
     single { HMKit.getInstance() }
     single { mockk<Logger>() }
 }
@@ -48,12 +47,6 @@ val testApiKey = "apiKey"
 open class BaseTest : KoinTest {
     val mockLogger by inject<Logger>()
 
-    /*
-        @get:Rule
-        val mockProvider = MockProviderRule.create { clazz ->
-            mockk(clazz.java.toString())
-        }
-    */
     companion object {
         lateinit var fleetSdk: FleetSdk
 
@@ -61,15 +54,6 @@ open class BaseTest : KoinTest {
         fun beforeAll() {
             fleetSdk = FleetSdk.getInstance(testApiKey)
             loadKoinModules(modules)
-
-            /*
-            stopKoin()
-
-            startKoin {
-                properties(values = mapOf("apiKey" to "apiKey"))
-                modules
-            }
-             */
         }
     }
 

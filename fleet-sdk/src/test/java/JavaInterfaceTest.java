@@ -1,46 +1,38 @@
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import network.WebService;
 
 /**
  * These are to test public API in java, so it looks nice.
  * More meaningful tests in .kt files.
  */
 class JavaInterfaceTest extends BaseTest {
-    FleetSdk sdk = FleetSdk.getInstance("apiKey");
     List<String> vins = List.of("1");
 
-    @Test public void debugLogEmitOnInit() {
-        debugLogExpected(1, () -> sdk.toString());
+    public void requestClearance() throws ExecutionException, InterruptedException {
+        CompletableFuture<WebService.RequestClearanceResponse>[] allRequests = new CompletableFuture[vins.size()];
+
+        for (int i = 0; i < vins.size(); i++) {
+            allRequests[i] = fleetSdk.requestClearance(vins.get(i));
+        }
+
+        CompletableFuture<Void> allTasks = CompletableFuture.allOf(allRequests);
+        CompletableFuture cf = allTasks.thenRun(() -> System.out.println("All tasks finished: "));
+
+        // start a blocking thread
+
+/*        Executors.newCachedThreadPool().submit<Any?> {
+            Thread.sleep(500)
+            completableFuture.complete(RequestClearanceResult("http error"))
+        }*/
+
+        cf.get();
     }
 
-    @Test public void throwsClearVehiclesNoApiKey() {
-        FleetSdk.FleetSdkResult result = new FleetSdk.FleetSdkResult() {
-            @Override public void onVehiclesCleared() {
-
-            }
-
-            @Override public void onFailure() {
-
-            }
-        };
-
-        assertThrows(IllegalStateException.class, () -> sdk.clearVehicles(vins, result));
-    }
-
-    @Test public void throwsDeleteClearVehiclesNoApiKey() {
-        FleetSdk.FleetSdkResult result = new FleetSdk.FleetSdkResult() {
-            @Override public void onVehiclesCleared() {
-
-            }
-
-            @Override public void onFailure() {
-
-            }
-        };
-
-        assertThrows(IllegalStateException.class, () -> sdk.deleteVehicleClearance("vin", result));
+    public void revokeClearance() {
+        // TODO:
+        CompletableFuture<Boolean> task = fleetSdk.revokeClearance("vin1");
     }
 }

@@ -19,6 +19,8 @@ repositories {
 dependencies {
     // kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
 
     // hmkit
     implementation('com.highmobility:hmkit-oem:2.0.1-osx')
@@ -38,6 +40,8 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
     testImplementation 'org.slf4j:slf4j-simple:1.7.25'
     testImplementation "io.mockk:mockk:1.10.2"

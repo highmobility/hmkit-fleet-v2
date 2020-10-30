@@ -1,6 +1,7 @@
 buildscript {
     ext.kotlinVersion = "1.4.10"
     ext.koin_version = '2.1.6'
+    ext.coroutinesVersion = "1.4.0"
 
     dependencies {
         // needed for auto-api-java only

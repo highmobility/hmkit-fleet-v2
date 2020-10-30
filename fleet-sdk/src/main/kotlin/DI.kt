@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory
 object DI {
     val logger: org.slf4j.Logger = LoggerFactory.getLogger(FleetSdk::class.java)
     val koinModules = module {
-        single { WebService(getProperty("apiKey")) }
+        single { OkHttpClient() }
+        single { WebService(getProperty("apiKey"), get()) }
         single { HMKit.getInstance() }
         single { logger }
-        single { OkHttpClient() }
     }
 
     fun start(apiKey: String) {

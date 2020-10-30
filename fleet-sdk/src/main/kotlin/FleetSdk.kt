@@ -1,8 +1,11 @@
 import com.highmobility.hmkit.HMKit
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.future.future
 import network.WebService
 import org.koin.core.KoinComponent
 import org.koin.core.inject
 import org.slf4j.Logger
+import java.util.concurrent.CompletableFuture
 
 class FleetSdk private constructor(apiKey: String) : KoinComponent {
     private val logger by inject<Logger>()
@@ -27,7 +30,11 @@ class FleetSdk private constructor(apiKey: String) : KoinComponent {
         logger.info("fleet sdk initialised")
     }
 
-    fun clearVehicles(vins: List<String>, result: FleetSdkResult) {
+    suspend fun requestClearance2(vin: String): WebService.RequestClearanceResponse {
+        return webService.clearVehicle(vin)
+    }
+
+    fun requestClearance(vin: String): CompletableFuture<WebService.RequestClearanceResponse> {
         // fleets/vehicles endpoint
         // post /v1/fleets/vehicles
         // auth header: token
@@ -51,13 +58,11 @@ class FleetSdk private constructor(apiKey: String) : KoinComponent {
         /*
         VIN clearing can take a long time. For BMW we need to send email.
          */
+        return GlobalScope.future { webService.clearVehicle(vin) }
     }
 
-    // TODO: endpoints
-    //  The SDK implements all endpoints of the Service Account API except for the device certificate
-    //  endpoints, which are not needed
-
-    fun deleteVehicleClearance(vin: String, result: FleetSdkResult) {
+    fun revokeClearance(vin: String) : CompletableFuture<Boolean> {
+        // TODO: 30/10/20 implement
         /*
         Although the OAuth2 API is not used to get an access token, it is used to refresh the access
         token and to revoke access. Revoking access means that the VIN is removed from the clearance list.
@@ -68,12 +73,13 @@ class FleetSdk private constructor(apiKey: String) : KoinComponent {
         By using the DELETE /access_tokens endpoint, the data customer passes in the access token
         and the vehicle is deleted from the clearance list
          */
+
+        return CompletableFuture()
     }
 
-    interface FleetSdkResult {
-        fun onVehiclesCleared()
-        fun onFailure()
-    }
+    // TODO: endpoints
+    //  The SDK implements all endpoints of the Service Account API except for the device certificate
+    //  endpoints, which are not needed
 
     companion object {
         @Volatile
