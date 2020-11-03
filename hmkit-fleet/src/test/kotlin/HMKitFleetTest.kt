@@ -3,7 +3,7 @@ import network.WebService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class FleetSdkTest : BaseTest() {
+class HMKitFleetTest : BaseTest() {
     lateinit var webService: WebService
 
     @BeforeEach

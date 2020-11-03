@@ -29,7 +29,7 @@ import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.koin.core.context.loadKoinModules
+import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
@@ -37,23 +37,26 @@ import org.slf4j.Logger
 
 val modules = module {
     single { mockk<OkHttpClient>() }
-    single { WebService(getProperty("apiKey"), get()) }
+    single { WebService(getProperty("apiKey"), get(), get()) }
     single { HMKit.getInstance() }
     single { mockk<Logger>() }
 }
 
-val testApiKey = "apiKey"
+const val testApiKey = "apiKey"
 
 open class BaseTest : KoinTest {
     val mockLogger by inject<Logger>()
 
     companion object {
-        lateinit var fleetSdk: FleetSdk
+        lateinit var fleetSdk: HMKitFleet
 
         @JvmStatic @BeforeAll
         fun beforeAll() {
-            fleetSdk = FleetSdk.getInstance(testApiKey)
-            loadKoinModules(modules)
+            fleetSdk = HMKitFleet.getInstance(testApiKey)
+            startKoin {
+                properties(values = mapOf("apiKey" to testApiKey))
+                modules(modules)
+            }
         }
     }
 

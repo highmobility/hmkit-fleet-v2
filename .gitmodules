@@ -1,0 +1,3 @@
+[submodule "hmkit-fleet-consumer"]
+	path = hmkit-fleet-consumer
+	url = git@bitbucket.org:highmobility/hmkit-fleet-consumer.git

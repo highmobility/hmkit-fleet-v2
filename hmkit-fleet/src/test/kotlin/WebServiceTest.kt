@@ -43,4 +43,10 @@ class WebServiceTest : BaseTest() {
     fun doesNotCreateAccessTokenIfExists() {
         fail<WebServiceTest>()
     }
+
+    @Test
+    fun someTest() = runBlocking {
+
+        return@runBlocking
+    }
 }

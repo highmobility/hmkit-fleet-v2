@@ -2,25 +2,27 @@ package network
 
 import okhttp3.OkHttpClient
 import kotlinx.coroutines.*
-import kotlin.coroutines.Continuation
+import org.slf4j.Logger
 
-class WebService(val apiKey: String, client: OkHttpClient) {
-    class RequestClearanceResponse(val vin: String, val status: Status, val error: Error? = null) {
-        enum class Status { PENDING, APPROVED, FAILED }
-        class Error(val title: String?, val description: String, val source: String?)
-    }
+
+
+class WebService(val apiKey: String, val client: OkHttpClient, val logger: Logger) {
+
 
     interface IClearVehicleResult {
-        fun onResult(result: RequestClearanceResponse)
+        fun onResult(result: ClearVehicleResponse)
     }
 
-    suspend fun clearVehicle(vin: String) : RequestClearanceResponse {
+    suspend fun clearVehicle(vin: String): ClearVehicleResponse {
         val authToken = getAuthToken()
+        val response = ClearVehicleResponse(vin, ClearVehicleResponse.Status.PENDING)
 
-        delay(500)
+        val extraDelay = (1000L * Math.random()).toLong()
+        delay(300L + extraDelay)
+        logger.debug("webService response: $vin")
 
         // .. do the clear vehicles requests
-        return RequestClearanceResponse(vin, RequestClearanceResponse.Status.PENDING)
+        return response
 
         // POST
 

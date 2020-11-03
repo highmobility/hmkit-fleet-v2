@@ -1,3 +1,6 @@
 rootProject.name = 'hmkit-fleet'
 
-include ':hmkit-fleet'
+include ':hmkit-fleet',
+        ':hmkit-fleet-consumer'
+
+project(':hmkit-fleet-consumer').projectDir = new File('hmkit-fleet-consumer/hmkit-fleet-consumer')

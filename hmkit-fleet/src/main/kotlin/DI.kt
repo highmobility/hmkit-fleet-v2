@@ -1,23 +1,33 @@
 import com.highmobility.hmkit.HMKit
 import network.WebService
 import okhttp3.OkHttpClient
-import org.koin.core.context.startKoin
+import org.koin.core.Koin
+import org.koin.core.KoinApplication
+import org.koin.core.component.KoinComponent
+import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
 object DI {
-    val logger: org.slf4j.Logger = LoggerFactory.getLogger(FleetSdk::class.java)
     val koinModules = module {
+        single { LoggerFactory.getLogger(HMKitFleet::class.java) }
         single { OkHttpClient() }
-        single { WebService(getProperty("apiKey"), get()) }
+        single { WebService(getProperty("apiKey"), get(), get()) }
         single { HMKit.getInstance() }
-        single { logger }
     }
 
+    lateinit var koinApplication: KoinApplication
+
     fun start(apiKey: String) {
-        startKoin {
+        koinApplication = koinApplication {
             properties(values = mapOf("apiKey" to apiKey))
-            koinModules
+            modules(koinModules)
+        }
+    }
+
+    interface FleetSdkKoinComponent : KoinComponent {
+        override fun getKoin(): Koin {
+            return koinApplication.koin
         }
     }
 }
