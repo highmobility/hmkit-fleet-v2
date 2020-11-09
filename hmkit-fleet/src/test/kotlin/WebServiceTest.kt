@@ -1,41 +1,46 @@
+import com.highmobility.crypto.Crypto
+import com.highmobility.hmkit.HMKit
+import com.highmobility.value.Bytes
+import io.mockk.every
+import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 import network.WebService
 import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Before
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
-import org.koin.test.inject
+import org.koin.core.component.get
+import org.koin.core.component.inject
 
 class WebServiceTest : BaseTest() {
-    val webService by inject<WebService>()
+//    val webService by inject<WebService>()
     val client by inject<OkHttpClient>()
-    var vins = listOf("vin1", "vin2")
+    val hmkitOem by inject<HMKit>()
+    val crypto = mockk<Crypto>()
+    val webService = WebService(configuration, client, hmkitOem, get())
 
-    private val mainThreadSurrogate = newSingleThreadContext("UI thread")
+    var vins = listOf("vin1", "vin2")
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(mainThreadSurrogate)
+        every { hmkitOem.crypto } returns crypto
     }
 
     @After
     fun tearDown() {
-        Dispatchers.resetMain() // reset main dispatcher to the original Main dispatcher
-        mainThreadSurrogate.close()
-    }
 
-    // TODO: test that apiKey used is the same from koin init
+    }
 
     @Test
     fun createsAccessTokenBeforeRequest() = runBlocking {
-        // TODO:
         webService.clearVehicle(vins[0])
+
+        // TODO: verify correct input from configuration
+        verify { crypto.signJWT(any<Bytes>(), any()) }
+
+        // TODO: verify call made
         verify { client.newCall(any()) }
     }
 

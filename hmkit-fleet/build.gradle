@@ -10,15 +10,16 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-repositories {
-    mavenCentral()
-}
+apply from: "deploy.gradle"
+apply plugin: 'kotlinx-serialization'
 
 dependencies {
     // kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc"
 
     // hmkit
     implementation('com.highmobility:hmkit-oem:2.0.1-osx')
@@ -34,15 +35,16 @@ dependencies {
     implementation "org.koin:koin-logger-slf4j:$koin_version"
 
     // logging
-    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation 'org.slf4j:slf4j-api:1.7.30'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
-    testImplementation 'org.slf4j:slf4j-simple:1.7.25'
+    testImplementation 'org.slf4j:slf4j-simple:1.7.30'
     testImplementation "io.mockk:mockk:1.10.2"
+    testImplementation "com.charleskorn.kaml:kaml:0.26.0"
 }
 
 // deploy script

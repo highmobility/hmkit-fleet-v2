@@ -8,20 +8,21 @@ import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
-object DI {
+internal object Koin {
     val koinModules = module {
         single { LoggerFactory.getLogger(HMKitFleet::class.java) }
         single { OkHttpClient() }
-        single { WebService(getProperty("apiKey"), get(), get()) }
+        single { WebService(get(), get(), get(), get()) }
         single { HMKit.getInstance() }
     }
 
     lateinit var koinApplication: KoinApplication
-
-    fun start(apiKey: String) {
+    fun start(apiConfiguration: ServiceAccountApiConfiguration) {
         koinApplication = koinApplication {
-            properties(values = mapOf("apiKey" to apiKey))
-            modules(koinModules)
+            modules(
+                module { single { apiConfiguration } },
+                koinModules
+            )
         }
     }
 

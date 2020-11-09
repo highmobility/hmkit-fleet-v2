@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+import com.charleskorn.kaml.Yaml
 import com.highmobility.hmkit.HMKit
 import io.mockk.*
 import network.WebService
@@ -34,10 +35,18 @@ import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
 import org.slf4j.Logger
+import java.nio.file.Files
+import java.nio.file.Paths
+
+var credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
+val credentialsContent = Files.readString(credentialsFilePath)
+val configuration =
+    Yaml.default.decodeFromString(ServiceAccountApiConfiguration.serializer(), credentialsContent)
 
 val modules = module {
     single { mockk<OkHttpClient>() }
-    single { WebService(getProperty("apiKey"), get(), get()) }
+    single { configuration }
+    single { WebService(get(), get(), get(), get()) }
     single { HMKit.getInstance() }
     single { mockk<Logger>() }
 }
@@ -48,11 +57,9 @@ open class BaseTest : KoinTest {
     val mockLogger by inject<Logger>()
 
     companion object {
-        lateinit var fleetSdk: HMKitFleet
-
-        @JvmStatic @BeforeAll
+        @JvmStatic
+        @BeforeAll
         fun beforeAll() {
-            fleetSdk = HMKitFleet.getInstance(testApiKey)
             startKoin {
                 properties(values = mapOf("apiKey" to testApiKey))
                 modules(modules)

@@ -7,14 +7,30 @@ import java.util.stream.Collectors;
 
 import network.ClearVehicleResponse;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * These are to test public API in java, so it looks nice.
  * More meaningful tests in .kt files.
  */
-class JavaInterfaceTest extends BaseTest {
+class JavaInterfaceTest {
     List<String> vins = List.of("1", "12", "189");
+    HMKitFleet fleetSdk = HMKitFleet.INSTANCE;
+
+    @Test public void throwsIfConfigurationNotSet() {
+        assertThrows(IllegalStateException.class, () -> {
+            HMKitFleet.INSTANCE.requestClearance("vin1");
+        });
+
+        // set it for next tests
+        ServiceAccountApiConfiguration configuration =
+                new ServiceAccountApiConfiguration(
+                        "apiKey",
+                        "privateKey");
+
+        fleetSdk.setConfiguration(configuration);
+    }
 
     @Test
     public void requestClearance() throws InterruptedException {
