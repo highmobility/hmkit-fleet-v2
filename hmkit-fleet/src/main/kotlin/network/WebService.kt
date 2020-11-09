@@ -59,63 +59,8 @@ class WebService(
             "iat" to System.currentTimeMillis() / 1000
         )
 
-        // "***REMOVED***"
         val privateKeyEncoded = configuration.privateKey
         val privateKeyBytes = configuration.getPrivateKeyBytes()
-
-        println("priv key bytes $privateKeyBytes")
-        val i = 1
-        // TODO: get the private key bytes from encoded string
-
-        /*
-        Client certificate:
-        {
-          "version": "2.0",
-          "type": "rest_api",
-          "private_key_id": "302ee1ad-4781-444f-bb23-65d80db32263",
-          "private_key": "***REMOVED***",
-          "app_uri": "https://rest-api.high-mobility.com/v3",
-          "app_id": "8F063617071E4426F013D44E"
-        }
-
-        val config = {
-        "inserted_at":"2020-10-28T03:21:15",
-        "private_key":"***REMOVED***",
-        "id":"38d09f99-6e9d-464f-b8cd-eb9d1ceddfb3"
-        }
-         */
-
-        /*
-        jwt example from tutorial
-        {
-          "iss": "<i>Api Key uuid</i>",
-          "aud": "https://sandbox.api.high-mobility.com/v1",
-          "iat": "<i>Current datetime in <a href="https://tools.ietf.org/html/rfc7519#page-6">UNIX timestamp</a></a></i>",
-          "jti": "<i>A random and unique UUIDv4</i>",
-          "ver": 1
-        }
-         */
-
-        /*
-        hmkit-android example
-        val header = "{\"alg\":\"ES256\",\"typ\":\"JWT\"}"
-        val body = "{\"code_verifier\":\"${nonce.hex}\",\"serial_number\":\"${deviceSerial.hex}\"}"
-
-        val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
-        val bodyBase64 = Base64.encodeUrlSafe(body.toByteArray())
-
-        val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
-        val jwtSignature = crypto.signJWT(jwtContent.toByteArray(), privateKey)
-
-        return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)
-         */
-
-        /*
-        get public key from client cert:
-        and @doofyus did you have a script to print the public key from a device certifiate hex e.g.
-***REMOVED***
-
-         */
 
         // url is {base}/auth_tokens
 
