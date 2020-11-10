@@ -47,7 +47,7 @@ val modules = module {
     single { mockk<OkHttpClient>() }
     single { configuration }
     single { WebService(get(), get(), get(), get()) }
-    single { HMKit.getInstance() }
+    single { mockk<HMKit>() }
     single { mockk<Logger>() }
 }
 

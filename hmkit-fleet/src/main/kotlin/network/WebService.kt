@@ -2,9 +2,13 @@ package network
 
 import ServiceAccountApiConfiguration
 import com.highmobility.hmkit.HMKit
+import com.highmobility.utils.Base64
 import kotlinx.coroutines.delay
+import okhttp3.FormBody
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.slf4j.Logger
+import ru.gildor.coroutines.okhttp.await
 
 class WebService(
     val configuration: ServiceAccountApiConfiguration,
@@ -21,21 +25,8 @@ class WebService(
         // 1) create jwt with apiKey and exchange it to auth token
         val authToken = getAuthToken()
 
-        /*
-        Once a vehicle VIN has been cleared, it’s possible to get an access token for that vehicle.
-        With the access token it will be possible to use our REST API (or any SDK) to get data.
-        */
-
-        /*
-        By using the POST /fleets/access_tokens endpoint, the data customer passes in the VIN and
-         receives an access token (and a refresh token) The access token is used with the REST API
-         to fetch data
-         */
-        /*
-        VIN clearing can take a long time. For BMW we need to send email. we will only return
-        response here
-         */
-
+        // 2: send /fleets/access_tokens request. receive access token and refresh token
+        // The access token is used with the REST API to fetch data
         val response = ClearVehicleResponse(vin, ClearVehicleResponse.Status.PENDING)
 
         val extraDelay = (1000L * Math.random()).toLong()
@@ -43,28 +34,44 @@ class WebService(
         logger.debug("webService response: $vin")
 
         // 3. return request response. otherwise user can poll the status
-        /*
-        Register a fleet vehicle for data access clearance. Once the VIN has its status changed to
-        "approved", an access token can be retrieved for the VIN.
-         */
         return response
     }
 
     private suspend fun getAuthToken(): String {
+        // TODO: first check if auth token exists, then use that instead.
+
         // 1. create jwt auth token
-        val jwtContent = mapOf(
+        val jwtMap = mapOf(
             "ver" to configuration.version,
             "iss" to configuration.apiKey,
             "aud" to configuration.baseUrl,
             "iat" to System.currentTimeMillis() / 1000
         )
 
-        val privateKeyEncoded = configuration.privateKey
-        val privateKeyBytes = configuration.getPrivateKeyBytes()
+        val privateKey = configuration.getHmPrivateKey()
 
-        // url is {base}/auth_tokens
+        println("priv key bytes $privateKey")
 
-        delay(500)
-        return "fakeToken ${Math.random()}"
+        val jwtContent = Base64.encode(jwtMap.toString().toByteArray())
+        val signature = hmkitOem.crypto.signJWT(jwtContent.toByteArray(), privateKey)
+
+//        val jwt = String.format("%s.%s", jwtContent, signature.base64UrlSafe)
+
+        // 2. make the auth tokes request
+        // {base}/auth_tokens
+        val body = FormBody.Builder()
+            .add("assertion", signature.base64UrlSafe)
+            .build()
+
+        val request = Request.Builder()
+            .url("${configuration.baseUrl}/auth_tokens")
+            .header("Content-Type", "application/json")
+            .post(body)
+            .build()
+        val call = client.newCall(request)
+
+        val response = call.await()
+
+        return response.body.toString()
     }
 }
