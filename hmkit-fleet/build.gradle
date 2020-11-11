@@ -32,9 +32,7 @@ dependencies {
 
     // Koin
     api "org.koin:koin-core:$koin_version"
-//     implementation "org.koin:koin-core-ext:$koin_version"
     testImplementation "org.koin:koin-test:$koin_version"
-    implementation "org.koin:koin-logger-slf4j:$koin_version"
 
     // logging
     implementation 'org.slf4j:slf4j-api:1.7.30'

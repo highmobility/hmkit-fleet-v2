@@ -44,9 +44,7 @@ val configuration =
     Yaml.default.decodeFromString(ServiceAccountApiConfiguration.serializer(), credentialsContent)
 
 val modules = module {
-    single { mockk<OkHttpClient>() }
     single { configuration }
-    single { WebService(get(), get(), get(), get()) }
     single { mockk<HMKit>() }
     single { mockk<Logger>() }
 }

@@ -20,8 +20,6 @@ import org.koin.core.component.inject
 import ru.gildor.coroutines.okhttp.await
 
 class WebServiceTest : BaseTest() {
-    //    val webService by inject<WebService>()
-
     val client = mockk<OkHttpClient>()
     val hmkitOem by inject<HMKit>()
 

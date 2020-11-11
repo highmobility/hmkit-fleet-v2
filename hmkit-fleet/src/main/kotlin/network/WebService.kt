@@ -3,10 +3,13 @@ package network
 import ServiceAccountApiConfiguration
 import com.highmobility.hmkit.HMKit
 import com.highmobility.utils.Base64
-import kotlinx.coroutines.delay
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
+import okio.Buffer
 import org.slf4j.Logger
 import ru.gildor.coroutines.okhttp.await
 
@@ -23,17 +26,14 @@ class WebService(
 
         // flow:
         // 1) create jwt with apiKey and exchange it to auth token
-        val authToken = getAuthToken()
+        val authToken = getAuthToken() // TODO: implement error handling
+        // {"errors":[{"title":"Internal server error"}]}
 
         // 2: send /fleets/access_tokens request. receive access token and refresh token
         // The access token is used with the REST API to fetch data
         val response = ClearVehicleResponse(vin, ClearVehicleResponse.Status.PENDING)
 
-        val extraDelay = (1000L * Math.random()).toLong()
-        delay(300L + extraDelay)
-        logger.debug("webService response: $vin")
-
-        // 3. return request response. otherwise user can poll the status
+        // 3. return request response.  user can poll the status
         return response
     }
 
@@ -41,26 +41,11 @@ class WebService(
         // TODO: first check if auth token exists, then use that instead.
 
         // 1. create jwt auth token
-        val jwtMap = mapOf(
-            "ver" to configuration.version,
-            "iss" to configuration.apiKey,
-            "aud" to configuration.baseUrl,
-            "iat" to System.currentTimeMillis() / 1000
-        )
-
-        val privateKey = configuration.getHmPrivateKey()
-
-        println("priv key bytes $privateKey")
-
-        val jwtContent = Base64.encode(jwtMap.toString().toByteArray())
-        val signature = hmkitOem.crypto.signJWT(jwtContent.toByteArray(), privateKey)
-
-//        val jwt = String.format("%s.%s", jwtContent, signature.base64UrlSafe)
 
         // 2. make the auth tokes request
         // {base}/auth_tokens
         val body = FormBody.Builder()
-            .add("assertion", signature.base64UrlSafe)
+            .add("assertion", getJwt())
             .build()
 
         val request = Request.Builder()
@@ -68,10 +53,48 @@ class WebService(
             .header("Content-Type", "application/json")
             .post(body)
             .build()
+        printRequest(request)
         val call = client.newCall(request)
 
         val response = call.await()
+        printResponse(response)
 
         return response.body.toString()
+    }
+
+    private fun getJwt(): String {
+        val header = buildJsonObject {
+            put("alg", "ES256")
+            put("typ", "JWT")
+        }.toString()
+
+        val jwtBody = buildJsonObject {
+            put("ver", configuration.version)
+            put("iss", configuration.apiKey)
+            put("aud", configuration.baseUrl)
+            put("iat", (System.currentTimeMillis() / 1000))
+        }.toString()
+
+        val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
+        val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
+        val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
+        val privateKey = configuration.getHmPrivateKey()
+        val jwtSignature = hmkitOem.crypto.signJWT(jwtContent.toByteArray(), privateKey)
+
+        return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)
+    }
+
+    private fun printRequest(request: Request) {
+        val buffer = Buffer()
+        request.body?.writeTo(buffer)
+        logger.debug(
+            "sending ${request.url}:" +
+                    "\nheaders: ${request.headers}" +
+                    "body :${(buffer.readUtf8())}"
+        )
+    }
+
+    private fun printResponse(response: Response) {
+        logger.debug("${response.request.url} response:\n${response.body?.string()}")
     }
 }

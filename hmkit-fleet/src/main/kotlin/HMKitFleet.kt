@@ -1,16 +1,13 @@
-import com.highmobility.hmkit.HMKit
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import network.ClearVehicleResponse
 import network.WebService
 import org.koin.core.component.inject
 import org.slf4j.Logger
-import java.lang.IllegalStateException
 import java.util.concurrent.CompletableFuture
 
 object HMKitFleet : Koin.FleetSdkKoinComponent {
     private val logger by inject<Logger>()
-    private val hmkit by inject<HMKit>()
     private val webService by inject<WebService>()
 
     var configuration: ServiceAccountApiConfiguration? = null
@@ -24,7 +21,10 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     fun requestClearance(vin: String): CompletableFuture<ClearVehicleResponse> {
         throwIfConfigurationNotSet()
         logger.debug("HMKitFleet: requestClearance: $vin")
-        return GlobalScope.future { webService.clearVehicle(vin) }
+
+        return GlobalScope.future {
+            webService.clearVehicle(vin)
+        }
     }
 
     fun revokeClearance(vin: String): CompletableFuture<Boolean> {
@@ -44,13 +44,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
         return CompletableFuture()
     }
 
-    // TODO: endpoints
-    //  The SDK implements all endpoints of the Service Account API except for the device certificate
-    //  endpoints, which are not needed
     private fun throwIfConfigurationNotSet() {
-        if (configuration == null) throw IllegalStateException(
-            "" +
-                    "HMKitFleet setConfiguration() not called"
-        )
+        if (configuration == null) throw IllegalStateException("HMKitFleet setConfiguration() not called")
     }
 }
