@@ -24,11 +24,7 @@ class JavaInterfaceTest {
         });
 
         // set it for next tests
-        ServiceAccountApiConfiguration configuration =
-                new ServiceAccountApiConfiguration(
-                        "apiKey",
-                        "privateKey");
-
+        ServiceAccountApiConfiguration configuration = BaseTestKt.getConfiguration();
         fleetSdk.setConfiguration(configuration);
     }
 

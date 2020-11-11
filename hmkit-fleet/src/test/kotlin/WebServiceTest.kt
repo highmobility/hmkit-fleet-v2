@@ -54,7 +54,7 @@ class WebServiceTest : BaseTest() {
         val jwtContent = Base64.encode(jwtMap.toString().toByteArray())
         val request = slot<Request>()
         val call = mockk<Call>()
-        val response = mockk<Response>()
+        val response = mockk<Response>(relaxed = true)
         val responseBody = "{\"token\":\"token\"}".toResponseBody("application/json".toMediaTypeOrNull())
         every { response.body } returns responseBody
         val callback = slot<Callback>()
@@ -83,6 +83,7 @@ class WebServiceTest : BaseTest() {
     @Test
     fun doesNotCreateAccessTokenIfExists() {
         // check that no request is made when token exists
+
         fail<WebServiceTest>()
     }
 
