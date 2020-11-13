@@ -5,6 +5,7 @@ import com.highmobility.hmkit.HMKit
 import com.highmobility.utils.Base64
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import model.Database
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,6 +18,7 @@ class WebService(
     val configuration: ServiceAccountApiConfiguration,
     val client: OkHttpClient,
     val hmkitOem: HMKit,
+    val database: Database,
     val logger: Logger
 ) {
     suspend fun clearVehicle(vin: String): ClearVehicleResponse {
@@ -40,7 +42,7 @@ class WebService(
     private suspend fun getAuthToken(): String {
         // TODO: first check if auth token exists, then use that instead.
 
-        // 1. create jwt auth token
+        // 1. create/read jwt auth token
 
         // 2. make the auth tokes request
         // {base}/auth_tokens
@@ -71,8 +73,9 @@ class WebService(
         val jwtBody = buildJsonObject {
             put("ver", configuration.version)
             put("iss", configuration.apiKey)
-            put("aud", configuration.baseUrl)
-            put("iat", (System.currentTimeMillis() / 1000))
+            put("aud", ServiceAccountApiConfiguration.Environment.PRODUCTION.url)
+            put("jti", configuration.createJti())
+            put("iat", configuration.createIat())
         }.toString()
 
         val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
@@ -90,11 +93,11 @@ class WebService(
         logger.debug(
             "sending ${request.url}:" +
                     "\nheaders: ${request.headers}" +
-                    "body :${(buffer.readUtf8())}"
+                    "body: ${(buffer.readUtf8())}"
         )
     }
 
     private fun printResponse(response: Response) {
-        logger.debug("${response.request.url} response:\n${response.body?.string()}")
+        logger.debug("${response.request.url} response:\n${response.code}: ${response.body?.string()}")
     }
 }

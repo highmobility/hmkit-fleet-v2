@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
+import java.util.*
 
 @Serializable
 data class ServiceAccountApiConfiguration @JvmOverloads constructor(
@@ -13,36 +14,45 @@ data class ServiceAccountApiConfiguration @JvmOverloads constructor(
     val environment: Environment = Environment.PRODUCTION
 ) {
     enum class Environment {
-        PRODUCTION, SANDBOX, DEV_SANDBOX;
+        PRODUCTION, SANDBOX, DEV, DEV_SANDBOX;
 
         val url: String
             get() {
                 return when (this) {
                     PRODUCTION -> "https://api.high-mobility.com/v1"
                     SANDBOX -> "https://sandbox.api.high-mobility.com/v1"
+                    DEV -> "https://api.develop.high-mobility.net/v1"
                     DEV_SANDBOX -> "https://sandbox.api.develop.high-mobility.net/v1"
                 }
             }
     }
 
     val baseUrl = environment.url
-    val version = 2
+    val version = 1
+
+    fun createJti() = UUID.randomUUID().toString()
+    fun createIat() = (System.currentTimeMillis() / 1000)
 
     fun getHmPrivateKey(): PrivateKey {
+        val bigIntegerBytes = getJavaPrivateKey().s.toByteArray()
+        val privateKeyBytes = ByteArray(32)
+
+        for (i in 0..31) {
+            privateKeyBytes[i] = bigIntegerBytes[i + 1]
+        }
+
+        return PrivateKey(privateKeyBytes)
+    }
+
+    fun getJavaPrivateKey(): ECPrivateKey {
         var encodedKeyString = privateKey
-        encodedKeyString = encodedKeyString.replace("-----BEGIN PRIVATE KEY-----\n", "")
-        encodedKeyString = encodedKeyString.replace("\n-----END PRIVATE KEY-----\n\n", "")
+        encodedKeyString = encodedKeyString.replace("-----BEGIN PRIVATE KEY----", "")
+        encodedKeyString = encodedKeyString.replace("-----END PRIVATE KEY-----", "")
         val decodedPrivateKey = Base64.decode(encodedKeyString)
         val keySpec = PKCS8EncodedKeySpec(decodedPrivateKey)
         // how to convert PKCS#8 to EC private key https://stackoverflow.com/a/52301461/599743
         val kf = KeyFactory.getInstance("EC")
-        val ecPrivateKey = kf.generatePrivate(keySpec) as ECPrivateKey // crashes here
-        val bigIntegerBytes = ecPrivateKey.s.toByteArray()
-        val privateKeyBytes = ByteArray(32)
-        for (i in 0..31) {
-            privateKeyBytes[i] = bigIntegerBytes[32 - i]
-        }
-
-        return PrivateKey(privateKeyBytes)
+        val ecPrivateKey = kf.generatePrivate(keySpec) as ECPrivateKey
+        return ecPrivateKey
     }
 }

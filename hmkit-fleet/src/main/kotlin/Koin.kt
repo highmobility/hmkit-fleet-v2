@@ -1,4 +1,5 @@
 import com.highmobility.hmkit.HMKit
+import model.Database
 import network.WebService
 import okhttp3.OkHttpClient
 import org.koin.core.Koin
@@ -11,8 +12,9 @@ import org.slf4j.LoggerFactory
 internal object Koin {
     val koinModules = module {
         single { LoggerFactory.getLogger(HMKitFleet::class.java) }
+        single { Database() }
         single { OkHttpClient() }
-        single { WebService(get(), get(), get(), get()) }
+        single { WebService(get(), get(), get(), get(), get()) }
         single { HMKit.getInstance() }
     }
 

@@ -41,7 +41,7 @@ import java.nio.file.Paths
 var credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
 val credentialsContent = Files.readString(credentialsFilePath)
 val configuration =
-    Yaml.default.decodeFromString(ServiceAccountApiConfiguration.serializer(), credentialsContent)
+    spyk(Yaml.default.decodeFromString(ServiceAccountApiConfiguration.serializer(), credentialsContent))
 
 val modules = module {
     single { configuration }
