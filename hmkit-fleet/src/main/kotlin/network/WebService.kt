@@ -1,11 +1,15 @@
 package network
 
+import HMKitFleet
 import ServiceAccountApiConfiguration
 import com.highmobility.hmkit.HMKit
 import com.highmobility.utils.Base64
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import model.Database
+import model.AuthToken
+import network.response.ClearVehicle
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,45 +17,21 @@ import okhttp3.Response
 import okio.Buffer
 import org.slf4j.Logger
 import ru.gildor.coroutines.okhttp.await
+import java.net.HttpURLConnection
 
-class WebService(
-    val configuration: ServiceAccountApiConfiguration,
+internal class WebService(
     val client: OkHttpClient,
     val hmkitOem: HMKit,
-    val database: Database,
-    val logger: Logger
+    val logger: Logger,
+    val baseUrl: String
 ) {
-    suspend fun clearVehicle(vin: String): ClearVehicleResponse {
-        // fleets/vehicles endpoint
-        // post /v1/fleets/vehicles
-        // auth header: token
-
-        // flow:
-        // 1) create jwt with apiKey and exchange it to auth token
-        val authToken = getAuthToken() // TODO: implement error handling
-        // {"errors":[{"title":"Internal server error"}]}
-
-        // 2: send /fleets/access_tokens request. receive access token and refresh token
-        // The access token is used with the REST API to fetch data
-        val response = ClearVehicleResponse(vin, ClearVehicleResponse.Status.PENDING)
-
-        // 3. return request response.  user can poll the status
-        return response
-    }
-
-    private suspend fun getAuthToken(): String {
-        // TODO: first check if auth token exists, then use that instead.
-
-        // 1. create/read jwt auth token
-
-        // 2. make the auth tokes request
-        // {base}/auth_tokens
+    suspend fun getAuthToken(configuration: ServiceAccountApiConfiguration): network.Response<AuthToken> {
         val body = FormBody.Builder()
-            .add("assertion", getJwt())
+            .add("assertion", getJwt(configuration))
             .build()
 
         val request = Request.Builder()
-            .url("${configuration.baseUrl}/auth_tokens")
+            .url("${baseUrl}/auth_tokens")
             .header("Content-Type", "application/json")
             .post(body)
             .build()
@@ -59,12 +39,32 @@ class WebService(
         val call = client.newCall(request)
 
         val response = call.await()
-        printResponse(response)
+        val responseBody = printResponse(response)
 
-        return response.body.toString()
+        if (response.code == HttpURLConnection.HTTP_CREATED) {
+            val token = Json.decodeFromString<AuthToken>(responseBody)
+            return Response(token)
+        } else {
+            return Response(null, Error("Bad server response"))
+        }
+
     }
 
-    private fun getJwt(): String {
+    suspend fun clearVehicle(vin: String, authToken: AuthToken): network.Response<ClearVehicle> {
+        // fleets/vehicles endpoint
+        // post /v1/fleets/vehicles
+        // auth header: token
+
+        // 2: send /fleets/access_tokens request. receive access token and refresh token
+        // The access token is used with the REST API to fetch data
+        val response = ClearVehicle(vin, ClearVehicle.Status.PENDING)
+
+        // 3. return request response.  user can poll the status
+        // TODO: 17/11/20 parse error or object
+        return network.Response(response)
+    }
+
+    private fun getJwt(configuration: ServiceAccountApiConfiguration): String {
         val header = buildJsonObject {
             put("alg", "ES256")
             put("typ", "JWT")
@@ -73,7 +73,7 @@ class WebService(
         val jwtBody = buildJsonObject {
             put("ver", configuration.version)
             put("iss", configuration.apiKey)
-            put("aud", ServiceAccountApiConfiguration.Environment.PRODUCTION.url)
+            put("aud", HMKitFleet.Environment.PRODUCTION.url)
             put("jti", configuration.createJti())
             put("iat", configuration.createIat())
         }.toString()
@@ -97,7 +97,9 @@ class WebService(
         )
     }
 
-    private fun printResponse(response: Response) {
-        logger.debug("${response.request.url} response:\n${response.code}: ${response.body?.string()}")
+    private fun printResponse(response: Response): String {
+        val body = response.body?.string()
+        logger.debug("${response.request.url} response:\n${response.code}: ${body}")
+        return body!!
     }
 }

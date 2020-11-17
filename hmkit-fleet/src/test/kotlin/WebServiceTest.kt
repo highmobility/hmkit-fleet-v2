@@ -6,75 +6,84 @@ import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import model.Database
 import network.WebService
 import okhttp3.*
-import okhttp3.Call
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.ResponseBody.Companion.toResponseBody
-import org.junit.After
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.koin.core.component.get
 import org.koin.core.component.inject
-import ru.gildor.coroutines.okhttp.await
+import java.net.HttpURLConnection
 
-class WebServiceTest : BaseTest() {
-    val client = mockk<OkHttpClient>()
+internal class WebServiceTest : BaseTest() {
+    val mockWebServer = MockWebServer()
+
+    val client = OkHttpClient()
+
     val hmkitOem by inject<HMKit>()
-    val database = mockk<Database>()
     val privateKey = configuration.getHmPrivateKey()
     val signature = Signature(privateKey.concat(privateKey))
     val crypto = mockk<Crypto> {
         every { signJWT(any<ByteArray>(), any()) } returns signature
     }
-    val webService = WebService(configuration, client, hmkitOem, database, get())
+//    val webService = WebService(client, hmkitOem, get(), HMKitFleet.Environment.DEV.url)
 
     var vins = listOf("vin1", "vin2")
 
     @BeforeEach
     fun setUp() {
         every { hmkitOem.crypto } returns crypto
+        mockWebServer.start()
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
-
+        mockWebServer.shutdown()
     }
 
     @Test
-    fun createsAccessTokenBeforeRequest() {
-        val request = slot<Request>()
-        val call = mockk<Call>()
-        val response = mockk<Response>(relaxed = true)
-        val responseBody =
-            "{\"token\":\"token\"}".toResponseBody("application/json".toMediaTypeOrNull())
-        every { response.body } returns responseBody
-        val callback = slot<Callback>()
+    fun parsesAuthTokenResponse() {
+        val mockResponse = MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_CREATED)
+            .setBody(
+                "{\"auth_token\":\"e903cb43-27b1-4e47-8922-c04ecd5d2019\"," +
+                        "\"valid_from\":\"2020-11-17T04:50:16\"," +
+                        "\"valid_until\":\"2020-11-17T05:50:16\"}"
+            )
 
-        // extension functions need to be mocked https://github.com/mockk/mockk/issues/344
-        mockkStatic("ru.gildor.coroutines.okhttp.CallAwaitKt")
-        coEvery { call.await() } returns response
-        every { call.enqueue(capture(callback)) } just Runs
+        mockWebServer.enqueue(mockResponse)
+
+        val baseUrl: HttpUrl = mockWebServer.url("")
+        val webService = WebService(client, hmkitOem, get(), baseUrl.toString())
+
         every { crypto.signJWT(any<ByteArray>(), any()) } returns signature
-        every { client.newCall(capture(request)) } returns call
 
         val jwtContent = getJwtContent()
         val privateKey = configuration.getHmPrivateKey()
 
         val status = runBlocking {
-            webService.clearVehicle(vins[0])
+            webService.getAuthToken(configuration)
         }
 
         coVerify { crypto.signJWT(jwtContent.toByteArray(), privateKey) }
 
-        coVerify { client.newCall(capture(request)) }
+        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+        assertTrue(recordedRequest.path!!.endsWith("/auth_tokens"))
 
-        assertTrue(request.captured.url.toString().endsWith("/auth_tokens"))
+        assertTrue(status.response!!.authToken == "e903cb43-27b1-4e47-8922-c04ecd5d2019")
+        assertTrue(status.response!!.validFrom.toString() == "2020-11-17T04:50:16")
+        assertTrue(status.response!!.validUntil.toString() == "2020-11-17T05:50:16")
+    }
 
-        // TODO: verify the returned auth token used in request
+    @Test
+    fun parsesAuthTokenResponseError() {
+        // TODO:
+        // possible error response:
+        // {"errors":[{"detail":"Missing or invalid assertion. It must be a JWT signed with the service account key.","source":"assertion","title":"Not authorized"}]}
+
     }
 
     fun getJwtContent(): String {
@@ -90,7 +99,7 @@ class WebServiceTest : BaseTest() {
         val jwtBody = buildJsonObject {
             put("ver", configuration.version)
             put("iss", configuration.apiKey)
-            put("aud", ServiceAccountApiConfiguration.Environment.PRODUCTION.url)
+            put("aud", HMKitFleet.Environment.PRODUCTION.url)
             put("jti", configuration.createJti())
             put("iat", configuration.createIat())
         }.toString()

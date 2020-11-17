@@ -1,6 +1,8 @@
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
-import network.ClearVehicleResponse
+import model.AuthToken
+import network.Response
+import network.response.ClearVehicle
 import network.WebService
 import org.koin.core.component.inject
 import org.slf4j.Logger
@@ -10,25 +12,44 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     private val logger by inject<Logger>()
     private val webService by inject<WebService>()
 
-    var configuration: ServiceAccountApiConfiguration? = null
-        set(value) {
-            if (value == null) return
-            field = value
-            Koin.start(value)
-            logger.info("HMKit Fleet initialised")
-        }
+    var environment: Environment = Environment.PRODUCTION
 
-    fun requestClearance(vin: String): CompletableFuture<ClearVehicleResponse> {
-        throwIfConfigurationNotSet()
-        logger.debug("HMKitFleet: requestClearance: $vin")
+    init {
+        Koin.start()
+    }
 
+    /**
+     * Get the auth token that is required for future requests.
+     *
+     * @param configuration The Service account API configuration
+     * @return The auth token
+     */
+    fun getAuthToken(configuration: ServiceAccountApiConfiguration):
+            CompletableFuture<Response<AuthToken>> {
         return GlobalScope.future {
-            webService.clearVehicle(vin)
+            webService.getAuthToken(configuration)
         }
     }
 
-    fun revokeClearance(vin: String): CompletableFuture<Boolean> {
-        throwIfConfigurationNotSet()
+    /**
+     * Clear the fleet vehicle for future requests.
+     *
+     * @param authToken The auth token acquired in {@link getAuthToken}
+     * @param vin The vehicle VIN
+     * @return The clearance status.
+     */
+    fun requestClearance(
+        authToken: AuthToken,
+        vin: String
+    ): CompletableFuture<Response<ClearVehicle>> {
+        logger.debug("HMKitFleet: requestClearance: $vin")
+
+        return GlobalScope.future {
+            webService.clearVehicle(vin, authToken)
+        }
+    }
+
+    fun revokeClearance(authToken: AuthToken, vin: String): CompletableFuture<Boolean> {
         // TODO: 30/10/20 implement
         /*
         Although the OAuth2 API is not used to get an access token, it is used to refresh the access
@@ -44,7 +65,17 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
         return CompletableFuture()
     }
 
-    private fun throwIfConfigurationNotSet() {
-        if (configuration == null) throw IllegalStateException("HMKitFleet setConfiguration() not called")
+    enum class Environment {
+        PRODUCTION, SANDBOX, DEV, DEV_SANDBOX;
+
+        val url: String
+            get() {
+                return when (this) {
+                    PRODUCTION -> "https://api.high-mobility.com/v1"
+                    SANDBOX -> "https://sandbox.api.high-mobility.com/v1"
+                    DEV -> "https://api.develop.high-mobility.net/v1"
+                    DEV_SANDBOX -> "https://sandbox.api.develop.high-mobility.net/v1"
+                }
+            }
     }
 }

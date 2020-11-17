@@ -11,23 +11,7 @@ import java.util.*
 data class ServiceAccountApiConfiguration @JvmOverloads constructor(
     val apiKey: String,
     val privateKey: String,
-    val environment: Environment = Environment.PRODUCTION
 ) {
-    enum class Environment {
-        PRODUCTION, SANDBOX, DEV, DEV_SANDBOX;
-
-        val url: String
-            get() {
-                return when (this) {
-                    PRODUCTION -> "https://api.high-mobility.com/v1"
-                    SANDBOX -> "https://sandbox.api.high-mobility.com/v1"
-                    DEV -> "https://api.develop.high-mobility.net/v1"
-                    DEV_SANDBOX -> "https://sandbox.api.develop.high-mobility.net/v1"
-                }
-            }
-    }
-
-    val baseUrl = environment.url
     val version = 1
 
     fun createJti() = UUID.randomUUID().toString()

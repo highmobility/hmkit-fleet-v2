@@ -25,12 +25,12 @@
 import com.charleskorn.kaml.Yaml
 import com.highmobility.hmkit.HMKit
 import io.mockk.*
-import network.WebService
-import okhttp3.OkHttpClient
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.inject
@@ -62,6 +62,12 @@ open class BaseTest : KoinTest {
                 properties(values = mapOf("apiKey" to testApiKey))
                 modules(modules)
             }
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun afterAll() {
+            stopKoin()
         }
     }
 

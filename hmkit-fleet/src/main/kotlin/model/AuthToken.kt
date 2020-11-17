@@ -1,13 +1,34 @@
+@file:UseSerializers(DateTimeSerializer::class)
+
 package model
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import java.time.LocalDateTime
+
 @Serializable
 data class AuthToken(
     @SerialName("auth_token")
-    val auth_token:String,
+    val authToken: String,
     @SerialName("valid_from")
-    val valid_from:String,
+    val validFrom: LocalDateTime,
     @SerialName("valid_until")
-    val valid_until:String
+    val validUntil: LocalDateTime
 )
+
+object DateTimeSerializer : KSerializer<LocalDateTime> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+
+    override fun serialize(output: Encoder, obj: LocalDateTime) {
+        output.encodeString(obj.toString())
+    }
+
+    override fun deserialize(input: Decoder): LocalDateTime {
+        return LocalDateTime.parse(input.decodeString())
+    }
+}
