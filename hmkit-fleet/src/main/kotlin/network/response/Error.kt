@@ -1,3 +1,10 @@
 package network.response
 
-data class Error(val title: String?, val description: String, val source: String?)
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Error(
+    val title: String,
+    val detail: String? = null,
+    val source: String? = null
+)

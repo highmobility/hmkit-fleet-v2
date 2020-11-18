@@ -5,9 +5,7 @@ import ServiceAccountApiConfiguration
 import com.highmobility.hmkit.HMKit
 import com.highmobility.utils.Base64
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
+import kotlinx.serialization.json.*
 import model.AuthToken
 import network.response.ClearVehicle
 import okhttp3.FormBody
@@ -17,6 +15,7 @@ import okhttp3.Response
 import okio.Buffer
 import org.slf4j.Logger
 import ru.gildor.coroutines.okhttp.await
+import java.lang.Exception
 import java.net.HttpURLConnection
 
 internal class WebService(
@@ -41,13 +40,27 @@ internal class WebService(
         val response = call.await()
         val responseBody = printResponse(response)
 
-        if (response.code == HttpURLConnection.HTTP_CREATED) {
-            val token = Json.decodeFromString<AuthToken>(responseBody)
-            return Response(token)
-        } else {
-            return Response(null, Error("Bad server response"))
-        }
+        try {
+            if (response.code == HttpURLConnection.HTTP_CREATED) {
+                val token = Json.decodeFromString<AuthToken>(responseBody)
+                return Response(token)
+            } else {
+                val json = Json.parseToJsonElement(responseBody)
+                if (json is JsonObject) {
+                    val errors = json["errors"] as JsonArray
+                    if (errors.size > 0) {
+                        val error =
+                            Json.decodeFromJsonElement<network.response.Error>(errors.first())
+                        return Response(null, error)
+                    }
+                }
 
+                return Response(null, genericError("invalid error structure"))
+            }
+        } catch (e: Exception) {
+            val detail = e.message.toString()
+            return Response(null, genericError(detail))
+        }
     }
 
     suspend fun clearVehicle(vin: String, authToken: AuthToken): network.Response<ClearVehicle> {
@@ -62,6 +75,11 @@ internal class WebService(
         // 3. return request response.  user can poll the status
         // TODO: 17/11/20 parse error or object
         return network.Response(response)
+    }
+
+    fun genericError(detail: String): network.response.Error {
+        val genericError = network.response.Error("Invalid server response", detail)
+        return genericError
     }
 
     private fun getJwt(configuration: ServiceAccountApiConfiguration): String {
