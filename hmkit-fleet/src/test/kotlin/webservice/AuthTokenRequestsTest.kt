@@ -1,14 +1,19 @@
+package webservice
+
+import BaseTest
+import HMKitFleet
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.Signature
 import com.highmobility.hmkit.HMKit
 import com.highmobility.utils.Base64
+import configuration
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import network.WebService
+import network.AuthTokenRequests
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -22,7 +27,7 @@ import org.koin.core.component.get
 import org.koin.core.component.inject
 import java.net.HttpURLConnection
 
-internal class WebServiceTest : BaseTest() {
+internal class AuthTokenRequestsTest : BaseTest() {
     val mockWebServer = MockWebServer()
 
     val client = OkHttpClient()
@@ -48,7 +53,7 @@ internal class WebServiceTest : BaseTest() {
     }
 
     @Test
-    fun parsesAuthTokenResponse() {
+    fun authTokenSuccessResponse() {
         val mockResponse = MockResponse()
             .setResponseCode(HttpURLConnection.HTTP_CREATED)
             .setBody(
@@ -58,7 +63,7 @@ internal class WebServiceTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val baseUrl: HttpUrl = mockWebServer.url("")
-        val webService = WebService(client, hmkitOem, get(), baseUrl.toString())
+        val webService = AuthTokenRequests(client, hmkitOem, get(), baseUrl.toString())
         val jwtContent = getJwtContent()
 
         val status = runBlocking {
@@ -76,7 +81,7 @@ internal class WebServiceTest : BaseTest() {
     }
 
     @Test
-    fun parsesAuthTokenResponseError() {
+    fun authTokenErrorResponse() {
         val mockResponse = MockResponse()
             .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setBody(
@@ -87,7 +92,7 @@ internal class WebServiceTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val baseUrl: HttpUrl = mockWebServer.url("")
-        val webService = WebService(client, hmkitOem, get(), baseUrl.toString())
+        val webService = AuthTokenRequests(client, hmkitOem, get(), baseUrl.toString())
 
         val status = runBlocking {
             webService.getAuthToken(configuration)
@@ -99,7 +104,7 @@ internal class WebServiceTest : BaseTest() {
     }
 
     @Test
-    fun returnsGenericAuthTokenErrorOnInvalidResponse() {
+    fun authTokenInvalidResponse() {
         val mockResponse = MockResponse()
             .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setBody(
@@ -107,7 +112,7 @@ internal class WebServiceTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val baseUrl: HttpUrl = mockWebServer.url("")
-        val webService = WebService(client, hmkitOem, get(), baseUrl.toString())
+        val webService = AuthTokenRequests(client, hmkitOem, get(), baseUrl.toString())
 
         val status = runBlocking {
             webService.getAuthToken(configuration)

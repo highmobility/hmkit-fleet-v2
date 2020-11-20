@@ -1,17 +1,17 @@
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import model.AuthToken
+import network.AuthTokenRequests
+import network.ClearanceRequests
 import network.Response
-import network.response.ClearVehicle
-import network.WebService
+import network.response.ClearanceStatus
+import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 
 object HMKitFleet : Koin.FleetSdkKoinComponent {
     private val logger by inject<Logger>()
-    private val webService by inject<WebService>()
-
     var environment: Environment = Environment.PRODUCTION
 
     init {
@@ -27,25 +27,44 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     fun getAuthToken(configuration: ServiceAccountApiConfiguration):
             CompletableFuture<Response<AuthToken>> {
         return GlobalScope.future {
-            webService.getAuthToken(configuration)
+            get<AuthTokenRequests>().getAuthToken(configuration)
         }
     }
 
     /**
      * Clear the fleet vehicle for future requests.
      *
-     * @param authToken The auth token acquired in {@link getAuthToken}
+     * @param authToken The auth token acquired in [getAuthToken]
      * @param vin The vehicle VIN
      * @return The clearance status.
      */
     fun requestClearance(
         authToken: AuthToken,
         vin: String
-    ): CompletableFuture<Response<ClearVehicle>> {
+    ): CompletableFuture<Response<ClearanceStatus>> {
         logger.debug("HMKitFleet: requestClearance: $vin")
 
         return GlobalScope.future {
-            webService.clearVehicle(vin, authToken)
+            get<ClearanceRequests>().requestClearance(authToken, vin)
+        }
+    }
+
+    /**
+     * Get the vehicle clearance status. Use this request to check the status after starting the clearance
+     * process with {@link requestClearance}
+     *
+     * @param authToken The auth token acquired in [getAuthToken]
+     * @param vin The vehicle VIN
+     * @return The clearance status.
+     */
+    fun getClearanceStatus(
+        authToken: AuthToken,
+        vin: String
+    ): CompletableFuture<Response<ClearanceStatus>> {
+        logger.debug("HMKitFleet: requestClearance: $vin")
+
+        return GlobalScope.future {
+            get<ClearanceRequests>().requestClearance(authToken, vin)
         }
     }
 

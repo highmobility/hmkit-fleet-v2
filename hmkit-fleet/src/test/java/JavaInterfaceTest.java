@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import model.AuthToken;
 import network.Response;
-import network.response.ClearVehicle;
+import network.response.ClearanceStatus;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,7 +30,7 @@ class JavaInterfaceTest {
     @Test
     public void requestClearance() throws InterruptedException {
 
-        CompletableFuture<Response<ClearVehicle>>[] allRequests = new CompletableFuture[vins.size()];
+        CompletableFuture<Response<ClearanceStatus>>[] allRequests = new CompletableFuture[vins.size()];
 
         for (int i = 0; i < vins.size(); i++) {
             allRequests[i] = fleetSdk.requestClearance(token, vins.get(i));
@@ -48,7 +48,7 @@ class JavaInterfaceTest {
                     System.out.println("All responses finished: " + "");
                     for (int i = 0; i < vins.size(); i++) {
                         try {
-                            Response<ClearVehicle> response = allRequests[i].get();
+                            Response<ClearanceStatus> response = allRequests[i].get();
                             System.out.println(response.getResponse().getStatus());
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -67,13 +67,13 @@ class JavaInterfaceTest {
     @Test
     public void RequestClearanceWithStreams() throws InterruptedException, ExecutionException {
         // requests with streams(dont have to loop)
-        List<CompletableFuture<Response<ClearVehicle>>> requests =
+        List<CompletableFuture<Response<ClearanceStatus>>> requests =
                 vins.stream().map(vin -> fleetSdk.requestClearance(token, vin)).collect(Collectors.toList());
 
         CompletableFuture<Void> allRequests = CompletableFuture.allOf(requests.toArray(new CompletableFuture[requests.size()]));
 
         // callback for single requests
-        for (CompletableFuture<Response<ClearVehicle>> request : requests) {
+        for (CompletableFuture<Response<ClearanceStatus>> request : requests) {
             request.thenAcceptAsync(response -> {
                 System.out.println("request response for VIN: " + response.getResponse().getVin() + " " + response.getResponse().getStatus());
             });

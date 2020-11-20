@@ -1,5 +1,7 @@
 import com.highmobility.hmkit.HMKit
-import network.WebService
+import network.AuthTokenRequests
+import network.ClearanceRequests
+import network.Requests
 import okhttp3.OkHttpClient
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
@@ -13,8 +15,10 @@ internal object Koin {
         single { LoggerFactory.getLogger(HMKitFleet::class.java) }
         single { OkHttpClient() }
         single { HMKitFleet.environment }
-        single { WebService(get(), get(), get(), get<HMKitFleet.Environment>().url) }
         single { HMKit.getInstance() }
+        single { Requests(get(), get(), get(), HMKitFleet.environment.url) }
+        single { AuthTokenRequests(get(), get(), get(), HMKitFleet.environment.url) }
+        single { ClearanceRequests(get(), get(), get(), HMKitFleet.environment.url) }
     }
 
     lateinit var koinApplication: KoinApplication
