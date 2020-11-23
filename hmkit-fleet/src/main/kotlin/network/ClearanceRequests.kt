@@ -6,6 +6,7 @@ import model.AuthToken
 import network.response.ClearanceStatus
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
 import ru.gildor.coroutines.okhttp.await
@@ -23,31 +24,26 @@ internal class ClearanceRequests(
     suspend fun requestClearance(
         authToken: AuthToken,
         vin: String
-    ): network.Response<ClearanceStatus> {
-        // fleets/vehicles endpoint
-        // post /v1/fleets/vehicles
-        // auth header: token
-        val vehicle = JsonObject(mapOf("vin" to JsonPrimitive(vin)))
-        val arrayOfVehicles = JsonArray(listOf(vehicle))
-        val completeBody = JsonObject(mapOf("vehicles" to arrayOfVehicles))
+    ): Response<ClearanceStatus> {
+        val body = requestBody(vin)
 
-        val body = completeBody.toString().toRequestBody(mediaType)
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.authToken}")
             .post(body)
             .build()
-        printRequest(request)
-        val call = client.newCall(request)
 
+        printRequest(request)
+
+        val call = client.newCall(request)
         val response = call.await()
         val responseBody = printResponse(response)
 
         try {
             if (response.code == HttpURLConnection.HTTP_OK) {
                 val jsonElement = Json.parseToJsonElement(responseBody) as JsonObject
-                val statuses =  jsonElement["vins"] as JsonArray
+                val statuses = jsonElement["vins"] as JsonArray
                 for (statusElement in statuses) {
                     val status = Json.decodeFromJsonElement<ClearanceStatus>(statusElement)
                     if (status.vin == vin) {
@@ -59,27 +55,56 @@ internal class ClearanceRequests(
                 return parseError(responseBody)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
             val detail = e.message.toString()
             return Response(null, genericError(detail))
         }
     }
 
-    suspend fun getClearanceStatus(
+    suspend fun getClearanceStatuses(
         authToken: AuthToken,
-        vin: String
-    ): network.Response<ClearanceStatus> {
+    ): Response<List<ClearanceStatus>> {
         // fleets/vehicles endpoint
-        // post /v1/fleets/vehicles
+        // GET /v1/fleets/vehicles
         // auth header: token
 
-        // 2: send /fleets/access_tokens request. receive access token and refresh token
-        // The access token is used with the REST API to fetch data
-        val response = ClearanceStatus(vin, ClearanceStatus.Status.PENDING)
+        val request = Request.Builder()
+            .url("${baseUrl}/fleets/vehicles")
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer ${authToken.authToken}")
+            .build()
 
-        // 3. return request response.  user can poll the status
-        // TODO: 17/11/20 parse error or object
-        return network.Response(response)
+        printRequest(request)
+
+        val call = client.newCall(request)
+        val response = call.await()
+        val responseBody = printResponse(response)
+
+        try {
+            return if (response.code == HttpURLConnection.HTTP_OK) {
+                val statuses = Json.parseToJsonElement(responseBody) as JsonArray
+
+                val builder = Array(statuses.size) {
+                    val statusElement = statuses[it]
+                    val status = Json.decodeFromJsonElement<ClearanceStatus>(statusElement)
+                    status
+                }
+
+                Response(builder.toList())
+            } else {
+                parseError(responseBody)
+            }
+        } catch (e: Exception) {
+            val detail = e.message.toString()
+            return Response(null, genericError(detail))
+        }
     }
 
+    private fun requestBody(vin: String): RequestBody {
+        val vehicle = JsonObject(mapOf("vin" to JsonPrimitive(vin)))
+        val arrayOfVehicles = JsonArray(listOf(vehicle))
+        val completeBody = JsonObject(mapOf("vehicles" to arrayOfVehicles))
+
+        val body = completeBody.toString().toRequestBody(mediaType)
+        return body
+    }
 }

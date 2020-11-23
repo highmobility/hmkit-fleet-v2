@@ -28,8 +28,12 @@ internal open class Requests(
         val format = Json { prettyPrint = true }
 
         // parse into json, so can log it out with pretty print
-        val jsonElement = format.decodeFromString<JsonElement>(request.asString())
-        val bodyInPrettyPrint = format.encodeToString(jsonElement)
+        val body = request.bodyAsString()
+        var bodyInPrettyPrint = ""
+        if (body != null) {
+            val jsonElement = format.decodeFromString<JsonElement>(body)
+            bodyInPrettyPrint = format.encodeToString(jsonElement)
+        }
 
         logger.debug(
             "sending ${request.url}:" +
@@ -59,7 +63,8 @@ internal open class Requests(
     }
 }
 
-fun Request.asString(): String {
+fun Request.bodyAsString(): String? {
+    if (this.body == null) return null
     val buffer = Buffer()
     this.body?.writeTo(buffer)
     return buffer.readUtf8()

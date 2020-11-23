@@ -32,7 +32,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     }
 
     /**
-     * Clear the fleet vehicle for future requests.
+     * Start the data access clearance process for a fleet vehicle.
      *
      * @param authToken The auth token acquired in [getAuthToken]
      * @param vin The vehicle VIN
@@ -50,21 +50,19 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     }
 
     /**
-     * Get the vehicle clearance status. Use this request to check the status after starting the clearance
-     * process with {@link requestClearance}
+     * Get the status of VINs that have previously been registered for data access clearance with
+     * [requestClearance]
      *
      * @param authToken The auth token acquired in [getAuthToken]
-     * @param vin The vehicle VIN
      * @return The clearance status.
      */
-    fun getClearanceStatus(
+    fun getClearanceStatuses(
         authToken: AuthToken,
-        vin: String
-    ): CompletableFuture<Response<ClearanceStatus>> {
-        logger.debug("HMKitFleet: requestClearance: $vin")
+    ): CompletableFuture<Response<List<ClearanceStatus>>> {
+        logger.debug("HMKitFleet: getClearanceStatuses:")
 
         return GlobalScope.future {
-            get<ClearanceRequests>().requestClearance(authToken, vin)
+            get<ClearanceRequests>().getClearanceStatuses(authToken)
         }
     }
 
