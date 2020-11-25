@@ -120,21 +120,6 @@ internal class AuthTokenRequestsTest : BaseTest() {
         assertTrue(status.error!!.title == genericError.title)
     }
 
-    @Test
-    fun requestClearanceSuccessResponse() {
-
-    }
-
-    @Test
-    fun requestClearanceErrorResponse() {
-
-    }
-
-    @Test
-    fun requestClearanceUnknownResponse() {
-
-    }
-
     fun getJwtContent(): String {
         // otherwise these would be created again in the web service and they would not match
         every { configuration.createJti() } returns "jti"

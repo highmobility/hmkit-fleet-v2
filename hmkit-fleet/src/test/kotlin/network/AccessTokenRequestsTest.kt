@@ -46,7 +46,6 @@ internal class AccessTokenRequestsTest : BaseTest() {
 
         val status = runBlocking {
             webService.createAccessToken(mockk(), "", "")
-
         }
     }
 }
