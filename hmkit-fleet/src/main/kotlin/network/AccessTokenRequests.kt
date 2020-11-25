@@ -2,7 +2,6 @@ package network
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import model.AuthToken
@@ -28,13 +27,12 @@ internal class AccessTokenRequests(
         vin: String,
         oem: String
     ): Response<AccessToken> {
-        val body = requestBody(vin)
 
         val request = Request.Builder()
-            .url("${baseUrl}/fleets/vehicles")
+            .url("${baseUrl}/fleets/access_tokens")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.authToken}")
-            .post(body)
+            .post(requestBody(vin, oem))
             .build()
 
         printRequest(request)
@@ -48,10 +46,14 @@ internal class AccessTokenRequests(
         }
     }
 
-    private fun requestBody(vin: String): RequestBody {
-        val vehicle = JsonObject(mapOf("vin" to JsonPrimitive(vin)))
-        val arrayOfVehicles = JsonArray(listOf(vehicle))
-        val completeBody = JsonObject(mapOf("vehicles" to arrayOfVehicles))
+    private fun requestBody(vin: String, oem: String): RequestBody {
+        val completeBody =
+            JsonObject(
+                mapOf(
+                    "vin" to JsonPrimitive(vin),
+                    "oem" to JsonPrimitive(oem)
+                )
+            )
 
         val body = completeBody.toString().toRequestBody(mediaType)
         return body

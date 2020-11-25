@@ -17,11 +17,6 @@ internal open class Requests(
 ) {
     val mediaType = "application/json; charset=utf-8".toMediaType()
 
-    fun genericError(detail: String? = null): network.response.Error {
-        val genericError = network.response.Error("Invalid server response", detail)
-        return genericError
-    }
-
     inline fun <T> tryParseResponse(
         response: Response,
         expectedResponseCode: Int,
@@ -80,9 +75,14 @@ internal open class Requests(
     }
 }
 
-fun Request.bodyAsString(): String? {
+internal fun Request.bodyAsString(): String? {
     if (this.body == null) return null
     val buffer = Buffer()
     this.body?.writeTo(buffer)
     return buffer.readUtf8()
+}
+
+internal fun genericError(detail: String? = null): network.response.Error {
+    val genericError = network.response.Error("Invalid server response", detail)
+    return genericError
 }

@@ -116,7 +116,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
             webService.getAuthToken(configuration)
         }
 
-        val genericError = webService.genericError("")
+        val genericError = genericError("")
         assertTrue(status.error!!.title == genericError.title)
     }
 

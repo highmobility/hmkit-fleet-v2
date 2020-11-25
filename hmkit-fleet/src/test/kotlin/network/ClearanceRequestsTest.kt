@@ -88,46 +88,22 @@ internal class ClearanceRequestsTest : BaseTest() {
 
     @Test
     fun requestClearanceErrorResponse() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-            .setBody(
-                "{\"errors\":" +
-                        "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
-                        "\"source\":\"assertion\"," +
-                        "\"title\":\"Not authorized\"}]}"
-            )
-        mockWebServer.enqueue(mockResponse)
-        val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, get(), mockUrl)
-
-        val status = runBlocking {
-            webService.requestClearance(authToken, "WBADT43452G296403")
+        runBlocking {
+            testErrorResponseHandled(mockWebServer) { mockUrl ->
+                val webService = ClearanceRequests(client, get(), mockUrl)
+                webService.requestClearance(authToken, "WBADT43452G296403")
+            }
         }
-
-        assertTrue(status.error!!.title == "Not authorized")
-        assertTrue(status.error!!.source == "assertion")
-        assertTrue(status.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key.")
-
-        // TODO: 20/11/20 the error spec will be updated. Update the tests then
     }
 
     @Test
     fun requestClearanceUnknownResponse() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-            .setBody(
-                "{\"invalidKey\":\"invalidValue\"}"
-            )
-        mockWebServer.enqueue(mockResponse)
-        val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, get(), mockUrl)
-
-        val status = runBlocking {
-            webService.requestClearance(authToken, "WBADT43452G296403")
+        runBlocking {
+            testUnknownResponseHandled(mockWebServer) { mockUrl ->
+                val webService = ClearanceRequests(client, get(), mockUrl)
+                webService.requestClearance(authToken, "WBADT43452G296403")
+            }
         }
-
-        val genericError = webService.genericError("")
-        assertTrue(status.error!!.title == genericError.title)
     }
 
     @Test
@@ -167,45 +143,21 @@ internal class ClearanceRequestsTest : BaseTest() {
 
     @Test
     fun getClearanceErrorResponse() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-            .setBody(
-                "{\"errors\":" +
-                        "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
-                        "\"source\":\"assertion\"," +
-                        "\"title\":\"Not authorized\"}]}"
-            )
-        mockWebServer.enqueue(mockResponse)
-        val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, get(), mockUrl)
-
-        val status = runBlocking {
-            webService.getClearanceStatuses(authToken)
+        runBlocking {
+            testErrorResponseHandled(mockWebServer) { mockUrl ->
+                val webService = ClearanceRequests(client, get(), mockUrl)
+                webService.getClearanceStatuses(authToken)
+            }
         }
-
-        assertTrue(status.error!!.title == "Not authorized")
-        assertTrue(status.error!!.source == "assertion")
-        assertTrue(status.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key.")
-
-        // TODO: 20/11/20 the error spec will be updated. Update the tests then
     }
 
     @Test
     fun getClearanceUnknownResponse() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-            .setBody(
-                "{\"invalidKey\":\"invalidValue\"}"
-            )
-        mockWebServer.enqueue(mockResponse)
-        val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, get(), mockUrl)
-
-        val status = runBlocking {
-            webService.getClearanceStatuses(authToken)
+        runBlocking {
+            testUnknownResponseHandled(mockWebServer) { mockUrl ->
+                val webService = ClearanceRequests(client, get(), mockUrl)
+                webService.getClearanceStatuses(authToken)
+            }
         }
-
-        val genericError = webService.genericError("")
-        assertTrue(status.error!!.title == genericError.title)
     }
 }
