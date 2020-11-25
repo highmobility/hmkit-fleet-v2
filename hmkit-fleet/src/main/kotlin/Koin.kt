@@ -16,9 +16,9 @@ internal object Koin {
         single { OkHttpClient() }
         single { HMKitFleet.environment }
         single { HMKit.getInstance() }
-        single { Requests(get(), get(), get(), HMKitFleet.environment.url) }
+        single { Requests(get(), get(), HMKitFleet.environment.url) }
         single { AuthTokenRequests(get(), get(), get(), HMKitFleet.environment.url) }
-        single { ClearanceRequests(get(), get(), get(), HMKitFleet.environment.url) }
+        single { ClearanceRequests(get(), get(), HMKitFleet.environment.url) }
     }
 
     lateinit var koinApplication: KoinApplication

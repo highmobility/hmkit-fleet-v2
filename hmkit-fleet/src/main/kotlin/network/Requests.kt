@@ -1,6 +1,5 @@
 package network
 
-import com.highmobility.hmkit.HMKit
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
@@ -13,7 +12,6 @@ import org.slf4j.Logger
 
 internal open class Requests(
     val client: OkHttpClient,
-    val hmkitOem: HMKit,
     val logger: Logger,
     val baseUrl: String
 ) {
@@ -22,6 +20,25 @@ internal open class Requests(
     fun genericError(detail: String? = null): network.response.Error {
         val genericError = network.response.Error("Invalid server response", detail)
         return genericError
+    }
+
+    inline fun <T> tryParseResponse(
+        response: Response,
+        expectedResponseCode: Int,
+        block: (body: String) -> (network.Response<T>)
+    ): network.Response<T> {
+        val responseBody = printResponse(response)
+
+        return try {
+            if (response.code == expectedResponseCode) {
+                block(responseBody)
+            } else {
+                parseError(responseBody)
+            }
+        } catch (e: Exception) {
+            val detail = e.message.toString()
+            Response(null, genericError(detail))
+        }
     }
 
     fun printRequest(request: Request) {

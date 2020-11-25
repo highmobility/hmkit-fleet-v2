@@ -16,11 +16,11 @@ import java.net.HttpURLConnection
 
 internal class AuthTokenRequests(
     client: OkHttpClient,
-    hmkitOem: HMKit,
+    val hmkitOem: HMKit,
     logger: Logger,
     baseUrl: String
 ) : Requests(
-    client, hmkitOem,
+    client,
     logger, baseUrl
 ) {
     suspend fun getAuthToken(configuration: ServiceAccountApiConfiguration): network.Response<AuthToken> {

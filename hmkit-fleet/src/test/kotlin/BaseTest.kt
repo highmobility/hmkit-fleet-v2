@@ -38,23 +38,29 @@ import org.slf4j.Logger
 import java.nio.file.Files
 import java.nio.file.Paths
 
-var credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
-val credentialsContent = Files.readString(credentialsFilePath)
-val configuration =
-    spyk(Yaml.default.decodeFromString(ServiceAccountApiConfiguration.serializer(), credentialsContent))
-
-val modules = module {
-    single { configuration }
-    single { mockk<HMKit>() }
-    single { mockk<Logger>() }
-}
-
 const val testApiKey = "apiKey"
 
 open class BaseTest : KoinTest {
     val mockLogger by inject<Logger>()
 
     companion object {
+        val modules = module {
+            single { configuration }
+            single { mockk<HMKit>() }
+            single { mockk<Logger>() }
+        }
+        var credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
+        val credentialsContent = Files.readString(credentialsFilePath)
+
+        @JvmStatic
+        val configuration =
+            spyk(
+                Yaml.default.decodeFromString(
+                    ServiceAccountApiConfiguration.serializer(),
+                    credentialsContent
+                )
+            )
+
         @JvmStatic
         @BeforeAll
         fun beforeAll() {

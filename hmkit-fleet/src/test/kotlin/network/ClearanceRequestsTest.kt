@@ -1,16 +1,14 @@
-package webservice
+package network
 
 import BaseTest
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.Signature
 import com.highmobility.hmkit.HMKit
-import configuration
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import model.AuthToken
-import network.ClearanceRequests
 import network.response.ClearanceStatus
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -68,7 +66,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, hmkitOem, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl)
 
         val status = runBlocking {
             webService.requestClearance(authToken, "WBADT43452G296403")
@@ -100,7 +98,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, hmkitOem, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl)
 
         val status = runBlocking {
             webService.requestClearance(authToken, "WBADT43452G296403")
@@ -122,7 +120,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, hmkitOem, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl)
 
         val status = runBlocking {
             webService.requestClearance(authToken, "WBADT43452G296403")
@@ -150,7 +148,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, hmkitOem, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl)
 
         val status = runBlocking {
             webService.getClearanceStatuses(authToken)
@@ -179,7 +177,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, hmkitOem, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl)
 
         val status = runBlocking {
             webService.getClearanceStatuses(authToken)
@@ -201,7 +199,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, hmkitOem, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl)
 
         val status = runBlocking {
             webService.getClearanceStatuses(authToken)

@@ -1,8 +1,10 @@
 package network
 
 import com.highmobility.hmkit.HMKit
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 import model.AuthToken
+import network.response.AccessToken
 import network.response.ClearanceStatus
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -14,11 +16,10 @@ import java.net.HttpURLConnection
 
 internal class ClearanceRequests(
     client: OkHttpClient,
-    hmkitOem: HMKit,
     logger: Logger,
     baseUrl: String
 ) : Requests(
-    client, hmkitOem,
+    client,
     logger, baseUrl
 ) {
     suspend fun requestClearance(
@@ -38,25 +39,18 @@ internal class ClearanceRequests(
 
         val call = client.newCall(request)
         val response = call.await()
-        val responseBody = printResponse(response)
 
-        try {
-            if (response.code == HttpURLConnection.HTTP_OK) {
-                val jsonElement = Json.parseToJsonElement(responseBody) as JsonObject
-                val statuses = jsonElement["vins"] as JsonArray
-                for (statusElement in statuses) {
-                    val status = Json.decodeFromJsonElement<ClearanceStatus>(statusElement)
-                    if (status.vin == vin) {
-                        return Response(status, null)
-                    }
+        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
+            val jsonElement = Json.parseToJsonElement(responseBody) as JsonObject
+            val statuses = jsonElement["vins"] as JsonArray
+            for (statusElement in statuses) {
+                val status =
+                    Json.decodeFromJsonElement<ClearanceStatus>(statusElement)
+                if (status.vin == vin) {
+                    return Response(status, null)
                 }
-                return Response(null, genericError())
-            } else {
-                return parseError(responseBody)
             }
-        } catch (e: Exception) {
-            val detail = e.message.toString()
-            return Response(null, genericError(detail))
+            Response(null, genericError())
         }
     }
 
@@ -77,25 +71,17 @@ internal class ClearanceRequests(
 
         val call = client.newCall(request)
         val response = call.await()
-        val responseBody = printResponse(response)
 
-        try {
-            return if (response.code == HttpURLConnection.HTTP_OK) {
-                val statuses = Json.parseToJsonElement(responseBody) as JsonArray
+        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
+            val statuses = Json.parseToJsonElement(responseBody) as JsonArray
 
-                val builder = Array(statuses.size) {
-                    val statusElement = statuses[it]
-                    val status = Json.decodeFromJsonElement<ClearanceStatus>(statusElement)
-                    status
-                }
-
-                Response(builder.toList())
-            } else {
-                parseError(responseBody)
+            val builder = Array(statuses.size) {
+                val statusElement = statuses[it]
+                val status = Json.decodeFromJsonElement<ClearanceStatus>(statusElement)
+                status
             }
-        } catch (e: Exception) {
-            val detail = e.message.toString()
-            return Response(null, genericError(detail))
+
+            Response(builder.toList())
         }
     }
 

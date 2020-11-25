@@ -1,3 +1,6 @@
+import com.highmobility.autoapi.Command
+import com.highmobility.crypto.AccessCertificate
+import com.highmobility.crypto.DeviceCertificate
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import model.AuthToken
@@ -51,7 +54,8 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
 
     /**
      * Get the status of VINs that have previously been registered for data access clearance with
-     * [requestClearance]
+     * [requestClearance]. After VIN is Approved, [getAccessCertificate] and subsequent
+     * [sendCommand] can be sent
      *
      * @param authToken The auth token acquired in [getAuthToken]
      * @return The clearance status.
@@ -80,6 +84,32 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
          */
 
         return CompletableFuture()
+    }
+
+    fun getAccessCertificate(
+        configuration: ServiceAccountApiConfiguration,
+        authToken: AuthToken,
+        clientCertificate: DeviceCertificate,
+        vin: String,
+        brand: String
+    ): CompletableFuture<Response<AccessCertificate>> {
+        // TODO: 24/11/20
+        return GlobalScope.future {
+            Response()
+        }
+    }
+
+    fun sendCommand(
+        configuration: ServiceAccountApiConfiguration,
+        accessCertificate: AccessCertificate,
+        certificate: DeviceCertificate,
+        command: Command
+    ): CompletableFuture<Response<Command>> {
+        // TODO: 23/11/20 implement
+
+        return GlobalScope.future {
+            Response()
+        }
     }
 
     enum class Environment {

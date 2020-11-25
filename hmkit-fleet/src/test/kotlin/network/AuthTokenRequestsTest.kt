@@ -1,4 +1,4 @@
-package webservice
+package network
 
 import BaseTest
 import HMKitFleet
@@ -6,14 +6,12 @@ import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.Signature
 import com.highmobility.hmkit.HMKit
 import com.highmobility.utils.Base64
-import configuration
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import network.AuthTokenRequests
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse

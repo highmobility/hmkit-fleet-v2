@@ -23,13 +23,12 @@ class JavaInterfaceTest {
 
     @Test public void getToken() {
         // set it for next tests
-        ServiceAccountApiConfiguration configuration = BaseTestKt.getConfiguration();
+        ServiceAccountApiConfiguration configuration = BaseTest.Companion.getConfiguration();
         CompletableFuture<Response<AuthToken>> tokenFuture = fleetSdk.getAuthToken(configuration);
     }
 
     @Test
     public void requestClearance() throws InterruptedException {
-
         CompletableFuture<Response<ClearanceStatus>>[] allRequests = new CompletableFuture[vins.size()];
 
         for (int i = 0; i < vins.size(); i++) {
