@@ -51,7 +51,7 @@ internal class AccessTokenRequests(
             JsonObject(
                 mapOf(
                     "vin" to JsonPrimitive(vin),
-                    "oem" to JsonPrimitive(oem)
+                    "oem" to JsonPrimitive(oem) // TODO: will be removed
                 )
             )
 

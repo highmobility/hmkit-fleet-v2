@@ -1,10 +1,11 @@
 import com.highmobility.autoapi.Command
-import com.highmobility.crypto.AccessCertificate
-import com.highmobility.crypto.DeviceCertificate
+import com.highmobility.value.Bytes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import model.AuthToken
-import network.AuthTokenRequests
+import model.Brand
+import model.ControlMeasure
+import model.VehicleAccess
 import network.ClearanceRequests
 import network.Response
 import network.response.ClearanceStatus
@@ -17,38 +18,34 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     private val logger by inject<Logger>()
     var environment: Environment = Environment.PRODUCTION
 
+    internal var authToken: AuthToken? = null
+
+    /**
+     * Set the Service Account Configuration before calling other methods.
+     */
+    lateinit var configuration: ServiceAccountApiConfiguration
+
     init {
         Koin.start()
     }
 
     /**
-     * Get the auth token that is required for future requests.
-     *
-     * @param configuration The Service account API configuration
-     * @return The auth token
-     */
-    fun getAuthToken(configuration: ServiceAccountApiConfiguration):
-            CompletableFuture<Response<AuthToken>> {
-        return GlobalScope.future {
-            get<AuthTokenRequests>().getAuthToken(configuration)
-        }
-    }
-
-    /**
      * Start the data access clearance process for a fleet vehicle.
      *
-     * @param authToken The auth token acquired in [getAuthToken]
-     * @param vin The vehicle VIN
-     * @return The clearance status.
+     * @param vin The vehicle VIN number
+     * @param brand The vehicle brand
+     * @param controlMeasures Optional control measures for some vehicle brands.
+     * @return The clearance status
      */
     fun requestClearance(
-        authToken: AuthToken,
-        vin: String
+        vin: String,
+        brand: Brand,
+        controlMeasures: List<ControlMeasure>?
     ): CompletableFuture<Response<ClearanceStatus>> {
         logger.debug("HMKitFleet: requestClearance: $vin")
 
         return GlobalScope.future {
-            get<ClearanceRequests>().requestClearance(authToken, vin)
+            get<ClearanceRequests>().requestClearance(vin)
         }
     }
 
@@ -57,59 +54,58 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      * [requestClearance]. After VIN is Approved, [getAccessCertificate] and subsequent
      * [sendCommand] can be sent
      *
-     * @param authToken The auth token acquired in [getAuthToken]
-     * @return The clearance status.
+     * @return The clearance status
      */
-    fun getClearanceStatuses(
-        authToken: AuthToken,
-    ): CompletableFuture<Response<List<ClearanceStatus>>> {
+    fun getClearanceStatuses(): CompletableFuture<Response<List<ClearanceStatus>>> {
         logger.debug("HMKitFleet: getClearanceStatuses:")
 
         return GlobalScope.future {
-            get<ClearanceRequests>().getClearanceStatuses(authToken)
+            get<ClearanceRequests>().getClearanceStatuses()
         }
     }
 
-    fun revokeClearance(authToken: AuthToken, vin: String): CompletableFuture<Boolean> {
-        // TODO: 30/10/20 implement
-        /*
-        Although the OAuth2 API is not used to get an access token, it is used to refresh the access
-        token and to revoke access. Revoking access means that the VIN is removed from the clearance list.
-
-        By using the POST /access_tokens endpoint, the data customer passes in the refresh token and
-         receives a new access token
-
-        By using the DELETE /access_tokens endpoint, the data customer passes in the access token
-        and the vehicle is deleted from the clearance list
-         */
+    /**
+     * Get Vehicle Access object. This can be queried for vehicles with [getClearanceStatuses]
+     * Approved. The returned object can be used with [revokeClearance] or [sendCommand].
+     * The user should securely store this object for later use.
+     *
+     * @param vin The vehicle VIN number
+     * @param brand The vehicle brand
+     * @return The vehicle access object
+     */
+    fun getVehicleAccess(vin: String, brand: Brand):
+            CompletableFuture<Response<VehicleAccess>> {
 
         return CompletableFuture()
     }
 
-    fun getAccessCertificate(
-        configuration: ServiceAccountApiConfiguration,
-        authToken: AuthToken,
-        clientCertificate: DeviceCertificate,
-        vin: String,
-        brand: String
-    ): CompletableFuture<Response<AccessCertificate>> {
-        // TODO: 24/11/20
-        return GlobalScope.future {
-            Response()
-        }
-    }
-
+    /**
+     * Send a telematics command to the vehicle.
+     *
+     * @param vehicleAccess The vehicle access object returned in [getVehicleAccess]
+     * @param command The command that is sent to the vehicle.
+     * @return The response command from the vehicle.
+     */
     fun sendCommand(
-        configuration: ServiceAccountApiConfiguration,
-        accessCertificate: AccessCertificate,
-        certificate: DeviceCertificate,
-        command: Command
-    ): CompletableFuture<Response<Command>> {
+        vehicleAccess: VehicleAccess,
+        command: Bytes
+    ): CompletableFuture<Response<Bytes>> {
         // TODO: 23/11/20 implement
 
         return GlobalScope.future {
             Response()
         }
+    }
+
+    /**
+     * Revoke the vehicle clearance. After this, the [VehicleAccess] object is invalid.
+     *
+     * @param vehicleAccess The vehicle access object
+     * @return Whether clearance was successful
+     */
+    fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Boolean> {
+        // TODO: 30/10/20 implement
+        return CompletableFuture()
     }
 
     enum class Environment {

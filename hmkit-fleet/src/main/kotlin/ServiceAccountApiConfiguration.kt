@@ -1,16 +1,29 @@
+@file:UseSerializers(DeviceCertificateSerializer::class)
+
+import com.highmobility.crypto.DeviceCertificate
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.utils.Base64
+import com.highmobility.value.Bytes
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.util.*
 
+typealias ClientCertificate = DeviceCertificate
+
 @Serializable
 data class ServiceAccountApiConfiguration @JvmOverloads constructor(
     val apiKey: String,
     val privateKey: String,
+    val clientCertificate: ClientCertificate
 ) {
     val version = 1
 
@@ -38,5 +51,18 @@ data class ServiceAccountApiConfiguration @JvmOverloads constructor(
         val kf = KeyFactory.getInstance("EC")
         val ecPrivateKey = kf.generatePrivate(keySpec) as ECPrivateKey
         return ecPrivateKey
+    }
+}
+
+object DeviceCertificateSerializer : KSerializer<DeviceCertificate> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+
+    override fun serialize(output: Encoder, obj: DeviceCertificate) {
+        output.encodeString(obj.toString())
+    }
+
+    override fun deserialize(input: Decoder): DeviceCertificate {
+        return DeviceCertificate(Bytes(input.decodeString()))
     }
 }
