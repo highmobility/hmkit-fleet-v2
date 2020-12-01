@@ -1,4 +1,3 @@
-import com.highmobility.autoapi.Command
 import com.highmobility.value.Bytes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future

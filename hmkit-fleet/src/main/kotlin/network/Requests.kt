@@ -17,7 +17,11 @@ internal open class Requests(
     val baseUrl: String
 ) {
     val mediaType = "application/json; charset=utf-8".toMediaType()
-    var authToken: AuthToken? = null
+    private var authToken: AuthToken? = null
+
+    suspend fun getAuthToken(): AuthToken {
+        return authToken!!
+    }
 
     inline fun <T> tryParseResponse(
         response: Response,

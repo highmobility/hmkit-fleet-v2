@@ -20,7 +20,7 @@ import java.util.*
 typealias ClientCertificate = DeviceCertificate
 
 @Serializable
-data class ServiceAccountApiConfiguration @JvmOverloads constructor(
+data class ServiceAccountApiConfiguration constructor(
     val apiKey: String,
     val privateKey: String,
     val clientCertificate: ClientCertificate
@@ -59,7 +59,7 @@ object DeviceCertificateSerializer : KSerializer<DeviceCertificate> {
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
     override fun serialize(output: Encoder, obj: DeviceCertificate) {
-        output.encodeString(obj.toString())
+        output.encodeString((obj as Bytes).toString())
     }
 
     override fun deserialize(input: Decoder): DeviceCertificate {

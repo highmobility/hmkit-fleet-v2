@@ -1,10 +1,6 @@
 package network
 
-import com.highmobility.hmkit.HMKit
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
-import model.AuthToken
-import network.response.AccessToken
 import network.response.ClearanceStatus
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,7 +19,6 @@ internal class ClearanceRequests(
     logger, baseUrl
 ) {
     suspend fun requestClearance(
-        authToken: AuthToken,
         vin: String
     ): Response<ClearanceStatus> {
         val body = requestBody(vin)
@@ -31,7 +26,7 @@ internal class ClearanceRequests(
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${authToken.authToken}")
+            .header("Authorization", "Bearer ${getAuthToken()}")
             .post(body)
             .build()
 
@@ -54,9 +49,7 @@ internal class ClearanceRequests(
         }
     }
 
-    suspend fun getClearanceStatuses(
-        authToken: AuthToken,
-    ): Response<List<ClearanceStatus>> {
+    suspend fun getClearanceStatuses(): Response<List<ClearanceStatus>> {
         // fleets/vehicles endpoint
         // GET /v1/fleets/vehicles
         // auth header: token
@@ -64,7 +57,7 @@ internal class ClearanceRequests(
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${authToken.authToken}")
+            .header("Authorization", "Bearer ${getAuthToken()}")
             .build()
 
         printRequest(request)
