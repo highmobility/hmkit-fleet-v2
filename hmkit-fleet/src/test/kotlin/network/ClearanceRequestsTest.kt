@@ -4,6 +4,7 @@ import BaseTest
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.Signature
 import com.highmobility.hmkit.HMKit
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.component.get
-import org.koin.core.component.inject
 import java.net.HttpURLConnection
 import java.time.LocalDateTime
 
@@ -27,15 +27,20 @@ internal class ClearanceRequestsTest : BaseTest() {
     val mockWebServer = MockWebServer()
 
     val client = OkHttpClient()
+    val hmkitOem = mockk<HMKit>()
 
-    val hmkitOem by inject<HMKit>()
+    val configuration = readConfigurationFromFile()
+
     val privateKey = configuration.getHmPrivateKey()
     val signature = Signature(privateKey.concat(privateKey))
+
     val crypto = mockk<Crypto> {
         every { signJWT(any<ByteArray>(), any()) } returns signature
     }
 
     val authToken = AuthToken("token", LocalDateTime.now(), LocalDateTime.now())
+    val authTokenRequests: AuthTokenRequests =
+        mockk { coEvery { getAuthToken() } returns Response(authToken) }
 
     @BeforeEach
     fun setUp() {
@@ -66,10 +71,10 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl, authTokenRequests)
 
         val status = runBlocking {
-            webService.requestClearance(authToken, "WBADT43452G296403")
+            webService.requestClearance("WBADT43452G296403")
         }
 
         val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
@@ -87,11 +92,16 @@ internal class ClearanceRequestsTest : BaseTest() {
     }
 
     @Test
+    fun getAuthTokenErrorReturned() {
+        TODO()
+    }
+
+    @Test
     fun requestClearanceErrorResponse() {
         runBlocking {
             testErrorResponseHandled(mockWebServer) { mockUrl ->
-                val webService = ClearanceRequests(client, get(), mockUrl)
-                webService.requestClearance(authToken, "WBADT43452G296403")
+                val webService = ClearanceRequests(client, get(), mockUrl, authTokenRequests)
+                webService.requestClearance("WBADT43452G296403")
             }
         }
     }
@@ -100,8 +110,8 @@ internal class ClearanceRequestsTest : BaseTest() {
     fun requestClearanceUnknownResponse() {
         runBlocking {
             testUnknownResponseHandled(mockWebServer) { mockUrl ->
-                val webService = ClearanceRequests(client, get(), mockUrl)
-                webService.requestClearance(authToken, "WBADT43452G296403")
+                val webService = ClearanceRequests(client, get(), mockUrl, authTokenRequests)
+                webService.requestClearance("WBADT43452G296403")
             }
         }
     }
@@ -124,10 +134,10 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
-        val webService = ClearanceRequests(client, get(), mockUrl)
+        val webService = ClearanceRequests(client, get(), mockUrl, authTokenRequests)
 
         val status = runBlocking {
-            webService.getClearanceStatuses(authToken)
+            webService.getClearanceStatuses()
         }
 
         val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
@@ -145,8 +155,8 @@ internal class ClearanceRequestsTest : BaseTest() {
     fun getClearanceErrorResponse() {
         runBlocking {
             testErrorResponseHandled(mockWebServer) { mockUrl ->
-                val webService = ClearanceRequests(client, get(), mockUrl)
-                webService.getClearanceStatuses(authToken)
+                val webService = ClearanceRequests(client, get(), mockUrl, authTokenRequests)
+                webService.getClearanceStatuses()
             }
         }
     }
@@ -155,8 +165,8 @@ internal class ClearanceRequestsTest : BaseTest() {
     fun getClearanceUnknownResponse() {
         runBlocking {
             testUnknownResponseHandled(mockWebServer) { mockUrl ->
-                val webService = ClearanceRequests(client, get(), mockUrl)
-                webService.getClearanceStatuses(authToken)
+                val webService = ClearanceRequests(client, get(), mockUrl, authTokenRequests)
+                webService.getClearanceStatuses()
             }
         }
     }

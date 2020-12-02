@@ -1,29 +1,37 @@
 package network
 
+import HMKitFleet
 import ServiceAccountApiConfiguration
 import com.highmobility.hmkit.HMKit
 import com.highmobility.utils.Base64
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import model.AuthToken
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.Logger
 import ru.gildor.coroutines.okhttp.await
-import java.lang.Exception
 import java.net.HttpURLConnection
 
 internal class AuthTokenRequests(
     client: OkHttpClient,
-    val hmkitOem: HMKit,
+    private val hmkitOem: HMKit,
     logger: Logger,
-    baseUrl: String
+    baseUrl: String,
+    private val configuration: ServiceAccountApiConfiguration,
+    private val cache: Cache
 ) : Requests(
     client,
-    logger, baseUrl
+    logger,
+    baseUrl
 ) {
-    suspend fun getAuthToken(configuration: ServiceAccountApiConfiguration): network.Response<AuthToken> {
+    suspend fun getAuthToken(): Response<AuthToken> {
+        val cachedToken = cache.authToken
+        if (cachedToken != null) return Response(cachedToken)
+
         val body = FormBody.Builder()
             .add("assertion", getJwt(configuration))
             .build()
@@ -41,18 +49,18 @@ internal class AuthTokenRequests(
 
         return try {
             if (response.code == HttpURLConnection.HTTP_CREATED) {
-                val token = Json.decodeFromString<AuthToken>(responseBody)
-                Response(token)
+                cache.authToken = Json.decodeFromString(responseBody)
+                Response(cache.authToken)
             } else {
                 parseError(responseBody)
             }
-        } catch (e: Exception) {
+        } catch (e: java.lang.Exception) {
             val detail = e.message.toString()
             Response(null, genericError(detail))
         }
     }
 
-    fun getJwt(configuration: ServiceAccountApiConfiguration): String {
+    private fun getJwt(configuration: ServiceAccountApiConfiguration): String {
         val header = buildJsonObject {
             put("alg", "ES256")
             put("typ", "JWT")

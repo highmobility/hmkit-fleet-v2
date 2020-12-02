@@ -75,6 +75,11 @@ internal class AccessTokenRequestsTest : BaseTest() {
         assertTrue(status.response?.scope == "diagnostics.mileage door_locks.locks windows.windows_positions")
     }
 
+    @Test
+    fun getAuthTokenErrorReturned() {
+        TODO()
+    }
+
     // error responses
 
     @Test

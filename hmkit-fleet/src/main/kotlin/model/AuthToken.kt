@@ -18,7 +18,12 @@ internal data class AuthToken(
     val validFrom: LocalDateTime,
     @SerialName("valid_until")
     val validUntil: LocalDateTime
-)
+) {
+    fun isExpired(): Boolean {
+        if (LocalDateTime.now().isAfter(validUntil)) return true
+        return false
+    }
+}
 
 internal object DateTimeSerializer : KSerializer<LocalDateTime> {
     override val descriptor: SerialDescriptor =

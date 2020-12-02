@@ -13,7 +13,8 @@ import java.net.HttpURLConnection
 internal class ClearanceRequests(
     client: OkHttpClient,
     logger: Logger,
-    baseUrl: String
+    baseUrl: String,
+    private val authTokenRequests: AuthTokenRequests
 ) : Requests(
     client,
     logger, baseUrl
@@ -22,11 +23,12 @@ internal class ClearanceRequests(
         vin: String
     ): Response<ClearanceStatus> {
         val body = requestBody(vin)
+        val authToken = authTokenRequests.getAuthToken()
 
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${getAuthToken()}")
+            .header("Authorization", "Bearer $authToken")
             .post(body)
             .build()
 
@@ -53,11 +55,12 @@ internal class ClearanceRequests(
         // fleets/vehicles endpoint
         // GET /v1/fleets/vehicles
         // auth header: token
+        val authToken = authTokenRequests.getAuthToken()
 
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${getAuthToken()}")
+            .header("Authorization", "Bearer $authToken")
             .build()
 
         printRequest(request)

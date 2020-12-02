@@ -1,5 +1,6 @@
 import com.highmobility.hmkit.HMKit
 import network.AuthTokenRequests
+import network.Cache
 import network.ClearanceRequests
 import network.Requests
 import okhttp3.OkHttpClient
@@ -16,9 +17,20 @@ internal object Koin {
         single { OkHttpClient() }
         single { HMKitFleet.environment }
         single { HMKit.getInstance() }
+        single { get<HMKit>().crypto }
         single { Requests(get(), get(), HMKitFleet.environment.url) }
-        single { AuthTokenRequests(get(), get(), get(), HMKitFleet.environment.url) }
-        single { ClearanceRequests(get(), get(), HMKitFleet.environment.url) }
+        single { Cache() }
+        single {
+            AuthTokenRequests(
+                get(),
+                get(),
+                get(),
+                HMKitFleet.environment.url,
+                HMKitFleet.configuration,
+                get()
+            )
+        }
+        single { ClearanceRequests(get(), get(), HMKitFleet.environment.url, get()) }
     }
 
     lateinit var koinApplication: KoinApplication

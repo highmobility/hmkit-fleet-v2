@@ -3,7 +3,6 @@ package network
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
-import model.AuthToken
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -17,11 +16,6 @@ internal open class Requests(
     val baseUrl: String
 ) {
     val mediaType = "application/json; charset=utf-8".toMediaType()
-    private var authToken: AuthToken? = null
-
-    suspend fun getAuthToken(): AuthToken {
-        return authToken!!
-    }
 
     inline fun <T> tryParseResponse(
         response: Response,

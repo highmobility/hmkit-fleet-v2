@@ -1,12 +1,12 @@
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-import model.AuthToken;
+import model.Brand;
+import model.ControlMeasure;
 import network.Response;
 import network.response.ClearanceStatus;
 
@@ -19,20 +19,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class JavaInterfaceTest {
     List<String> vins = List.of("1", "12", "189");
     HMKitFleet fleetSdk = HMKitFleet.INSTANCE;
-    AuthToken token = new AuthToken("token", LocalDateTime.now(), LocalDateTime.now());
-
-    @Test public void getToken() {
-        // set it for next tests
-        ServiceAccountApiConfiguration configuration = BaseTest.Companion.getConfiguration();
-        CompletableFuture<Response<AuthToken>> tokenFuture = fleetSdk.getAuthToken(configuration);
-    }
 
     @Test
     public void requestClearance() throws InterruptedException {
         CompletableFuture<Response<ClearanceStatus>>[] allRequests = new CompletableFuture[vins.size()];
+        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
 
         for (int i = 0; i < vins.size(); i++) {
-            allRequests[i] = fleetSdk.requestClearance(token, vins.get(i));
+            allRequests[i] = fleetSdk.requestClearance(
+                    vins.get(i), Brand.MERCEDES_BENZ, List.of(measure));
 
             allRequests[i].thenAcceptAsync(response -> {
                 System.out.println("single response "
@@ -66,8 +61,11 @@ class JavaInterfaceTest {
     @Test
     public void RequestClearanceWithStreams() throws InterruptedException, ExecutionException {
         // requests with streams(dont have to loop)
+        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
         List<CompletableFuture<Response<ClearanceStatus>>> requests =
-                vins.stream().map(vin -> fleetSdk.requestClearance(token, vin)).collect(Collectors.toList());
+                vins.stream().map(vin -> fleetSdk
+                        .requestClearance(vin, Brand.MERCEDES_BENZ, List.of(measure)))
+                        .collect(Collectors.toList());
 
         CompletableFuture<Void> allRequests = CompletableFuture.allOf(requests.toArray(new CompletableFuture[requests.size()]));
 
@@ -89,6 +87,7 @@ class JavaInterfaceTest {
 
     public void revokeClearance() {
         // TODO:
-        CompletableFuture<Boolean> task = fleetSdk.revokeClearance(token, "vin1");
+        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
+//        CompletableFuture<Boolean> task = fleetSdk.revokeClearance("vin1");
     }
 }

@@ -10,7 +10,6 @@ class ModuleCheckTest : BaseTest() {
     @Test
     fun checkModuless() {
         checkModules {
-            modules(modules)
         }
     }
 }

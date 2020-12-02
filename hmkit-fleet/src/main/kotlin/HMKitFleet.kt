@@ -65,7 +65,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
 
     /**
      * Get Vehicle Access object. This can be queried for vehicles with [getClearanceStatuses]
-     * Approved. The returned object can be used with [revokeClearance] or [sendCommand].
+     * Approved. The returned object can be used with [sendCommand] or [revokeClearance].
      * The user should securely store this object for later use.
      *
      * @param vin The vehicle VIN number
