@@ -8,6 +8,7 @@ import model.VehicleAccess
 import network.ClearanceRequests
 import network.Response
 import model.ClearanceStatus
+import network.AccessTokenRequests
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.slf4j.Logger
@@ -29,7 +30,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     }
 
     /**
-     * Start the data access clearance process for a fleet vehicle.
+     * Start the data access clearance process for a vehicle.
      *
      * @param vin The vehicle VIN number
      * @param brand The vehicle brand
@@ -72,9 +73,9 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      * @param brand The vehicle brand
      * @return The vehicle access object
      */
-    fun getVehicleAccess(vin: String, brand: Brand):
+    suspend fun getVehicleAccess(vin: String, brand: Brand):
             CompletableFuture<Response<VehicleAccess>> {
-
+        val accessToken = get<AccessTokenRequests>().createAccessToken(vin, brand)
         return CompletableFuture()
     }
 

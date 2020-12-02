@@ -24,7 +24,7 @@ internal class ClearanceRequestsTest : BaseTest() {
     val mockWebServer = MockWebServer()
     val client = OkHttpClient()
     val authToken = notExpiredAuthToken()
-    val authTokenRequests: AuthTokenRequests = mockk()
+    val authTokenRequests = mockk<AuthTokenRequests>()
 
     val controlMeasures = listOf<ControlMeasure>(
         Odometer(

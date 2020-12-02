@@ -1,11 +1,9 @@
 package network
 
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import model.AuthToken
+import kotlinx.serialization.json.*
 import model.AccessToken
+import model.Brand
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -17,22 +15,25 @@ import java.net.HttpURLConnection
 internal class AccessTokenRequests(
     client: OkHttpClient,
     logger: Logger,
-    baseUrl: String
+    baseUrl: String,
+    private val authTokenRequests: AuthTokenRequests
 ) : Requests(
     client,
     logger, baseUrl
 ) {
     suspend fun createAccessToken(
-        authToken: AuthToken,
         vin: String,
-        oem: String
+        brand: Brand
     ): Response<AccessToken> {
+        val authToken = authTokenRequests.getAuthToken()
+
+        if (authToken.response == null) return Response(null, authToken.error)
 
         val request = Request.Builder()
             .url("${baseUrl}/fleets/access_tokens")
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${authToken.authToken}")
-            .post(requestBody(vin, oem))
+            .header("Authorization", "Bearer ${authToken.response.authToken}")
+            .post(requestBody(vin, brand))
             .build()
 
         printRequest(request)
@@ -46,14 +47,11 @@ internal class AccessTokenRequests(
         }
     }
 
-    private fun requestBody(vin: String, oem: String): RequestBody {
-        val completeBody =
-            JsonObject(
-                mapOf(
-                    "vin" to JsonPrimitive(vin),
-                    "oem" to JsonPrimitive(oem) // TODO: will be removed
-                )
-            )
+    private fun requestBody(vin: String, brand: Brand): RequestBody {
+        val completeBody = buildJsonObject {
+            put("vin", vin)
+            put("brand", Json.encodeToJsonElement(brand))
+        }
 
         val body = completeBody.toString().toRequestBody(mediaType)
         return body
