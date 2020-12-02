@@ -7,8 +7,9 @@ import java.util.stream.Collectors;
 
 import model.Brand;
 import model.ControlMeasure;
+import model.Odometer;
 import network.Response;
-import network.response.ClearanceStatus;
+import model.ClearanceStatus;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,7 +24,7 @@ class JavaInterfaceTest {
     @Test
     public void requestClearance() throws InterruptedException {
         CompletableFuture<Response<ClearanceStatus>>[] allRequests = new CompletableFuture[vins.size()];
-        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
+        ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
 
         for (int i = 0; i < vins.size(); i++) {
             allRequests[i] = fleetSdk.requestClearance(
@@ -61,18 +62,22 @@ class JavaInterfaceTest {
     @Test
     public void RequestClearanceWithStreams() throws InterruptedException, ExecutionException {
         // requests with streams(dont have to loop)
-        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
+        ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<CompletableFuture<Response<ClearanceStatus>>> requests =
                 vins.stream().map(vin -> fleetSdk
                         .requestClearance(vin, Brand.MERCEDES_BENZ, List.of(measure)))
                         .collect(Collectors.toList());
 
-        CompletableFuture<Void> allRequests = CompletableFuture.allOf(requests.toArray(new CompletableFuture[requests.size()]));
+        CompletableFuture<Void> allRequests = CompletableFuture.allOf(
+                requests.toArray(new CompletableFuture[requests.size()]));
 
         // callback for single requests
         for (CompletableFuture<Response<ClearanceStatus>> request : requests) {
             request.thenAcceptAsync(response -> {
-                System.out.println("request response for VIN: " + response.getResponse().getVin() + " " + response.getResponse().getStatus());
+                System.out.println("request response for VIN: "
+                        + response.getResponse().getVin()
+                        + " "
+                        + response.getResponse().getStatus());
             });
         }
 
@@ -87,7 +92,7 @@ class JavaInterfaceTest {
 
     public void revokeClearance() {
         // TODO:
-        ControlMeasure measure = new ControlMeasure.Odometer(110000, ControlMeasure.Odometer.Length.KILOMETERS);
+        ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
 //        CompletableFuture<Boolean> task = fleetSdk.revokeClearance("vin1");
     }
 }

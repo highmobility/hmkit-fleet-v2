@@ -1,5 +1,6 @@
 package network
 
+import io.mockk.coEvery
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -8,8 +9,7 @@ import java.net.HttpURLConnection
 /**
  * Respond with an error for this [request] and assert the fields are parsed into the response
  */
-// TODO: 20/11/20 the error spec will be updated. Update the tests then
-internal inline fun <T> testErrorResponseHandled(
+internal inline fun <T> testErrorResponseReturned(
     mockWebServer: MockWebServer,
     request: (mockUrl: String) -> Response<T>
 ) {
@@ -34,7 +34,7 @@ internal inline fun <T> testErrorResponseHandled(
 /**
  * Respond with unknown response and assert generic error is returned
  */
-internal inline fun <T> testUnknownResponseHandled(
+internal inline fun <T> testForUnknownResponseGenericErrorReturned(
     mockWebServer: MockWebServer,
     request: (mockUrl: String) -> Response<T>
 ) {
@@ -50,4 +50,25 @@ internal inline fun <T> testUnknownResponseHandled(
 
     val genericError = genericError("")
     assertTrue(response.error!!.title == genericError.title)
+}
+
+/**
+ * Auth token request returns error
+ */
+internal inline fun <T> testAuthTokenErrorReturned(
+    mockWebServer: MockWebServer,
+    authTokenRequests: AuthTokenRequests,
+    request: (mockUrl: String) -> Response<T>
+) {
+    coEvery { authTokenRequests.getAuthToken() } returns Response(
+        null,
+        genericError("auth token error")
+    )
+
+    val mockUrl = mockWebServer.url("").toString()
+
+    val response = request(mockUrl)
+
+    assertTrue(response.response == null)
+    assertTrue(response.error!!.detail == "auth token error")
 }

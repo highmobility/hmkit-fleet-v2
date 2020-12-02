@@ -1,7 +1,9 @@
 package network
 
 import kotlinx.serialization.json.*
-import network.response.ClearanceStatus
+import model.Brand
+import model.ControlMeasure
+import model.ClearanceStatus
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -20,10 +22,14 @@ internal class ClearanceRequests(
     logger, baseUrl
 ) {
     suspend fun requestClearance(
-        vin: String
+        vin: String,
+        brand: Brand,
+        controlMeasures: List<ControlMeasure>?
     ): Response<ClearanceStatus> {
-        val body = requestBody(vin)
+        val body = requestBody(vin, brand, controlMeasures)
         val authToken = authTokenRequests.getAuthToken()
+
+        if (authToken.error != null) return Response(null, authToken.error)
 
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
@@ -52,10 +58,10 @@ internal class ClearanceRequests(
     }
 
     suspend fun getClearanceStatuses(): Response<List<ClearanceStatus>> {
-        // fleets/vehicles endpoint
         // GET /v1/fleets/vehicles
-        // auth header: token
         val authToken = authTokenRequests.getAuthToken()
+
+        if (authToken.error != null) return Response(null, authToken.error)
 
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
@@ -81,8 +87,27 @@ internal class ClearanceRequests(
         }
     }
 
-    private fun requestBody(vin: String): RequestBody {
-        val vehicle = JsonObject(mapOf("vin" to JsonPrimitive(vin)))
+    private fun requestBody(
+        vin: String,
+        brand: Brand,
+        controlMeasures: List<ControlMeasure>?
+    ): RequestBody {
+        val vehicle = buildJsonObject {
+            put("vin", vin)
+            put("brand", Json.encodeToJsonElement(brand))
+            if (controlMeasures != null) {
+                putJsonObject("control_measures") {
+                    for (controlMeasure in controlMeasures) {
+                        // polymorphism adds type key to child controlmeasure classes. remove with filter
+                        val json = Json.encodeToJsonElement(controlMeasure)
+                        val valuesWithoutType = json.jsonObject.filterNot { it.key == "type" }
+                        val jsonTrimmed = Json.encodeToJsonElement(valuesWithoutType)
+                        put("odometer", jsonTrimmed)
+                    }
+                }
+            }
+        }
+
         val arrayOfVehicles = JsonArray(listOf(vehicle))
         val completeBody = JsonObject(mapOf("vehicles" to arrayOfVehicles))
 

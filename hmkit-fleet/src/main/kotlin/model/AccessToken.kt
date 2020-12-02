@@ -1,4 +1,4 @@
-package network.response
+package model
 
 import kotlinx.serialization.*
 

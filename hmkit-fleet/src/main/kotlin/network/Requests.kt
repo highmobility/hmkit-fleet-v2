@@ -66,7 +66,7 @@ internal open class Requests(
             val errors = json["errors"] as JsonArray
             if (errors.size > 0) {
                 val error =
-                    Json.decodeFromJsonElement<network.response.Error>(errors.first())
+                    Json.decodeFromJsonElement<Error>(errors.first())
                 return Response(null, error)
             }
         }
@@ -82,7 +82,7 @@ internal fun Request.bodyAsString(): String? {
     return buffer.readUtf8()
 }
 
-internal fun genericError(detail: String? = null): network.response.Error {
-    val genericError = network.response.Error("Invalid server response", detail)
+internal fun genericError(detail: String? = null): Error {
+    val genericError = Error("Invalid server response", detail)
     return genericError
 }

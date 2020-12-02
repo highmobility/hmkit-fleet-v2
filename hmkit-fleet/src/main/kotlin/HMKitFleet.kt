@@ -7,7 +7,7 @@ import model.ControlMeasure
 import model.VehicleAccess
 import network.ClearanceRequests
 import network.Response
-import network.response.ClearanceStatus
+import model.ClearanceStatus
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.slf4j.Logger
@@ -44,7 +44,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
         logger.debug("HMKitFleet: requestClearance: $vin")
 
         return GlobalScope.future {
-            get<ClearanceRequests>().requestClearance(vin)
+            get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
         }
     }
 

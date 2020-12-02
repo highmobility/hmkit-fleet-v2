@@ -4,16 +4,12 @@ package model
 
 import com.highmobility.crypto.AccessCertificate
 import com.highmobility.value.Bytes
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
-import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import network.response.AccessToken
 
 @Serializable
 data class VehicleAccess(
@@ -37,6 +33,14 @@ object AccessCertificateSerializer : KSerializer<AccessCertificate> {
     }
 }
 
+@Serializable
 enum class Brand {
-    BMW, MERCEDES_BENZ, MINI
+    @SerialName("bmw")
+    BMW,
+
+    @SerialName("mercedes-benz")
+    MERCEDES_BENZ,
+
+    @SerialName("mini")
+    MINI;
 }

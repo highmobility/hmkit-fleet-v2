@@ -85,7 +85,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     @Test
     fun getClearanceErrorResponse() {
         runBlocking {
-            testErrorResponseHandled(mockWebServer) { mockUrl ->
+            testErrorResponseReturned(mockWebServer) { mockUrl ->
                 val webService = AccessTokenRequests(client, get(), mockUrl)
                 webService.createAccessToken(
                     mockk { every { authToken } returns "token1" },
@@ -99,7 +99,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     @Test
     fun getClearanceUnknownResponse() {
         runBlocking {
-            testUnknownResponseHandled(mockWebServer) { mockUrl ->
+            testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
                 val webService = AccessTokenRequests(client, get(), mockUrl)
                 webService.createAccessToken(
                     mockk { every { authToken } returns "token1" },

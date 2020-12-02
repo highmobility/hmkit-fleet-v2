@@ -2,7 +2,7 @@ package network
 
 import HMKitFleet
 import ServiceAccountApiConfiguration
-import com.highmobility.hmkit.HMKit
+import com.highmobility.crypto.Crypto
 import com.highmobility.utils.Base64
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -18,7 +18,7 @@ import java.net.HttpURLConnection
 
 internal class AuthTokenRequests(
     client: OkHttpClient,
-    private val hmkitOem: HMKit,
+    private val crypto: Crypto,
     logger: Logger,
     baseUrl: String,
     private val configuration: ServiceAccountApiConfiguration,
@@ -78,7 +78,7 @@ internal class AuthTokenRequests(
         val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
         val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
         val privateKey = configuration.getHmPrivateKey()
-        val jwtSignature = hmkitOem.crypto.signJWT(jwtContent.toByteArray(), privateKey)
+        val jwtSignature = crypto.signJWT(jwtContent.toByteArray(), privateKey)
 
         return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)
     }

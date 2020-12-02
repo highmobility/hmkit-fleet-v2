@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import model.AuthToken
-import network.response.AccessToken
+import model.AccessToken
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody

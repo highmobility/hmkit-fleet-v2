@@ -24,6 +24,22 @@ import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 import java.time.LocalDateTime
 
+internal fun notExpiredAuthToken(): AuthToken {
+    return AuthToken(
+        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
+        LocalDateTime.now(),
+        LocalDateTime.now().plusHours(1)
+    )
+}
+
+internal fun expiredAuthToken(): AuthToken {
+    return AuthToken(
+        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
+        LocalDateTime.parse("2020-11-17T04:50:16"),
+        LocalDateTime.parse("2020-11-17T05:50:16")
+    )
+}
+
 internal class AuthTokenRequestsTest : BaseTest() {
     private val mockWebServer = MockWebServer()
     private val client = OkHttpClient()
@@ -201,21 +217,5 @@ internal class AuthTokenRequestsTest : BaseTest() {
         val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
 
         return String.format("%s.%s", headerBase64, bodyBase64)
-    }
-
-    private fun notExpiredAuthToken(): AuthToken {
-        return AuthToken(
-            "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-            LocalDateTime.now(),
-            LocalDateTime.now().plusHours(1)
-        )
-    }
-
-    private fun expiredAuthToken(): AuthToken {
-        return AuthToken(
-            "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-            LocalDateTime.parse("2020-11-17T04:50:16"),
-            LocalDateTime.parse("2020-11-17T05:50:16")
-        )
     }
 }

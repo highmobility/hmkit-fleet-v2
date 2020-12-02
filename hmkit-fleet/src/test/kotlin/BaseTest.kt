@@ -23,17 +23,10 @@
  */
 
 import com.charleskorn.kaml.Yaml
-import com.highmobility.hmkit.HMKit
 import io.mockk.*
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
-import org.koin.dsl.module
 import org.koin.test.KoinTest
-import org.koin.test.inject
 import org.slf4j.Logger
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -41,18 +34,11 @@ import java.nio.file.Paths
 const val testApiKey = "apiKey"
 
 open class BaseTest : KoinTest {
-    val mockLogger by inject<Logger>()
 
-    companion object {
-        val modules = module {
-            single { configuration }
-            single { mockk<HMKit>() }
-            single { mockk<Logger>() }
-        }
-        var credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
+    fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
+        val credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
         val credentialsContent = Files.readString(credentialsFilePath)
 
-        @JvmStatic
         val configuration =
             spyk(
                 Yaml.default.decodeFromString(
@@ -60,22 +46,10 @@ open class BaseTest : KoinTest {
                     credentialsContent
                 )
             )
-
-        @JvmStatic
-        @BeforeAll
-        fun beforeAll() {
-            startKoin {
-                properties(values = mapOf("apiKey" to testApiKey))
-                modules(modules)
-            }
-        }
-
-        @JvmStatic
-        @AfterAll
-        fun afterAll() {
-            stopKoin()
-        }
+        return configuration
     }
+
+    val mockLogger = mockk<Logger>()
 
     @BeforeEach
     fun before() {
