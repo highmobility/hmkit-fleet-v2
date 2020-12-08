@@ -10,6 +10,7 @@ import model.Brand
 import model.ClearanceStatus
 import model.ControlMeasure
 import model.Odometer
+import notExpiredAuthToken
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

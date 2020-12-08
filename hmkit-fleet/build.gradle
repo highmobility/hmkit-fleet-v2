@@ -19,7 +19,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
 
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
     // hmkit
     implementation('com.highmobility:hmkit-oem:2.0.1-osx')
@@ -43,7 +43,7 @@ dependencies {
     testImplementation 'org.slf4j:slf4j-simple:1.7.30'
     testImplementation "io.mockk:mockk:1.10.3"
     testImplementation "com.charleskorn.kaml:kaml:0.26.0"
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.0")
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
 }
 
 // deploy script

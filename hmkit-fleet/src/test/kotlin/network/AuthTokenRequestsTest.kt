@@ -3,7 +3,6 @@ package network
 import BaseTest
 import HMKitFleet
 import com.highmobility.crypto.Crypto
-import com.highmobility.crypto.value.Signature
 import com.highmobility.utils.Base64
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
@@ -11,7 +10,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import mockSignature
 import model.AuthToken
+import notExpiredAuthToken
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -22,23 +23,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
-import java.time.LocalDateTime
-
-internal fun notExpiredAuthToken(): AuthToken {
-    return AuthToken(
-        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-        LocalDateTime.now(),
-        LocalDateTime.now().plusHours(1)
-    )
-}
-
-internal fun expiredAuthToken(): AuthToken {
-    return AuthToken(
-        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-        LocalDateTime.parse("2020-11-17T04:50:16"),
-        LocalDateTime.parse("2020-11-17T05:50:16")
-    )
-}
 
 internal class AuthTokenRequestsTest : BaseTest() {
     private val mockWebServer = MockWebServer()
@@ -49,7 +33,6 @@ internal class AuthTokenRequestsTest : BaseTest() {
 
     private val configuration = readConfigurationFromFile()
     private val privateKey = configuration.getHmPrivateKey()
-    private val signature = Signature(privateKey.concat(privateKey))
 
     @BeforeEach
     fun setUp() {
@@ -58,7 +41,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
         every { cache setProperty "authToken" value any<AuthToken>() } just Runs
 
         crypto = mockk()
-        every { crypto.signJWT(any<ByteArray>(), any()) } returns signature
+        every { crypto.signJWT(any<ByteArray>(), any()) } returns mockSignature
 
         mockWebServer.start()
     }

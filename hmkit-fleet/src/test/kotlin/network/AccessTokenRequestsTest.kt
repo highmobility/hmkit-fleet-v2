@@ -5,11 +5,14 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import model.AccessToken
 import model.Brand
+import notExpiredAuthToken
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -89,9 +92,9 @@ internal class AccessTokenRequestsTest : BaseTest() {
             accessTokenRequests.createAccessToken("WBADT43452G296403", Brand.MERCEDES_BENZ)
         }
     }
-    
+
     @Test
-    fun getClearanceErrorResponse() = runBlocking {
+    fun getAccessTokenErrorResponse() = runBlocking {
         testErrorResponseReturned(mockWebServer) { mockUrl ->
             val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.createAccessToken(
@@ -102,7 +105,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     }
 
     @Test
-    fun getClearanceUnknownResponse() = runBlocking {
+    fun getAccessTokenUnknownResponse() = runBlocking {
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
             val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.createAccessToken(

@@ -51,8 +51,8 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
 
     /**
      * Get the status of VINs that have previously been registered for data access clearance with
-     * [requestClearance]. After VIN is Approved, [getAccessCertificate] and subsequent
-     * [sendCommand] can be sent
+     * [requestClearance]. After VIN is Approved, [getVehicleAccess] and subsequent [sendCommand]
+     * can be sent.
      *
      * @return The clearance status
      */

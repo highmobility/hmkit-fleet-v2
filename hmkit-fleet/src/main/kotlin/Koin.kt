@@ -1,4 +1,6 @@
 import com.highmobility.hmkit.HMKit
+import network.*
+import network.AccessCertificateRequests
 import network.AuthTokenRequests
 import network.Cache
 import network.ClearanceRequests
@@ -31,6 +33,16 @@ internal object Koin {
             )
         }
         single { ClearanceRequests(get(), get(), HMKitFleet.environment.url, get()) }
+        single {
+            AccessCertificateRequests(
+                get(),
+                get(),
+                HMKitFleet.environment.url,
+                HMKitFleet.configuration.getHmPrivateKey(),
+                HMKitFleet.configuration.clientCertificate,
+                get()
+            )
+        }
     }
 
     lateinit var koinApplication: KoinApplication
