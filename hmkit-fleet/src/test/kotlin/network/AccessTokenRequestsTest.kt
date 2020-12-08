@@ -5,12 +5,10 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import model.AccessToken
 import model.Brand
 import notExpiredAuthToken
 import okhttp3.HttpUrl
@@ -59,7 +57,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
             AccessTokenRequests(client, mockLogger, baseUrl.toString(), authTokenRequests)
 
         val response = runBlocking {
-            accessTokenRequests.createAccessToken(
+            accessTokenRequests.getAccessToken(
                 "WBADT43452G296403",
                 Brand.MERCEDES_BENZ
             )
@@ -89,7 +87,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     fun getAuthTokenErrorReturned() = runBlocking {
         testAuthTokenErrorReturned(mockWebServer, authTokenRequests) {
             val accessTokenRequests = AccessTokenRequests(client, mockLogger, it, authTokenRequests)
-            accessTokenRequests.createAccessToken("WBADT43452G296403", Brand.MERCEDES_BENZ)
+            accessTokenRequests.getAccessToken("WBADT43452G296403", Brand.MERCEDES_BENZ)
         }
     }
 
@@ -97,7 +95,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     fun getAccessTokenErrorResponse() = runBlocking {
         testErrorResponseReturned(mockWebServer) { mockUrl ->
             val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
-            webService.createAccessToken(
+            webService.getAccessToken(
                 "WBADT43452G296403",
                 Brand.MERCEDES_BENZ
             )
@@ -108,7 +106,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     fun getAccessTokenUnknownResponse() = runBlocking {
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
             val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
-            webService.createAccessToken(
+            webService.getAccessToken(
                 "WBADT43452G296403",
                 Brand.MERCEDES_BENZ
             )

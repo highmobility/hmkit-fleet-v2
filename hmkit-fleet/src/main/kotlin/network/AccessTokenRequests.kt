@@ -21,7 +21,7 @@ internal class AccessTokenRequests(
     client,
     logger, baseUrl
 ) {
-    suspend fun createAccessToken(
+    suspend fun getAccessToken(
         vin: String,
         brand: Brand
     ): Response<AccessToken> {

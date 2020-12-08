@@ -5,10 +5,11 @@ import model.AuthToken
 import model.Brand
 import model.ControlMeasure
 import model.VehicleAccess
-import network.ClearanceRequests
-import network.Response
 import model.ClearanceStatus
+import network.*
+import network.AccessCertificateRequests
 import network.AccessTokenRequests
+import network.ClearanceRequests
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.slf4j.Logger
@@ -41,12 +42,9 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
         vin: String,
         brand: Brand,
         controlMeasures: List<ControlMeasure>?
-    ): CompletableFuture<Response<ClearanceStatus>> {
+    ): CompletableFuture<Response<ClearanceStatus>> = GlobalScope.future {
         logger.debug("HMKitFleet: requestClearance: $vin")
-
-        return GlobalScope.future {
-            get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
-        }
+        get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
     }
 
     /**
@@ -56,27 +54,47 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      *
      * @return The clearance status
      */
-    fun getClearanceStatuses(): CompletableFuture<Response<List<ClearanceStatus>>> {
-        logger.debug("HMKitFleet: getClearanceStatuses:")
-
-        return GlobalScope.future {
+    fun getClearanceStatuses(): CompletableFuture<Response<List<ClearanceStatus>>> =
+        GlobalScope.future {
+            logger.debug("HMKitFleet: getClearanceStatuses:")
             get<ClearanceRequests>().getClearanceStatuses()
         }
-    }
 
     /**
      * Get Vehicle Access object. This can be queried for vehicles with [getClearanceStatuses]
      * Approved. The returned object can be used with [sendCommand] or [revokeClearance].
+     *
      * The user should securely store this object for later use.
      *
      * @param vin The vehicle VIN number
      * @param brand The vehicle brand
      * @return The vehicle access object
      */
+
     suspend fun getVehicleAccess(vin: String, brand: Brand):
-            CompletableFuture<Response<VehicleAccess>> {
-        val accessToken = get<AccessTokenRequests>().createAccessToken(vin, brand)
-        return CompletableFuture()
+            CompletableFuture<Response<VehicleAccess>> = GlobalScope.future {
+        val accessToken = get<AccessTokenRequests>().getAccessToken(vin, brand)
+
+        if (accessToken.response != null) {
+            val accessCertificate = get<AccessCertificateRequests>().getAccessCertificate(
+                accessToken.response,
+            )
+
+            if (accessCertificate.response != null) {
+                val vehicleAccess =
+                    VehicleAccess(
+                        vin,
+                        brand,
+                        accessToken.response,
+                        accessCertificate.response
+                    )
+                Response(vehicleAccess, null)
+            } else {
+                Response(null, accessCertificate.error)
+            }
+        } else {
+            Response(null, accessToken.error)
+        }
     }
 
     /**
@@ -89,12 +107,10 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     fun sendCommand(
         vehicleAccess: VehicleAccess,
         command: Bytes
-    ): CompletableFuture<Response<Bytes>> {
-        // TODO: 23/11/20 implement
+    ): CompletableFuture<Response<Bytes>> = GlobalScope.future {
+        TODO()
 
-        return GlobalScope.future {
-            Response()
-        }
+        Response()
     }
 
     /**
@@ -103,10 +119,11 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      * @param vehicleAccess The vehicle access object
      * @return Whether clearance was successful
      */
-    fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Boolean> {
-        // TODO: 30/10/20 implement
-        return CompletableFuture()
-    }
+    fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Response<Boolean>> =
+        GlobalScope.future {
+            TODO()
+            Response()
+        }
 
     enum class Environment {
         PRODUCTION, SANDBOX, DEV, DEV_SANDBOX;
