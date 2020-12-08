@@ -5,7 +5,6 @@ import com.highmobility.crypto.AccessCertificate
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.value.Bytes
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 import model.AccessToken
 import okhttp3.OkHttpClient
@@ -15,8 +14,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
 import ru.gildor.coroutines.okhttp.await
 import java.net.HttpURLConnection
-
-val apiDeviceCertKey = "device_access_certificate"
 
 internal class AccessCertificateRequests(
     client: OkHttpClient,
@@ -29,6 +26,8 @@ internal class AccessCertificateRequests(
     client,
     logger, baseUrl
 ) {
+    val apiDeviceCertKey = "device_access_certificate"
+
     suspend fun getAccessCertificate(
         accessToken: AccessToken,
     ): Response<AccessCertificate> {

@@ -9,6 +9,7 @@ import network.Response
 import network.genericError
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.context.stopKoin
 import org.koin.dsl.koinApplication
@@ -18,6 +19,7 @@ class HMKitFleetTest : BaseTest() {
     private val accessCertificateRequests = mockk<AccessCertificateRequests>()
     private val accessTokenRequests = mockk<AccessTokenRequests>()
 
+    @BeforeEach
     fun setUp() {
         HMKitFleet // call the init first, so koin can be reset
         Koin.koinApplication = koinApplication {

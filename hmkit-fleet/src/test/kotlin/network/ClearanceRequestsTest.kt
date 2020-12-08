@@ -73,6 +73,8 @@ internal class ClearanceRequestsTest : BaseTest() {
         assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles"))
 
         // verify request
+        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
         val array = jsonBody.jsonObject["vehicles"] as JsonArray
         val firstVehicle = array.first() as JsonObject
@@ -151,6 +153,8 @@ internal class ClearanceRequestsTest : BaseTest() {
         coVerify { authTokenRequests.getAuthToken() }
 
         val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+
         assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles"))
         assertTrue(recordedRequest.method == "GET")
 

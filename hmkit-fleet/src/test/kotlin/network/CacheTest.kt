@@ -3,19 +3,20 @@ package network
 import model.AuthToken
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.Clock.systemUTC
 import java.time.LocalDateTime
 
 internal class CacheTest {
     private val notExpiredToken = AuthToken(
         "",
-        LocalDateTime.now().minusMinutes(30),
-        LocalDateTime.now().plusMinutes(30)
+        LocalDateTime.now(systemUTC()).minusMinutes(30),
+        LocalDateTime.now(systemUTC()).plusMinutes(30)
     )
 
     private val expiredToken = AuthToken(
         "",
-        LocalDateTime.now().minusMinutes(120),
-        LocalDateTime.now().minusMinutes(60)
+        LocalDateTime.now(systemUTC()).minusMinutes(120),
+        LocalDateTime.now(systemUTC()).minusMinutes(60)
     )
 
     @Test

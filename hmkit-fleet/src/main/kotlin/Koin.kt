@@ -49,9 +49,7 @@ internal object Koin {
 
     fun start() {
         koinApplication = koinApplication {
-            modules(
-                koinModules
-            )
+            modules(koinModules)
         }
     }
 

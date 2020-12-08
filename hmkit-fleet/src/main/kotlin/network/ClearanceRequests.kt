@@ -34,7 +34,7 @@ internal class ClearanceRequests(
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer $authToken")
+            .header("Authorization", "Bearer ${authToken.response?.authToken}")
             .post(body)
             .build()
 
@@ -66,7 +66,7 @@ internal class ClearanceRequests(
         val request = Request.Builder()
             .url("${baseUrl}/fleets/vehicles")
             .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer $authToken")
+            .header("Authorization", "Bearer ${authToken.response?.authToken}")
             .build()
 
         printRequest(request)

@@ -8,6 +8,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import java.time.Clock.systemUTC
 import java.time.LocalDateTime
 
 @Serializable
@@ -20,7 +21,7 @@ internal data class AuthToken(
     val validUntil: LocalDateTime
 ) {
     fun isExpired(): Boolean {
-        if (LocalDateTime.now().isAfter(validUntil)) return true
+        if (LocalDateTime.now(systemUTC()).isAfter(validUntil)) return true
         return false
     }
 }
