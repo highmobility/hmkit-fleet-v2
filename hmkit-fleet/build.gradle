@@ -35,6 +35,8 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.30'
 
     // test
+    // hmkit
+    testImplementation 'com.highmobility:hmkit-auto-api:3.12.0-dev' // TODO: use real version
     testImplementation "org.koin:koin-test:$koin_version"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'

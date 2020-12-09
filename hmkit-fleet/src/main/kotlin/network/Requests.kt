@@ -3,9 +3,9 @@ package network
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.Buffer
 import org.slf4j.Logger
@@ -16,6 +16,7 @@ internal open class Requests(
     val baseUrl: String
 ) {
     val mediaType = "application/json; charset=utf-8".toMediaType()
+    val baseHeaders = Headers.Builder().add("Content-Type", "application/json").build()
 
     inline fun <T> tryParseResponse(
         response: Response,
@@ -72,6 +73,16 @@ internal open class Requests(
         }
 
         return Response(null, genericError("invalid error structure"))
+    }
+
+    internal fun requestBody(values: Map<String, String>): RequestBody {
+        val completeBody = buildJsonObject {
+            for (item in values) {
+                put(item.key, item.value)
+            }
+        }
+
+        return completeBody.toString().toRequestBody(mediaType)
     }
 }
 
