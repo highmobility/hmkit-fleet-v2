@@ -71,7 +71,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      * @return The vehicle access object
      */
 
-    suspend fun getVehicleAccess(vin: String, brand: Brand):
+    fun getVehicleAccess(vin: String, brand: Brand):
             CompletableFuture<Response<VehicleAccess>> = GlobalScope.future {
         val accessToken = get<AccessTokenRequests>().getAccessToken(vin, brand)
 
@@ -105,12 +105,10 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      * @return The response command from the vehicle.
      */
     fun sendCommand(
-        vehicleAccess: VehicleAccess,
-        command: Bytes
+        command: Bytes,
+        vehicleAccess: VehicleAccess
     ): CompletableFuture<Response<Bytes>> = GlobalScope.future {
-        TODO()
-
-        Response()
+        get<TelematicsRequests>().sendCommand(command, vehicleAccess.accessCertificate)
     }
 
     /**

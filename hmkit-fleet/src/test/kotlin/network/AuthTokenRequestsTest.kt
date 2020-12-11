@@ -32,7 +32,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
     private val cache = mockk<Cache>()
 
     private val configuration = readConfigurationFromFile()
-    private val privateKey = configuration.getHmPrivateKey()
+    private val privateKey = configuration.getServiceAccountHmPrivateKey()
 
     @BeforeEach
     fun setUp() {

@@ -38,8 +38,8 @@ enum class Brand {
     @SerialName("bmw")
     BMW,
 
-    @SerialName("mercedes-benz")
-    MERCEDES_BENZ,
+    @SerialName("daimler_fleet")
+    DAIMLER_FLEET,
 
     @SerialName("mini")
     MINI;

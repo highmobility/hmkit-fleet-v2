@@ -77,7 +77,7 @@ internal class AuthTokenRequests(
         val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
         val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
         val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
-        val privateKey = configuration.getHmPrivateKey()
+        val privateKey = configuration.getServiceAccountHmPrivateKey()
         val jwtSignature = crypto.signJWT(jwtContent.toByteArray(), privateKey)
 
         return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)

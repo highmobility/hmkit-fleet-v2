@@ -33,7 +33,7 @@ internal class AccessTokenRequests(
             .url("${baseUrl}/fleets/access_tokens")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response.authToken}")
-            .post(requestBody(vin, brand))
+            .post(getTokenBody(vin, brand))
             .build()
 
         printRequest(request)
@@ -42,15 +42,42 @@ internal class AccessTokenRequests(
         val response = call.await()
 
         return tryParseResponse(response, HttpURLConnection.HTTP_OK) { body ->
-            val accessToken = Json.decodeFromString<AccessToken>(body)
+            val format = Json { ignoreUnknownKeys = true }
+            val accessToken = format.decodeFromString<AccessToken>(body)
             Response(accessToken, null)
         }
     }
 
-    private fun requestBody(vin: String, brand: Brand): RequestBody {
+    suspend fun deleteAccessToken(accessToken: AccessToken): Response<Boolean> {
+        val request = Request.Builder()
+            .url("${baseUrl}/fleets/access_tokens")
+            .header("Content-Type", "application/json")
+            .post(deleteTokenBody(accessToken))
+            .build()
+
+        printRequest(request)
+
+        val call = client.newCall(request)
+        val response = call.await()
+
+        return tryParseResponse(response, HttpURLConnection.HTTP_OK) {
+            Response(true, null)
+        }
+    }
+
+    private fun deleteTokenBody(accessToken: AccessToken): RequestBody {
+        val completeBody = buildJsonObject {
+            TODO()
+        }
+
+        val body = completeBody.toString().toRequestBody(mediaType)
+        return body
+    }
+
+    private fun getTokenBody(vin: String, brand: Brand): RequestBody {
         val completeBody = buildJsonObject {
             put("vin", vin)
-            put("brand", Json.encodeToJsonElement(brand))
+            put("oem", Json.encodeToJsonElement(brand))
         }
 
         val body = completeBody.toString().toRequestBody(mediaType)

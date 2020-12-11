@@ -32,13 +32,31 @@ internal object Koin {
                 get()
             )
         }
+        single {
+            AccessTokenRequests(
+                get(),
+                get(),
+                HMKitFleet.environment.url,
+                get()
+            )
+        }
         single { ClearanceRequests(get(), get(), HMKitFleet.environment.url, get()) }
         single {
             AccessCertificateRequests(
                 get(),
                 get(),
                 HMKitFleet.environment.url,
-                HMKitFleet.configuration.getHmPrivateKey(),
+                HMKitFleet.configuration.getClientPrivateKey(),
+                HMKitFleet.configuration.clientCertificate,
+                get()
+            )
+        }
+        single {
+            TelematicsRequests(
+                get(),
+                get(),
+                HMKitFleet.environment.url,
+                HMKitFleet.configuration.getClientPrivateKey(),
                 HMKitFleet.configuration.clientCertificate,
                 get()
             )

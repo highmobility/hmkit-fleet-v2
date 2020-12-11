@@ -21,17 +21,45 @@ typealias ClientCertificate = DeviceCertificate
 
 @Serializable
 data class ServiceAccountApiConfiguration constructor(
+    /**
+     * Service account API key
+     */
     val apiKey: String,
-    val privateKey: String,
-    val clientCertificate: ClientCertificate
+    /**
+     * This private key is downloaded when creating a Service Account API key. It should be in
+     * PKCS 8 format
+     *
+     */
+    val serviceAccountApiPrivateKey: String,
+
+    /**
+     * The client certificate
+     */
+    val clientCertificate: ClientCertificate,
+
+    /**
+     * This key is paired with the app's client certificate. It should be the 32 bytes of the
+     * ANSI X9.62 Prime 256v1 curve in hex or base64.
+     */
+    val clientPrivateKey: String,
+
+    /**
+     * The OAuth client ID.
+     */
+    val clientId: String,
+
+    /**
+     * The OAuth client secret.
+     */
+    val clientSecret: String
 ) {
     val version = 1
 
     fun createJti() = UUID.randomUUID().toString()
     fun createIat() = (System.currentTimeMillis() / 1000)
 
-    fun getHmPrivateKey(): PrivateKey {
-        val bigIntegerBytes = getJavaPrivateKey().s.toByteArray()
+    fun getServiceAccountHmPrivateKey(): PrivateKey {
+        val bigIntegerBytes = getServiceAccountJavaPrivateKey().s.toByteArray()
         val privateKeyBytes = ByteArray(32)
 
         for (i in 0..31) {
@@ -41,8 +69,8 @@ data class ServiceAccountApiConfiguration constructor(
         return PrivateKey(privateKeyBytes)
     }
 
-    fun getJavaPrivateKey(): ECPrivateKey {
-        var encodedKeyString = privateKey
+    fun getServiceAccountJavaPrivateKey(): ECPrivateKey {
+        var encodedKeyString = serviceAccountApiPrivateKey
         encodedKeyString = encodedKeyString.replace("-----BEGIN PRIVATE KEY----", "")
         encodedKeyString = encodedKeyString.replace("-----END PRIVATE KEY-----", "")
         val decodedPrivateKey = Base64.decode(encodedKeyString)
@@ -51,6 +79,10 @@ data class ServiceAccountApiConfiguration constructor(
         val kf = KeyFactory.getInstance("EC")
         val ecPrivateKey = kf.generatePrivate(keySpec) as ECPrivateKey
         return ecPrivateKey
+    }
+
+    fun getClientPrivateKey(): PrivateKey {
+        return PrivateKey(clientPrivateKey)
     }
 }
 
