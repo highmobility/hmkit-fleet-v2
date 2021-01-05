@@ -20,7 +20,7 @@ import java.util.*
 typealias ClientCertificate = DeviceCertificate
 
 @Serializable
-data class ServiceAccountApiConfiguration constructor(
+data class ServiceAccountApiConfiguration(
     /**
      * Service account API key
      */
@@ -28,7 +28,6 @@ data class ServiceAccountApiConfiguration constructor(
     /**
      * This private key is downloaded when creating a Service Account API key. It should be in
      * PKCS 8 format
-     *
      */
     val serviceAccountApiPrivateKey: String,
 

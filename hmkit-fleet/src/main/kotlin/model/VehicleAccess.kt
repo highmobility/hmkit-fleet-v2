@@ -20,12 +20,12 @@ data class VehicleAccess(
 )
 
 @Serializer(forClass = AccessCertificate::class)
-object AccessCertificateSerializer : KSerializer<AccessCertificate> {
+internal object AccessCertificateSerializer : KSerializer<AccessCertificate> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
     override fun serialize(output: Encoder, obj: AccessCertificate) {
-        output.encodeString((obj as Bytes).toString())
+        output.encodeString(obj.hex)
     }
 
     override fun deserialize(input: Decoder): AccessCertificate {

@@ -88,3 +88,4 @@ obj
 *.jnilib
 
 credentials.yaml
+vehicleAccess.yaml
