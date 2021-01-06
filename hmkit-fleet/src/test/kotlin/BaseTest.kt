@@ -35,11 +35,16 @@ import model.Brand
 import model.VehicleAccess
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.koin.test.KoinTest
 import org.slf4j.Logger
+import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
+import java.util.function.Consumer
+import java.util.stream.Collectors
 
 const val testApiKey = "apiKey"
 const val testVin = "C0NNECT0000000001"
@@ -86,13 +91,29 @@ internal val mockAccessCert = mockk<AccessCertificate> {
     every { base64 } returns "AQMAAAMEAAAAAAAAAAQFAAAAAAAAAAUGAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAGBwECAwcIBAUGCQkKCgoKCgoKCgoLAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAL"
 }
 
-internal val newVehicleAccess = VehicleAccess(testVin, Brand.DAIMLER_FLEET, newAccessToken, mockAccessCert)
+internal val newVehicleAccess = VehicleAccess(
+    testVin,
+    Brand.DAIMLER_FLEET,
+    newAccessToken,
+    mockAccessCert
+)
 
 open class BaseTest : KoinTest {
     val configuration = readConfigurationFromFile()
 
     private fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
-        val credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
+        val homeDir = System.getProperty("user.home")
+
+        val credentialsFilePath =
+            Paths.get("$homeDir/.config/high-mobility/fleet-sdk/credentials.yaml")
+        val credentialsDirectory = credentialsFilePath.parent
+
+        if (Files.exists(credentialsDirectory) == false) {
+            Files.createDirectories(credentialsDirectory)
+            Files.createFile(credentialsFilePath)
+            throw InstantiationException("Please add Service account credentials to $credentialsFilePath")
+        }
+
         val credentialsContent = Files.readString(credentialsFilePath)
 
         val configuration =

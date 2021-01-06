@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'koin'
@@ -7,7 +9,7 @@ compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 
 apply from: "deploy.gradle"
@@ -21,15 +23,19 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
-    // hmkit
-    implementation('com.highmobility:hmkit-oem:2.0.1-osx')
+    if (Os.isFamily(Os.FAMILY_MAC)) {
+        implementation('com.highmobility:hmkit-oem:2.0.1-osx-dev')
+    }
+    else {
+        implementation('com.highmobility:hmkit-oem:2.0.1-dev')
+    }
 
     // web
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
 
     // Koin
-    api "org.koin:koin-core:$koin_version"
+    implementation "org.koin:koin-core:$koin_version"
 
     // logging
     implementation 'org.slf4j:slf4j-api:1.7.30'
