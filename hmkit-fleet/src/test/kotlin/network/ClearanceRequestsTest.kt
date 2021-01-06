@@ -64,7 +64,7 @@ internal class ClearanceRequestsTest : BaseTest() {
         val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
 
         val status = runBlocking {
-            webService.requestClearance("WBADT43452G296403", Brand.MERCEDES_BENZ, controlMeasures)
+            webService.requestClearance("WBADT43452G296403", Brand.DAIMLER_FLEET, controlMeasures)
         }
 
         coVerify { authTokenRequests.getAuthToken() }
@@ -79,7 +79,7 @@ internal class ClearanceRequestsTest : BaseTest() {
         val array = jsonBody.jsonObject["vehicles"] as JsonArray
         val firstVehicle = array.first() as JsonObject
         assertTrue(firstVehicle?.get("vin")?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(firstVehicle?.get("brand")?.jsonPrimitive?.contentOrNull == "mercedes-benz")
+        assertTrue(firstVehicle?.get("brand")?.jsonPrimitive?.contentOrNull == "daimler-fleet")
         val controlMeasures = firstVehicle?.get("control_measures")?.jsonObject
         val odometer = controlMeasures?.get("odometer")?.jsonObject
         assertTrue(odometer?.get("value")?.jsonPrimitive?.contentOrNull == "100000")
@@ -96,7 +96,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.requestClearance(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ,
+                Brand.DAIMLER_FLEET,
                 controlMeasures
             )
         }
@@ -108,7 +108,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.requestClearance(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ,
+                Brand.DAIMLER_FLEET,
                 controlMeasures
             )
         }
@@ -120,7 +120,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.requestClearance(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ,
+                Brand.DAIMLER_FLEET,
                 controlMeasures
             )
         }

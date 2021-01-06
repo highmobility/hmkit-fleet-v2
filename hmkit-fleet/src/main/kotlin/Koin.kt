@@ -37,7 +37,8 @@ internal object Koin {
                 get(),
                 get(),
                 HMKitFleet.environment.url,
-                get()
+                get(),
+                HMKitFleet.configuration
             )
         }
         single { ClearanceRequests(get(), get(), HMKitFleet.environment.url, get()) }

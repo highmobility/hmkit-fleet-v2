@@ -1,6 +1,7 @@
 package network
 
 import BaseTest
+import HMKitFleet.configuration
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -55,12 +56,12 @@ internal class AccessTokenRequestsTest : BaseTest() {
         mockWebServer.enqueue(mockResponse)
         val baseUrl: HttpUrl = mockWebServer.url("")
         val accessTokenRequests =
-            AccessTokenRequests(client, mockLogger, baseUrl.toString(), authTokenRequests)
+            AccessTokenRequests(client, mockLogger, baseUrl.toString(), authTokenRequests, configuration)
 
         val response = runBlocking {
             accessTokenRequests.getAccessToken(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ
+                Brand.DAIMLER_FLEET
             )
         }
 
@@ -73,7 +74,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
         assertTrue(jsonBody["vin"]!!.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(jsonBody["brand"]!!.jsonPrimitive?.contentOrNull == "mercedes-benz")
+        assertTrue(jsonBody["oem"]!!.jsonPrimitive?.contentOrNull == "daimler_fleet")
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
 
         // verify response
@@ -88,18 +89,18 @@ internal class AccessTokenRequestsTest : BaseTest() {
     @Test
     fun getAuthTokenErrorReturned() = runBlocking {
         testAuthTokenErrorReturned(mockWebServer, authTokenRequests) {
-            val accessTokenRequests = AccessTokenRequests(client, mockLogger, it, authTokenRequests)
-            accessTokenRequests.getAccessToken("WBADT43452G296403", Brand.MERCEDES_BENZ)
+            val accessTokenRequests = AccessTokenRequests(client, mockLogger, it, authTokenRequests, configuration)
+            accessTokenRequests.getAccessToken("WBADT43452G296403", Brand.DAIMLER_FLEET)
         }
     }
 
     @Test
     fun getAccessTokenErrorResponse() = runBlocking {
         testErrorResponseReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
+            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
             webService.getAccessToken(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ
+                Brand.DAIMLER_FLEET
             )
         }
     }
@@ -107,10 +108,10 @@ internal class AccessTokenRequestsTest : BaseTest() {
     @Test
     fun getAccessTokenUnknownResponse() = runBlocking {
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
+            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
             webService.getAccessToken(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ
+                Brand.DAIMLER_FLEET
             )
         }
     }
@@ -121,26 +122,25 @@ internal class AccessTokenRequestsTest : BaseTest() {
             .setResponseCode(HttpURLConnection.HTTP_OK)
 
         mockWebServer.enqueue(mockResponse)
-        val baseUrl: HttpUrl = mockWebServer.url("")
-        val accessTokenRequests =
-            AccessTokenRequests(client, mockLogger, baseUrl.toString(), authTokenRequests)
+        val mockUrl = mockWebServer.url("").toString()
+        val accessTokenRequests = AccessTokenRequests(client, mockLogger, mockUrl, mockk(), configuration)
 
         val response = runBlocking {
             accessTokenRequests.deleteAccessToken(newAccessToken)
         }
 
+        // verify request
         val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
         assertTrue(recordedRequest.path!!.endsWith("/access_tokens"))
+        assertTrue(recordedRequest.method == "DELETE")
 
-        // verify request
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
-        assertTrue(jsonBody["token"]!!.jsonPrimitive?.contentOrNull == newAccessToken.accessToken)
-        assertTrue(jsonBody["client_id"]!!.jsonPrimitive?.contentOrNull == "TODO:")
-        assertTrue(jsonBody["client_secret"]!!.jsonPrimitive?.contentOrNull == "TODO:")
-        assertTrue(jsonBody["token_type_hint"]!!.jsonPrimitive?.contentOrNull == "refresh_token")
+        assertTrue(jsonBody["token"]?.jsonPrimitive?.contentOrNull == newAccessToken.refreshToken)
+        assertTrue(jsonBody["client_id"]?.jsonPrimitive?.contentOrNull == configuration.clientId)
+        assertTrue(jsonBody["client_secret"]?.jsonPrimitive?.contentOrNull == configuration.clientSecret)
+        assertTrue(jsonBody["token_type_hint"]?.jsonPrimitive?.contentOrNull == "refresh_token")
 
-        // verify response
-        assertTrue(response.response == true)
+        // the response is empty 200, nothing to verify
     }
 
     // error responses
@@ -148,7 +148,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     @Test
     fun deleteAccessTokenErrorResponse() = runBlocking {
         testErrorResponseReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
+            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
             webService.deleteAccessToken(newAccessToken)
         }
     }
@@ -156,9 +156,8 @@ internal class AccessTokenRequestsTest : BaseTest() {
     @Test
     fun deleteAccessTokenUnknownResponse() = runBlocking {
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests)
+            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
             webService.deleteAccessToken(newAccessToken)
         }
     }
-
 }

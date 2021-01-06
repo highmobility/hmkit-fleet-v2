@@ -119,8 +119,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      */
     fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Response<Boolean>> =
         GlobalScope.future {
-            TODO()
-            Response()
+            get<AccessTokenRequests>().deleteAccessToken(vehicleAccess.accessToken)
         }
 
     enum class Environment {

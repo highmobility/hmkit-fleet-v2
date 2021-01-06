@@ -31,6 +31,8 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import model.AccessToken
 import model.AuthToken
+import model.Brand
+import model.VehicleAccess
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.koin.test.KoinTest
@@ -40,6 +42,7 @@ import java.nio.file.Paths
 import java.time.LocalDateTime
 
 const val testApiKey = "apiKey"
+const val testVin = "C0NNECT0000000001"
 
 internal fun notExpiredAuthToken(): AuthToken {
     return AuthToken(
@@ -83,9 +86,12 @@ internal val mockAccessCert = mockk<AccessCertificate> {
     every { base64 } returns "AQMAAAMEAAAAAAAAAAQFAAAAAAAAAAUGAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAGBwECAwcIBAUGCQkKCgoKCgoKCgoLAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAL"
 }
 
-open class BaseTest : KoinTest {
+internal val newVehicleAccess = VehicleAccess(testVin, Brand.DAIMLER_FLEET, newAccessToken, mockAccessCert)
 
-    fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
+open class BaseTest : KoinTest {
+    val configuration = readConfigurationFromFile()
+
+    private fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
         val credentialsFilePath = Paths.get("src", "test", "resources", "credentials.yaml")
         val credentialsContent = Files.readString(credentialsFilePath)
 

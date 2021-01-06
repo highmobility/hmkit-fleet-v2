@@ -28,7 +28,7 @@ class JavaInterfaceTest {
 
         for (int i = 0; i < vins.size(); i++) {
             allRequests[i] = fleetSdk.requestClearance(
-                    vins.get(i), Brand.MERCEDES_BENZ, List.of(measure));
+                    vins.get(i), Brand.DAIMLER_FLEET, List.of(measure));
 
             allRequests[i].thenAcceptAsync(response -> {
                 System.out.println("single response "
@@ -65,7 +65,7 @@ class JavaInterfaceTest {
         ControlMeasure measure = new Odometer(110000, Odometer.Length.KILOMETERS);
         List<CompletableFuture<Response<ClearanceStatus>>> requests =
                 vins.stream().map(vin -> fleetSdk
-                        .requestClearance(vin, Brand.MERCEDES_BENZ, List.of(measure)))
+                        .requestClearance(vin, Brand.DAIMLER_FLEET, List.of(measure)))
                         .collect(Collectors.toList());
 
         CompletableFuture<Void> allRequests = CompletableFuture.allOf(

@@ -7,11 +7,12 @@ import com.highmobility.utils.Base64
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
+import kotlinx.serialization.json.*
 import mockSignature
 import model.AuthToken
+import model.Brand
+import model.ClearanceStatus
+import newAccessToken
 import notExpiredAuthToken
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -31,7 +32,6 @@ internal class AuthTokenRequestsTest : BaseTest() {
     private lateinit var crypto: Crypto
     private val cache = mockk<Cache>()
 
-    private val configuration = readConfigurationFromFile()
     private val privateKey = configuration.getServiceAccountHmPrivateKey()
 
     @BeforeEach

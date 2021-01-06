@@ -1,5 +1,6 @@
 package network
 
+import ServiceAccountApiConfiguration
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 import model.AccessToken
@@ -16,7 +17,8 @@ internal class AccessTokenRequests(
     client: OkHttpClient,
     logger: Logger,
     baseUrl: String,
-    private val authTokenRequests: AuthTokenRequests
+    private val authTokenRequests: AuthTokenRequests,
+    private val configuration: ServiceAccountApiConfiguration,
 ) : Requests(
     client,
     logger, baseUrl
@@ -50,9 +52,9 @@ internal class AccessTokenRequests(
 
     suspend fun deleteAccessToken(accessToken: AccessToken): Response<Boolean> {
         val request = Request.Builder()
-            .url("${baseUrl}/fleets/access_tokens")
+            .url("${baseUrl}/access_tokens")
             .header("Content-Type", "application/json")
-            .post(deleteTokenBody(accessToken))
+            .method("DELETE", deleteTokenBody(accessToken))
             .build()
 
         printRequest(request)
@@ -67,7 +69,10 @@ internal class AccessTokenRequests(
 
     private fun deleteTokenBody(accessToken: AccessToken): RequestBody {
         val completeBody = buildJsonObject {
-            TODO()
+            put("token", accessToken.refreshToken)
+            put("client_id", configuration.clientId)
+            put("client_secret", configuration.clientSecret)
+            put("token_type_hint", "refresh_token")
         }
 
         val body = completeBody.toString().toRequestBody(mediaType)

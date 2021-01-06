@@ -48,13 +48,13 @@ class HMKitFleetTest : BaseTest() {
             )
         } returns Response(newAccessToken, null)
 
-        val access = HMKitFleet.getVehicleAccess("vin1", Brand.MERCEDES_BENZ).get()
+        val access = HMKitFleet.getVehicleAccess("vin1", Brand.DAIMLER_FLEET).get()
 
         coVerify { accessCertificateRequests.getAccessCertificate(any()) }
         coVerify { accessTokenRequests.getAccessToken(any(), any()) }
 
         assertTrue(access.response!!.vin == "vin1")
-        assertTrue(access.response!!.brand == Brand.MERCEDES_BENZ)
+        assertTrue(access.response!!.brand == Brand.DAIMLER_FLEET)
         assertTrue(access.response!!.accessCertificate.hex == mockAccessCert.hex)
         assertTrue(access.response!!.accessToken == newAccessToken)
     }
@@ -68,7 +68,7 @@ class HMKitFleetTest : BaseTest() {
             )
         } returns Response(null, genericError("accessTokenError"))
 
-        val access = HMKitFleet.getVehicleAccess("vin1", Brand.MERCEDES_BENZ).get()
+        val access = HMKitFleet.getVehicleAccess("vin1", Brand.DAIMLER_FLEET).get()
 
         assertTrue(access.response == null)
         assertTrue(access.error!!.detail == "accessTokenError")
@@ -88,8 +88,20 @@ class HMKitFleetTest : BaseTest() {
             genericError("accessCertError")
         )
 
-        val access = HMKitFleet.getVehicleAccess("vin1", Brand.MERCEDES_BENZ).get()
+        val access = HMKitFleet.getVehicleAccess("vin1", Brand.DAIMLER_FLEET).get()
         assertTrue(access.response == null)
         assertTrue(access.error!!.detail == "accessCertError")
+    }
+
+    @Test
+    fun revokeClearance() = runBlocking {
+        coEvery {
+            accessTokenRequests.deleteAccessToken(
+                any()
+            )
+        } returns Response(true, null)
+
+        val access = HMKitFleet.revokeClearance(newVehicleAccess).get()
+        assertTrue(access.response == true)
     }
 }
