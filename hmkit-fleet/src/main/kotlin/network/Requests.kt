@@ -49,7 +49,7 @@ internal open class Requests(
         }
 
         logger.debug(
-            "sending ${request.url}:" +
+            "sending ${request.method} ${request.url}:" +
                     "\nheaders: ${request.headers}" +
                     "body: $bodyInPrettyPrint"
         )
