@@ -64,15 +64,15 @@ internal open class Requests(
     fun <T> parseError(responseBody: String): network.Response<T> {
         val json = Json.parseToJsonElement(responseBody)
         if (json is JsonObject) {
-            val errors = json["errors"] as JsonArray
-            if (errors.size > 0) {
+            val errors = json["errors"] as? JsonArray
+            if (errors != null && errors.size > 0) {
                 val error =
                     Json.decodeFromJsonElement<Error>(errors.first())
                 return Response(null, error)
             }
         }
 
-        return Response(null, genericError("invalid error structure"))
+        return Response(null, genericError("Unknown server response"))
     }
 
     internal fun requestBody(values: Map<String, String>): RequestBody {

@@ -74,7 +74,7 @@ internal class TelematicsRequests(
         val call = client.newCall(request)
         val response = call.await()
 
-        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { body ->
+        return tryParseResponse(response, HttpURLConnection.HTTP_CREATED) { body ->
             val jsonResponse = Json.parseToJsonElement(body) as JsonObject
             val nonce = jsonResponse.jsonObject["nonce"]?.jsonPrimitive?.content
             Response(nonce, null)
