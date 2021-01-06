@@ -79,7 +79,7 @@ internal class ClearanceRequestsTest : BaseTest() {
         val array = jsonBody.jsonObject["vehicles"] as JsonArray
         val firstVehicle = array.first() as JsonObject
         assertTrue(firstVehicle?.get("vin")?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(firstVehicle?.get("brand")?.jsonPrimitive?.contentOrNull == "daimler-fleet")
+        assertTrue(firstVehicle?.get("brand")?.jsonPrimitive?.contentOrNull == "daimler_fleet")
         val controlMeasures = firstVehicle?.get("control_measures")?.jsonObject
         val odometer = controlMeasures?.get("odometer")?.jsonObject
         assertTrue(odometer?.get("value")?.jsonPrimitive?.contentOrNull == "100000")

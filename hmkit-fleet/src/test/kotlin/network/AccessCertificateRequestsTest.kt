@@ -51,7 +51,7 @@ internal class AccessCertificateRequestsTest : BaseTest() {
     @Test
     fun getAccessCertificate() {
         val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setResponseCode(HttpURLConnection.HTTP_CREATED)
             .setBody(
                 """
                     {

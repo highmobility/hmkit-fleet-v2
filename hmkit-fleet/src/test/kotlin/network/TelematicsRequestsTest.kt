@@ -145,7 +145,7 @@ internal class TelematicsRequestsTest : BaseTest() {
 
     private fun mockNonceResponse() {
         val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setResponseCode(HttpURLConnection.HTTP_CREATED)
             .setBody(
                 """
                     {
