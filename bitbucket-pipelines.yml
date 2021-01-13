@@ -6,7 +6,7 @@
 # Prerequisites: appropriate project structure should exist in the repository.
 
 image:
-  name: tonisives/gradle-6@sha256:63bb4797fbe2cd1acd223c9f9a7feea3d6ff4c63a31c34bb6d2f400696bdeb7d
+  name: tonisives/gradle6:latest
   username: $TONIS_DOCKER_USER
   password: $TONIS_DOCKER_PW
 
