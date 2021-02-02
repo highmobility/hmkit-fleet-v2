@@ -15,8 +15,15 @@ import org.koin.core.component.inject
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 
-object HMKitFleet : Koin.FleetSdkKoinComponent {
-    private val logger by inject<Logger>()
+object HMKitFleet {
+    init {
+        Koin.start()
+    }
+
+    // use a separate class so public API doesn't need implement KoinComponent
+    private val koin = KoinFactory()
+
+    private val logger by koin.inject<Logger>()
     var environment: Environment = Environment.PRODUCTION
 
     internal var authToken: AuthToken? = null
@@ -25,10 +32,6 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      * Set the Service Account Configuration before calling other methods.
      */
     lateinit var configuration: ServiceAccountApiConfiguration
-
-    init {
-        Koin.start()
-    }
 
     /**
      * Start the data access clearance process for a vehicle.
@@ -44,7 +47,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
         controlMeasures: List<ControlMeasure>?
     ): CompletableFuture<Response<ClearanceStatus>> = GlobalScope.future {
         logger.debug("HMKitFleet: requestClearance: $vin")
-        get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
+        koin.get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
     }
 
     /**
@@ -57,7 +60,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
     fun getClearanceStatuses(): CompletableFuture<Response<List<ClearanceStatus>>> =
         GlobalScope.future {
             logger.debug("HMKitFleet: getClearanceStatuses:")
-            get<ClearanceRequests>().getClearanceStatuses()
+            koin.get<ClearanceRequests>().getClearanceStatuses()
         }
 
     /**
@@ -73,10 +76,10 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
 
     fun getVehicleAccess(vin: String, brand: Brand):
             CompletableFuture<Response<VehicleAccess>> = GlobalScope.future {
-        val accessToken = get<AccessTokenRequests>().getAccessToken(vin, brand)
+        val accessToken = koin.get<AccessTokenRequests>().getAccessToken(vin, brand)
 
         if (accessToken.response != null) {
-            val accessCertificate = get<AccessCertificateRequests>().getAccessCertificate(
+            val accessCertificate = koin.get<AccessCertificateRequests>().getAccessCertificate(
                 accessToken.response,
             )
 
@@ -108,7 +111,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
         command: Bytes,
         vehicleAccess: VehicleAccess
     ): CompletableFuture<Response<Bytes>> = GlobalScope.future {
-        get<TelematicsRequests>().sendCommand(command, vehicleAccess.accessCertificate)
+        koin.get<TelematicsRequests>().sendCommand(command, vehicleAccess.accessCertificate)
     }
 
     /**
@@ -119,7 +122,7 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
      */
     fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Response<Boolean>> =
         GlobalScope.future {
-            get<AccessTokenRequests>().deleteAccessToken(vehicleAccess.accessToken)
+            koin.get<AccessTokenRequests>().deleteAccessToken(vehicleAccess.accessToken)
         }
 
     enum class Environment {
@@ -135,4 +138,6 @@ object HMKitFleet : Koin.FleetSdkKoinComponent {
                 }
             }
     }
+
+    private class KoinFactory : Koin.FleetSdkKoinComponent
 }

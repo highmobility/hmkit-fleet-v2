@@ -5,7 +5,10 @@
 
 # Prerequisites: appropriate project structure should exist in the repository.
 
-image: gradle:6.6.0
+image:
+  name: tonisives/gradle6:latest
+  username: $TONIS_DOCKER_USER
+  password: $TONIS_DOCKER_PW
 
 pipelines:
   default:
