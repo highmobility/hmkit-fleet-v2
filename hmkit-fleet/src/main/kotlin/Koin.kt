@@ -1,4 +1,4 @@
-import com.highmobility.hmkit.HMKit
+import com.highmobility.cryptok.Crypto
 import network.*
 import network.AccessCertificateRequests
 import network.AuthTokenRequests
@@ -18,8 +18,7 @@ internal object Koin {
         single { LoggerFactory.getLogger(HMKitFleet::class.java) }
         single { OkHttpClient() }
         single { HMKitFleet.environment }
-        single { HMKit.getInstance() }
-        single { get<HMKit>().crypto }
+        single { Crypto() }
         single { Requests(get(), get(), HMKitFleet.environment.url) }
         single { Cache() }
         single {

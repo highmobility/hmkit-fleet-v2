@@ -1,9 +1,9 @@
 package network
 
 import ClientCertificate
-import com.highmobility.crypto.AccessCertificate
-import com.highmobility.crypto.Crypto
-import com.highmobility.crypto.value.PrivateKey
+import com.highmobility.cryptok.AccessCertificate
+import com.highmobility.cryptok.Crypto
+import com.highmobility.cryptok.value.PrivateKey
 import com.highmobility.value.Bytes
 import kotlinx.serialization.json.*
 import model.AccessToken

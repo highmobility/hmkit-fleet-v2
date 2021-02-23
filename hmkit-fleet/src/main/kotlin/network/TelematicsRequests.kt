@@ -1,9 +1,9 @@
 package network
 
 import ClientCertificate
-import com.highmobility.crypto.AccessCertificate
-import com.highmobility.crypto.value.PrivateKey
-import com.highmobility.hmkit.HMKit
+import com.highmobility.cryptok.AccessCertificate
+import com.highmobility.cryptok.Crypto
+import com.highmobility.cryptok.value.PrivateKey
 import com.highmobility.value.Bytes
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -21,7 +21,7 @@ internal class TelematicsRequests(
     baseUrl: String,
     private val privateKey: PrivateKey,
     private val certificate: ClientCertificate,
-    private val oem: HMKit
+    private val crypto: Crypto
 ) : Requests(
     client,
     logger, baseUrl
@@ -35,7 +35,7 @@ internal class TelematicsRequests(
         if (nonce.error != null) return Response(null, nonce.error)
 
         val encryptedCommand =
-            oem.encrypt(
+            crypto.encrypt(
                 privateKey,
                 accessCertificate,
                 Bytes(nonce.response!!),
@@ -47,7 +47,7 @@ internal class TelematicsRequests(
 
         if (encryptedCommandResponse.error != null) return encryptedCommandResponse
 
-        val decryptedResponseCommand = oem.decrypt(
+        val decryptedResponseCommand = crypto.decrypt(
             privateKey,
             accessCertificate,
             encryptedCommandResponse.response!!

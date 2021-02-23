@@ -2,8 +2,8 @@ package network
 
 import BaseTest
 import ClientCertificate
-import com.highmobility.crypto.Crypto
-import com.highmobility.crypto.value.PrivateKey
+import com.highmobility.cryptok.Crypto
+import com.highmobility.cryptok.value.PrivateKey
 import com.highmobility.value.Bytes
 import io.mockk.every
 import io.mockk.mockk

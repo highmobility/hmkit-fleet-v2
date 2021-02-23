@@ -5,10 +5,10 @@ import ClientCertificate
 import com.highmobility.autoapi.Diagnostics
 import com.highmobility.autoapi.property.Property
 import com.highmobility.autoapi.value.measurement.Length
-import com.highmobility.crypto.value.DeviceSerial
-import com.highmobility.crypto.value.Issuer
-import com.highmobility.crypto.value.PrivateKey
-import com.highmobility.hmkit.HMKit
+import com.highmobility.cryptok.Crypto
+import com.highmobility.cryptok.value.DeviceSerial
+import com.highmobility.cryptok.value.Issuer
+import com.highmobility.cryptok.value.PrivateKey
 import com.highmobility.value.Bytes
 import io.mockk.every
 import io.mockk.mockk
@@ -20,7 +20,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import mockAccessCert
-import mockSerial
 import mockSignature
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -51,7 +50,7 @@ internal class TelematicsRequestsTest : BaseTest() {
         every { issuer } returns Issuer("00000000")
     }
 
-    private val oem = mockk<HMKit> {
+    private val crypto = mockk<Crypto> {
         // random encryption ok here
         every {
             encrypt(
@@ -87,14 +86,14 @@ internal class TelematicsRequestsTest : BaseTest() {
         val baseUrl: HttpUrl = mockWebServer.url("")
 
         val telematicsRequests =
-            TelematicsRequests(client, mockLogger, baseUrl.toString(), privateKey, certificate, oem)
+            TelematicsRequests(client, mockLogger, baseUrl.toString(), privateKey, certificate, crypto)
 
         val response = runBlocking {
             telematicsRequests.sendCommand(Diagnostics.GetState(), mockAccessCert)
         }
 
         verify {
-            oem.encrypt(
+            crypto.encrypt(
                 privateKey,
                 mockAccessCert,
                 nonce,
@@ -122,7 +121,7 @@ internal class TelematicsRequestsTest : BaseTest() {
         assertTrue(jsonBody["data"]!!.jsonPrimitive?.contentOrNull == encryptedSentCommand.base64)
 
         // verify command decrypted
-        verify { oem.decrypt(privateKey, mockAccessCert, encryptedReceivedCommand) }
+        verify { crypto.decrypt(privateKey, mockAccessCert, encryptedReceivedCommand) }
 
         // verify final telematics command response
         assertTrue(response.response!! == decryptedReceivedCommand)
@@ -162,7 +161,7 @@ internal class TelematicsRequestsTest : BaseTest() {
     fun nonceErrorResponse() = runBlocking {
         testErrorResponseReturned(mockWebServer) { mockUrl ->
             val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, oem)
+                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
             webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
         }
     }
@@ -171,7 +170,7 @@ internal class TelematicsRequestsTest : BaseTest() {
     fun nonceUnknownResponse() = runBlocking {
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
             val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, oem)
+                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
             webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
         }
     }
@@ -181,7 +180,7 @@ internal class TelematicsRequestsTest : BaseTest() {
         mockNonceResponse()
         testErrorResponseReturned(mockWebServer) { mockUrl ->
             val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, oem)
+                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
             webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
         }
     }
@@ -191,7 +190,7 @@ internal class TelematicsRequestsTest : BaseTest() {
         mockNonceResponse()
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
             val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, oem)
+                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
             webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
         }
     }

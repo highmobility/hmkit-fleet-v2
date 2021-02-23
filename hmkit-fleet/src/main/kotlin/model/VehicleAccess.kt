@@ -2,7 +2,7 @@
 
 package model
 
-import com.highmobility.crypto.AccessCertificate
+import com.highmobility.cryptok.AccessCertificate
 import com.highmobility.value.Bytes
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind

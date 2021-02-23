@@ -23,11 +23,12 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
 
-    if (Os.isFamily(Os.FAMILY_MAC)) {
-        implementation('com.highmobility:hmkit-oem:2.0.1-osx-dev')
-    }
-    else {
-        implementation('com.highmobility:hmkit-oem:2.0.1-dev')
+    if (project.hasProperty('depLocation') == false || project.depLocation > 0) {
+        // TODO: use remote here
+        api project(path: ':hmkit-crypto-java')
+
+    } else {
+        api project(path: ':hmkit-crypto-java')
     }
 
     // web
