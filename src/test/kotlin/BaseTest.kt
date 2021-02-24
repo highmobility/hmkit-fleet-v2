@@ -35,16 +35,11 @@ import model.Brand
 import model.VehicleAccess
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.koin.test.KoinTest
 import org.slf4j.Logger
-import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.LocalDateTime
-import java.util.function.Consumer
-import java.util.stream.Collectors
 
 const val testApiKey = "apiKey"
 const val testVin = "C0NNECT0000000001"

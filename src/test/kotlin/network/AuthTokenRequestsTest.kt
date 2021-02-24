@@ -10,9 +10,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import mockSignature
 import model.AuthToken
-import model.Brand
-import model.ClearanceStatus
-import newAccessToken
 import notExpiredAuthToken
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
