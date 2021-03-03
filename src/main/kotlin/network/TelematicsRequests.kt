@@ -35,22 +35,22 @@ internal class TelematicsRequests(
         if (nonce.error != null) return Response(null, nonce.error)
 
         val encryptedCommand =
-            crypto.encrypt(
+            crypto.createTelematicsContainer(
+                command,
                 privateKey,
-                accessCertificate,
-                Bytes(nonce.response!!),
                 certificate.serial,
-                command
+                accessCertificate,
+                Bytes(nonce.response!!)
             )
 
         val encryptedCommandResponse = postCommand(encryptedCommand)
 
         if (encryptedCommandResponse.error != null) return encryptedCommandResponse
 
-        val decryptedResponseCommand = crypto.decrypt(
+        val decryptedResponseCommand = crypto.getCommandFromTelematicsContainer(
+            encryptedCommandResponse.response!!,
             privateKey,
             accessCertificate,
-            encryptedCommandResponse.response!!
         )
 
         return Response(decryptedResponseCommand)
