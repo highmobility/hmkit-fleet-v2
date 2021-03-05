@@ -1,7 +1,7 @@
 @file:UseSerializers(DeviceCertificateSerializer::class)
 
-import com.highmobility.cryptok.DeviceCertificate
-import com.highmobility.cryptok.value.PrivateKey
+import com.highmobility.crypto.DeviceCertificate
+import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.utils.Base64
 import com.highmobility.value.Bytes
 import kotlinx.serialization.KSerializer

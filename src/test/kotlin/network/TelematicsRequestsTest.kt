@@ -5,10 +5,10 @@ import ClientCertificate
 import com.highmobility.autoapi.Diagnostics
 import com.highmobility.autoapi.property.Property
 import com.highmobility.autoapi.value.measurement.Length
-import com.highmobility.cryptok.Crypto
-import com.highmobility.cryptok.value.DeviceSerial
-import com.highmobility.cryptok.value.Issuer
-import com.highmobility.cryptok.value.PrivateKey
+import com.highmobility.crypto.Crypto
+import com.highmobility.crypto.value.DeviceSerial
+import com.highmobility.crypto.value.Issuer
+import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.value.Bytes
 import io.mockk.every
 import io.mockk.mockk
@@ -53,17 +53,21 @@ internal class TelematicsRequestsTest : BaseTest() {
     private val crypto = mockk<Crypto> {
         // random encryption ok here
         every {
-            encrypt(
+            createTelematicsContainer(
+                Diagnostics.GetState(),
                 privateKey,
-                mockAccessCert,
-                nonce,
                 certificate.serial,
-                Diagnostics.GetState()
+                mockAccessCert,
+                nonce
             )
         } returns encryptedSentCommand
 
         every {
-            decrypt(privateKey, mockAccessCert, Bytes(encryptedReceivedCommand))
+            getCommandFromTelematicsContainer(
+                Bytes(encryptedReceivedCommand),
+                privateKey,
+                mockAccessCert
+            )
         } returns decryptedReceivedCommand
     }
 
@@ -86,19 +90,26 @@ internal class TelematicsRequestsTest : BaseTest() {
         val baseUrl: HttpUrl = mockWebServer.url("")
 
         val telematicsRequests =
-            TelematicsRequests(client, mockLogger, baseUrl.toString(), privateKey, certificate, crypto)
+            TelematicsRequests(
+                client,
+                mockLogger,
+                baseUrl.toString(),
+                privateKey,
+                certificate,
+                crypto
+            )
 
         val response = runBlocking {
             telematicsRequests.sendCommand(Diagnostics.GetState(), mockAccessCert)
         }
 
         verify {
-            crypto.encrypt(
+            crypto.createTelematicsContainer(
+                Diagnostics.GetState(),
                 privateKey,
-                mockAccessCert,
-                nonce,
                 certificate.serial,
-                Diagnostics.GetState()
+                mockAccessCert,
+                nonce
             )
         }
 
@@ -121,7 +132,13 @@ internal class TelematicsRequestsTest : BaseTest() {
         assertTrue(jsonBody["data"]!!.jsonPrimitive?.contentOrNull == encryptedSentCommand.base64)
 
         // verify command decrypted
-        verify { crypto.decrypt(privateKey, mockAccessCert, encryptedReceivedCommand) }
+        verify {
+            crypto.getCommandFromTelematicsContainer(
+                encryptedReceivedCommand,
+                privateKey,
+                mockAccessCert
+            )
+        }
 
         // verify final telematics command response
         assertTrue(response.response!! == decryptedReceivedCommand)

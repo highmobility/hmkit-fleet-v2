@@ -1,4 +1,4 @@
-import com.highmobility.cryptok.Crypto
+import com.highmobility.crypto.Crypto
 import network.*
 import network.AccessCertificateRequests
 import network.AuthTokenRequests

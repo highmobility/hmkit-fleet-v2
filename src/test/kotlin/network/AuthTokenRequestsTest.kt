@@ -2,7 +2,7 @@ package network
 
 import BaseTest
 import HMKitFleet
-import com.highmobility.cryptok.Crypto
+import com.highmobility.crypto.Crypto
 import com.highmobility.utils.Base64
 import io.mockk.*
 import kotlinx.coroutines.runBlocking

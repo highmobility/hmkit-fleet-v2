@@ -23,9 +23,9 @@
  */
 
 import com.charleskorn.kaml.Yaml
-import com.highmobility.cryptok.AccessCertificate
-import com.highmobility.cryptok.value.DeviceSerial
-import com.highmobility.cryptok.value.Signature
+import com.highmobility.crypto.AccessCertificate
+import com.highmobility.crypto.value.DeviceSerial
+import com.highmobility.crypto.value.Signature
 import io.mockk.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json

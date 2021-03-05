@@ -2,7 +2,7 @@ package network
 
 import HMKitFleet
 import ServiceAccountApiConfiguration
-import com.highmobility.cryptok.Crypto
+import com.highmobility.crypto.Crypto
 import com.highmobility.utils.Base64
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
