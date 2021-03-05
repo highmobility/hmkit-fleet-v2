@@ -43,11 +43,11 @@ internal class TelematicsRequests(
                 Bytes(nonce.response!!)
             )
 
-        val encryptedCommandResponse = postCommand(encryptedCommand)
+        val encryptedCommandResponse = postCommand(encryptedCommand, accessCertificate)
 
         if (encryptedCommandResponse.error != null) return encryptedCommandResponse
 
-        val decryptedResponseCommand = crypto.getCommandFromTelematicsContainer(
+        val decryptedResponseCommand = crypto.getPayloadFromTelematicsContainer(
             encryptedCommandResponse.response!!,
             privateKey,
             accessCertificate,
@@ -83,6 +83,7 @@ internal class TelematicsRequests(
 
     private suspend fun postCommand(
         encryptedCommand: Bytes,
+        accessCertificate: AccessCertificate,
     ): Response<Bytes> {
         val request = Request.Builder()
             .url("${baseUrl}/telematics_commands")
@@ -90,7 +91,7 @@ internal class TelematicsRequests(
             .post(
                 requestBody(
                     mapOf(
-                        "serial_number" to certificate.serial.hex,
+                        "serial_number" to accessCertificate.gainerSerial.hex,
                         "issuer" to certificate.issuer.hex,
                         "data" to encryptedCommand.base64
                     )

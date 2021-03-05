@@ -63,7 +63,7 @@ internal class TelematicsRequestsTest : BaseTest() {
         } returns encryptedSentCommand
 
         every {
-            getCommandFromTelematicsContainer(
+            getPayloadFromTelematicsContainer(
                 Bytes(encryptedReceivedCommand),
                 privateKey,
                 mockAccessCert
@@ -133,7 +133,7 @@ internal class TelematicsRequestsTest : BaseTest() {
 
         // verify command decrypted
         verify {
-            crypto.getCommandFromTelematicsContainer(
+            crypto.getPayloadFromTelematicsContainer(
                 encryptedReceivedCommand,
                 privateKey,
                 mockAccessCert

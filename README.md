@@ -14,9 +14,7 @@ Telematics API to help car companies manage their fleet.
 
 ### Requirements
 
-* Linux or OSX (x86)
-
-Contact High-Mobility for binaries for other systems.
+Java 8+
 
 ### Getting Started
 
