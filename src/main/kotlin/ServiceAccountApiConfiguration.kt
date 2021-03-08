@@ -112,11 +112,11 @@ object DeviceCertificateSerializer : KSerializer<DeviceCertificate> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
-    override fun serialize(output: Encoder, obj: DeviceCertificate) {
-        output.encodeString((obj as Bytes).toString())
+    override fun serialize(encoder: Encoder, value: DeviceCertificate) {
+        encoder.encodeString((value as Bytes).toString())
     }
 
-    override fun deserialize(input: Decoder): DeviceCertificate {
-        return DeviceCertificate(Bytes(input.decodeString()))
+    override fun deserialize(decoder: Decoder): DeviceCertificate {
+        return DeviceCertificate(Bytes(decoder.decodeString()))
     }
 }

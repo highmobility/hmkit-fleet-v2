@@ -21,18 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+import com.highmobility.crypto.AccessCertificate
+import com.highmobility.crypto.DeviceCertificate
+import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.value.Bytes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
-import model.AuthToken
-import model.Brand
-import model.ControlMeasure
-import model.VehicleAccess
-import model.ClearanceStatus
+import model.*
 import network.*
-import network.AccessCertificateRequests
-import network.AccessTokenRequests
-import network.ClearanceRequests
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.slf4j.Logger

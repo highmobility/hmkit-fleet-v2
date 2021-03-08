@@ -53,11 +53,11 @@ internal object DateTimeSerializer : KSerializer<LocalDateTime> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
-    override fun serialize(output: Encoder, obj: LocalDateTime) {
-        output.encodeString(obj.toString())
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeString(value.toString())
     }
 
-    override fun deserialize(input: Decoder): LocalDateTime {
-        return LocalDateTime.parse(input.decodeString())
+    override fun deserialize(decoder: Decoder): LocalDateTime {
+        return LocalDateTime.parse(decoder.decodeString())
     }
 }

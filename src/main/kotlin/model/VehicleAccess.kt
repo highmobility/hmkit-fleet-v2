@@ -47,12 +47,12 @@ internal object AccessCertificateSerializer : KSerializer<AccessCertificate> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
-    override fun serialize(output: Encoder, obj: AccessCertificate) {
-        output.encodeString(obj.hex)
+    override fun serialize(encoder: Encoder, value: AccessCertificate) {
+        encoder.encodeString(value.hex)
     }
 
-    override fun deserialize(input: Decoder): AccessCertificate {
-        return AccessCertificate(Bytes(input.decodeString()))
+    override fun deserialize(decoder: Decoder): AccessCertificate {
+        return AccessCertificate(Bytes(decoder.decodeString()))
     }
 }
 

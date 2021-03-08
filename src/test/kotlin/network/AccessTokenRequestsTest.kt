@@ -95,8 +95,8 @@ internal class AccessTokenRequestsTest : BaseTest() {
         // verify request
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
-        assertTrue(jsonBody["vin"]!!.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(jsonBody["oem"]!!.jsonPrimitive?.contentOrNull == "daimler_fleet")
+        assertTrue(jsonBody["vin"]!!.jsonPrimitive.contentOrNull == "WBADT43452G296403")
+        assertTrue(jsonBody["oem"]!!.jsonPrimitive.contentOrNull == "daimler_fleet")
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
 
         // verify response
@@ -147,7 +147,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         val mockUrl = mockWebServer.url("").toString()
         val accessTokenRequests = AccessTokenRequests(client, mockLogger, mockUrl, mockk(), configuration)
 
-        val response = runBlocking {
+        runBlocking {
             accessTokenRequests.deleteAccessToken(newAccessToken)
         }
 

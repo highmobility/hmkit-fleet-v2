@@ -36,7 +36,6 @@ import com.highmobility.value.Bytes
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -138,21 +137,21 @@ internal class TelematicsRequestsTest : BaseTest() {
 
         // first request is nonce
         val nonceRequest: RecordedRequest = mockWebServer.takeRequest()
-        assertTrue(nonceRequest.path!!.endsWith("/nonces"))
+        assert(nonceRequest.path!!.endsWith("/nonces"))
 
         // verify request
         val nonceRequestBody = Json.parseToJsonElement(nonceRequest.body.readUtf8()) as JsonObject
-        assertTrue(nonceRequestBody["serial_number"]!!.jsonPrimitive?.contentOrNull == certificate.serial.hex)
+        assert(nonceRequestBody["serial_number"]!!.jsonPrimitive.contentOrNull == certificate.serial.hex)
 
         // second request is telematics command
         val commandRequest: RecordedRequest = mockWebServer.takeRequest()
-        assertTrue(commandRequest.path!!.endsWith("/telematics_commands"))
+        assert(commandRequest.path!!.endsWith("/telematics_commands"))
 
         // verify request
         val jsonBody = Json.parseToJsonElement(commandRequest.body.readUtf8()) as JsonObject
-        assertTrue(jsonBody["serial_number"]!!.jsonPrimitive?.contentOrNull == certificate.serial.hex)
-        assertTrue(jsonBody["issuer"]!!.jsonPrimitive?.contentOrNull == certificate.issuer.hex)
-        assertTrue(jsonBody["data"]!!.jsonPrimitive?.contentOrNull == encryptedSentCommand.base64)
+        assert(jsonBody["serial_number"]!!.jsonPrimitive.contentOrNull == certificate.serial.hex)
+        assert(jsonBody["issuer"]!!.jsonPrimitive.contentOrNull == certificate.issuer.hex)
+        assert(jsonBody["data"]!!.jsonPrimitive.contentOrNull == encryptedSentCommand.base64)
 
         // verify command decrypted
         verify {
@@ -164,7 +163,7 @@ internal class TelematicsRequestsTest : BaseTest() {
         }
 
         // verify final telematics command response
-        assertTrue(response.response!! == decryptedReceivedCommand)
+        assert(response.response!! == decryptedReceivedCommand)
     }
 
     private fun mockTelematicsResponse() {

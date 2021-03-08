@@ -96,9 +96,9 @@ internal class AccessCertificateRequestsTest : BaseTest() {
 
         // verify request
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
-        assertTrue(jsonBody["serial_number"]!!.jsonPrimitive?.contentOrNull == mockSerial.hex)
-        assertTrue(jsonBody["access_token"]!!.jsonPrimitive?.contentOrNull == newAccessToken.accessToken)
-        assertTrue(jsonBody["signature"]!!.jsonPrimitive?.contentOrNull == mockSignature.base64)
+        assertTrue(jsonBody["serial_number"]!!.jsonPrimitive.contentOrNull == mockSerial.hex)
+        assertTrue(jsonBody["access_token"]!!.jsonPrimitive.contentOrNull == newAccessToken.accessToken)
+        assertTrue(jsonBody["signature"]!!.jsonPrimitive.contentOrNull == mockSignature.base64)
 
         // verify response
         assertTrue(response.response?.hex == mockAccessCert.hex)

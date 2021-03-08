@@ -9,7 +9,7 @@ allprojects {
         mavenCentral()
         jcenter()
         maven { url "https://kotlin.bintray.com/kotlinx" }
-        maven { url "http://jfrog.high-mobility.com/artifactory/gradle-00/" }
+        maven { url "https://jfrog.high-mobility.com/artifactory/gradle-release-local/" }
     }
 }
 
@@ -18,7 +18,12 @@ ext {
     coroutinesVersion = "1.4.0"
     koin_version = '2.2.0-rc-4'
     ver = [
-            "hmkit-fleet": "0-osx"
+            "hmkit-fleet" : "0.0.1",
+            "hmkit-crypto": "0.0.1"
+    ]
+    deps = [
+            "hmkit" : "com.highmobility:hmkit-fleet:${ver."hmkit-fleet"}",
+            "crypto": "com.highmobility:hmkit-crypto-telematics:${ver."hmkit-crypto"}"
     ]
 }
 
@@ -31,17 +36,15 @@ apply from: "https://raw.githubusercontent.com/tonisives/tools/master/scripts/ju
 
 
 dependencies {
-// kotlin
+    // kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
 
     if (project.hasProperty('depLocation') == false || project.depLocation > 0) {
-        // TODO: use remote here
-        api project(":hmkit-crypto-java")
-
+        api deps.crypto
     } else {
         api project(":hmkit-crypto-java")
     }

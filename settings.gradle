@@ -1,7 +1,6 @@
 rootProject.name = 'hmkit-fleet'
 
-include ':hmkit-fleet',
-        ':hmkit-crypto-java',
+include ':hmkit-crypto-java',
         ':hmkit-fleet-consumer',
         ':hmkit-utils'
 
