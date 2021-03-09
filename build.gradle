@@ -36,7 +36,6 @@ apply from: "deploy.gradle"
 apply from: "https://raw.githubusercontent.com/tonisives/tools/master/gradle/deploy-java-v2.gradle"
 apply from: "https://raw.githubusercontent.com/tonisives/tools/master/scripts/jupiter-test-shell-logging.gradle"
 
-
 dependencies {
     // kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -74,4 +73,9 @@ dependencies {
     testImplementation "io.mockk:mockk:1.10.3"
     testImplementation "com.charleskorn.kaml:kaml:0.26.0"
     testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
+}
+
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 }
