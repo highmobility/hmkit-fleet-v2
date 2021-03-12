@@ -87,10 +87,24 @@ internal open class Requests(
     fun <T> parseError(responseBody: String): network.Response<T> {
         val json = Json.parseToJsonElement(responseBody)
         if (json is JsonObject) {
+            // there are 3 error formats
             val errors = json["errors"] as? JsonArray
-            if (errors != null && errors.size > 0) {
+
+            return if (errors != null && errors.size > 0) {
                 val error =
                     Json.decodeFromJsonElement<Error>(errors.first())
+                Response(null, error)
+            } else {
+                val error = Error(
+                    json["error"]?.jsonPrimitive?.content ?: "Unknown server response",
+                    json["error_description"]?.jsonPrimitive?.content
+                )
+
+                Response(null, error)
+            }
+        } else if (json is JsonArray) {
+            if (json.size > 0) {
+                val error = Json.decodeFromJsonElement<Error>(json.first())
                 return Response(null, error)
             }
         }
@@ -117,6 +131,6 @@ internal fun Request.bodyAsString(): String? {
 }
 
 internal fun genericError(detail: String? = null): Error {
-    val genericError = Error("Invalid server response", detail)
+    val genericError = Error("Unknown server response", detail)
     return genericError
 }

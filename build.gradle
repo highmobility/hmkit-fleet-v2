@@ -29,6 +29,11 @@ ext {
     ]
 }
 
+compileJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
 version '1.0-SNAPSHOT'
 
 apply from: "deploy.gradle"
@@ -73,9 +78,4 @@ dependencies {
     testImplementation "io.mockk:mockk:1.10.3"
     testImplementation "com.charleskorn.kaml:kaml:0.26.0"
     testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
-}
-
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
 }
