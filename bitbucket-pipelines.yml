@@ -18,6 +18,7 @@ pipelines:
           caches:
             - gradle
           script:
+            - git submodule update --recursive --init
             - gradle build
           after-script:
             - pipe: atlassian/checkstyle-report:0.2.0
