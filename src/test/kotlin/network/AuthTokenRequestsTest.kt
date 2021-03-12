@@ -210,7 +210,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
 
         val jwtBody = buildJsonObject {
             put("ver", configuration.version)
-            put("iss", configuration.apiKey)
+            put("iss", configuration.serviceAccountApiKey)
             put("aud", HMKitFleet.Environment.PRODUCTION.url)
             put("jti", configuration.createJti())
             put("iat", configuration.createIat())

@@ -93,8 +93,8 @@ internal class AccessTokenRequests(
     private fun deleteTokenBody(accessToken: AccessToken): RequestBody {
         val completeBody = buildJsonObject {
             put("token", accessToken.refreshToken)
-            put("client_id", configuration.clientId)
-            put("client_secret", configuration.clientSecret)
+            put("client_id", configuration.oauthClientId)
+            put("client_secret", configuration.oauthClientSecret)
             put("token_type_hint", "refresh_token")
         }
 

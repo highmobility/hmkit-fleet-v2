@@ -158,8 +158,8 @@ internal class AccessTokenRequestsTest : BaseTest() {
 
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
         assertTrue(jsonBody["token"]?.jsonPrimitive?.contentOrNull == newAccessToken.refreshToken)
-        assertTrue(jsonBody["client_id"]?.jsonPrimitive?.contentOrNull == configuration.clientId)
-        assertTrue(jsonBody["client_secret"]?.jsonPrimitive?.contentOrNull == configuration.clientSecret)
+        assertTrue(jsonBody["client_id"]?.jsonPrimitive?.contentOrNull == configuration.oauthClientId)
+        assertTrue(jsonBody["client_secret"]?.jsonPrimitive?.contentOrNull == configuration.oauthClientSecret)
         assertTrue(jsonBody["token_type_hint"]?.jsonPrimitive?.contentOrNull == "refresh_token")
 
         // the response is empty 200, nothing to verify
