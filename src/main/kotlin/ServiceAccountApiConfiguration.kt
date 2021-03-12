@@ -47,12 +47,12 @@ data class ServiceAccountApiConfiguration(
     /**
      * Service account API key
      */
-    val apiKey: String,
+    val serviceAccountApiKey: String,
     /**
      * This private key is downloaded when creating a Service Account API key. It should be in
      * PKCS 8 format
      */
-    val serviceAccountApiPrivateKey: String,
+    val serviceAccountPrivateKey: String,
 
     /**
      * The client certificate
@@ -68,12 +68,12 @@ data class ServiceAccountApiConfiguration(
     /**
      * The OAuth client ID.
      */
-    val clientId: String,
+    val oauthClientId: String,
 
     /**
      * The OAuth client secret.
      */
-    val clientSecret: String
+    val oauthClientSecret: String
 ) {
     val version = 1
 
@@ -92,7 +92,7 @@ data class ServiceAccountApiConfiguration(
     }
 
     fun getServiceAccountJavaPrivateKey(): ECPrivateKey {
-        var encodedKeyString = serviceAccountApiPrivateKey
+        var encodedKeyString = serviceAccountPrivateKey
         encodedKeyString = encodedKeyString.replace("-----BEGIN PRIVATE KEY----", "")
         encodedKeyString = encodedKeyString.replace("-----END PRIVATE KEY-----", "")
         val decodedPrivateKey = Base64.decode(encodedKeyString)
