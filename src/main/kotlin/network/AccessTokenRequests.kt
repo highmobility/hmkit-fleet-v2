@@ -27,7 +27,6 @@ import ServiceAccountApiConfiguration
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 import model.AccessToken
-import model.Brand
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -47,8 +46,7 @@ internal class AccessTokenRequests(
     logger, baseUrl
 ) {
     suspend fun getAccessToken(
-        vin: String,
-        brand: Brand
+        vin: String
     ): Response<AccessToken> {
         val authToken = authTokenRequests.getAuthToken()
 
@@ -58,7 +56,7 @@ internal class AccessTokenRequests(
             .url("${baseUrl}/fleets/access_tokens")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response.authToken}")
-            .post(getTokenBody(vin, brand))
+            .post(getTokenBody(vin))
             .build()
 
         printRequest(request)
@@ -102,10 +100,9 @@ internal class AccessTokenRequests(
         return body
     }
 
-    private fun getTokenBody(vin: String, brand: Brand): RequestBody {
+    private fun getTokenBody(vin: String): RequestBody {
         val completeBody = buildJsonObject {
             put("vin", vin)
-            put("oem", Json.encodeToJsonElement(brand))
         }
 
         val body = completeBody.toString().toRequestBody(mediaType)

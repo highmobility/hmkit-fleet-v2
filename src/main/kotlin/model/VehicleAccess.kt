@@ -37,7 +37,6 @@ import kotlinx.serialization.encoding.Encoder
 @Serializable
 data class VehicleAccess(
     val vin: String,
-    val brand: Brand,
     val accessToken: AccessToken,
     val accessCertificate: AccessCertificate
 )
@@ -60,9 +59,6 @@ internal object AccessCertificateSerializer : KSerializer<AccessCertificate> {
 enum class Brand {
     @SerialName("bmw")
     BMW,
-
-    @SerialName("daimler_fleet")
-    DAIMLER_FLEET,
 
     @SerialName("mercedes-benz")
     MERCEDES_BENZ,

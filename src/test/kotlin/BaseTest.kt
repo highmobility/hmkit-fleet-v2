@@ -89,7 +89,6 @@ internal val mockAccessCert = mockk<AccessCertificate> {
 
 internal val newVehicleAccess = VehicleAccess(
     testVin,
-    Brand.DAIMLER_FLEET,
     newAccessToken,
     mockAccessCert
 )

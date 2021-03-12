@@ -66,18 +66,16 @@ class HMKitFleetTest : BaseTest() {
         )
         coEvery {
             accessTokenRequests.getAccessToken(
-                any(),
                 any()
             )
         } returns Response(newAccessToken, null)
 
-        val access = HMKitFleet.getVehicleAccess("vin1", Brand.DAIMLER_FLEET).get()
+        val access = HMKitFleet.getVehicleAccess("vin1").get()
 
         coVerify { accessCertificateRequests.getAccessCertificate(any()) }
-        coVerify { accessTokenRequests.getAccessToken(any(), any()) }
+        coVerify { accessTokenRequests.getAccessToken(any()) }
 
         assertTrue(access.response!!.vin == "vin1")
-        assertTrue(access.response!!.brand == Brand.DAIMLER_FLEET)
         assertTrue(access.response!!.accessCertificate.hex == mockAccessCert.hex)
         assertTrue(access.response!!.accessToken == newAccessToken)
     }
@@ -86,12 +84,11 @@ class HMKitFleetTest : BaseTest() {
     fun accessTokenErrorReturned() = runBlocking {
         coEvery {
             accessTokenRequests.getAccessToken(
-                any(),
                 any()
             )
         } returns Response(null, genericError("accessTokenError"))
 
-        val access = HMKitFleet.getVehicleAccess("vin1", Brand.DAIMLER_FLEET).get()
+        val access = HMKitFleet.getVehicleAccess("vin1").get()
 
         assertTrue(access.response == null)
         assertTrue(access.error!!.detail == "accessTokenError")
@@ -101,7 +98,6 @@ class HMKitFleetTest : BaseTest() {
     fun accessCertErrorReturned() = runBlocking {
         coEvery {
             accessTokenRequests.getAccessToken(
-                any(),
                 any()
             )
         } returns Response(newAccessToken, null)
@@ -111,7 +107,7 @@ class HMKitFleetTest : BaseTest() {
             genericError("accessCertError")
         )
 
-        val access = HMKitFleet.getVehicleAccess("vin1", Brand.DAIMLER_FLEET).get()
+        val access = HMKitFleet.getVehicleAccess("vin1").get()
         assertTrue(access.response == null)
         assertTrue(access.error!!.detail == "accessCertError")
     }

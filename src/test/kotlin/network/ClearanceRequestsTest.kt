@@ -87,7 +87,7 @@ internal class ClearanceRequestsTest : BaseTest() {
         val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
 
         val status = runBlocking {
-            webService.requestClearance("WBADT43452G296403", Brand.DAIMLER_FLEET, controlMeasures)
+            webService.requestClearance("WBADT43452G296403", Brand.MERCEDES_BENZ, controlMeasures)
         }
 
         coVerify { authTokenRequests.getAuthToken() }
@@ -102,7 +102,6 @@ internal class ClearanceRequestsTest : BaseTest() {
         val array = jsonBody.jsonObject["vehicles"] as JsonArray
         val firstVehicle = array.first() as JsonObject
         assertTrue(firstVehicle["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(firstVehicle["brand"]?.jsonPrimitive?.contentOrNull == "daimler_fleet")
         val controlMeasures = firstVehicle["control_measures"]?.jsonObject
         val odometer = controlMeasures?.get("odometer")?.jsonObject
         assertTrue(odometer?.get("value")?.jsonPrimitive?.contentOrNull == "100000")
@@ -119,7 +118,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.requestClearance(
                 "WBADT43452G296403",
-                Brand.DAIMLER_FLEET,
+                Brand.MERCEDES_BENZ,
                 controlMeasures
             )
         }
@@ -131,7 +130,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.requestClearance(
                 "WBADT43452G296403",
-                Brand.DAIMLER_FLEET,
+                Brand.MERCEDES_BENZ,
                 controlMeasures
             )
         }
@@ -143,7 +142,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.requestClearance(
                 "WBADT43452G296403",
-                Brand.DAIMLER_FLEET,
+                Brand.MERCEDES_BENZ,
                 controlMeasures
             )
         }

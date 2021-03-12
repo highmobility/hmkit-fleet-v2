@@ -89,13 +89,11 @@ object HMKitFleet {
      * The user should securely store this object for later use.
      *
      * @param vin The vehicle VIN number
-     * @param brand The vehicle brand
      * @return The vehicle access object
      */
-
-    fun getVehicleAccess(vin: String, brand: Brand):
+    fun getVehicleAccess(vin: String):
             CompletableFuture<Response<VehicleAccess>> = GlobalScope.future {
-        val accessToken = koin.get<AccessTokenRequests>().getAccessToken(vin, brand)
+        val accessToken = koin.get<AccessTokenRequests>().getAccessToken(vin)
 
         if (accessToken.response != null) {
             val accessCertificate = koin.get<AccessCertificateRequests>().getAccessCertificate(
@@ -106,7 +104,6 @@ object HMKitFleet {
                 val vehicleAccess =
                     VehicleAccess(
                         vin,
-                        brand,
                         accessToken.response,
                         accessCertificate.response
                     )

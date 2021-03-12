@@ -32,7 +32,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import model.Brand
 import newAccessToken
 import notExpiredAuthToken
 import okhttp3.HttpUrl
@@ -82,8 +81,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
 
         val response = runBlocking {
             accessTokenRequests.getAccessToken(
-                "WBADT43452G296403",
-                Brand.DAIMLER_FLEET
+                "WBADT43452G296403"
             )
         }
 
@@ -96,7 +94,6 @@ internal class AccessTokenRequestsTest : BaseTest() {
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
         assertTrue(jsonBody["vin"]!!.jsonPrimitive.contentOrNull == "WBADT43452G296403")
-        assertTrue(jsonBody["oem"]!!.jsonPrimitive.contentOrNull == "daimler_fleet")
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
 
         // verify response
@@ -112,7 +109,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     fun getAuthTokenErrorReturned() = runBlocking {
         testAuthTokenErrorReturned(mockWebServer, authTokenRequests) {
             val accessTokenRequests = AccessTokenRequests(client, mockLogger, it, authTokenRequests, configuration)
-            accessTokenRequests.getAccessToken("WBADT43452G296403", Brand.DAIMLER_FLEET)
+            accessTokenRequests.getAccessToken("WBADT43452G296403")
         }
     }
 
@@ -121,8 +118,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         testErrorResponseReturned(mockWebServer) { mockUrl ->
             val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
             webService.getAccessToken(
-                "WBADT43452G296403",
-                Brand.DAIMLER_FLEET
+                "WBADT43452G296403"
             )
         }
     }
@@ -132,8 +128,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
             val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
             webService.getAccessToken(
-                "WBADT43452G296403",
-                Brand.DAIMLER_FLEET
+                "WBADT43452G296403"
             )
         }
     }
