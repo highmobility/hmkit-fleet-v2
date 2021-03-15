@@ -100,26 +100,7 @@ data class ServiceAccountApiConfiguration(
     fun createIat() = (System.currentTimeMillis() / 1000)
 
     fun getServiceAccountHmPrivateKey(): PrivateKey {
-        val bigIntegerBytes = getServiceAccountJavaPrivateKey().s.toByteArray()
-        val privateKeyBytes = ByteArray(32)
-
-        for (i in 0..31) {
-            privateKeyBytes[i] = bigIntegerBytes[i + 1]
-        }
-
-        return PrivateKey(privateKeyBytes)
-    }
-
-    fun getServiceAccountJavaPrivateKey(): ECPrivateKey {
-        var encodedKeyString = serviceAccountPrivateKey
-        encodedKeyString = encodedKeyString.replace("-----BEGIN PRIVATE KEY----", "")
-        encodedKeyString = encodedKeyString.replace("-----END PRIVATE KEY-----", "")
-        val decodedPrivateKey = Base64.decode(encodedKeyString)
-        val keySpec = PKCS8EncodedKeySpec(decodedPrivateKey)
-        // how to convert PKCS#8 to EC private key https://stackoverflow.com/a/52301461/599743
-        val kf = KeyFactory.getInstance("EC")
-        val ecPrivateKey = kf.generatePrivate(keySpec) as ECPrivateKey
-        return ecPrivateKey
+        return PrivateKey.fromPKCS8(serviceAccountPrivateKey)
     }
 
     fun getClientPrivateKey(): PrivateKey {
