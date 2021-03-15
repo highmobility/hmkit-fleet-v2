@@ -75,6 +75,25 @@ data class ServiceAccountApiConfiguration(
      */
     val oauthClientSecret: String
 ) {
+    /**
+     * Client Certificate in base64 or hex
+     */
+    constructor(
+        serviceAccountApiKey: String,
+        serviceAccountPrivateKey: String,
+        clientCertificate: String,
+        clientPrivateKey: String,
+        oauthClientId: String,
+        oauthClientSecret: String
+    ) : this(
+        serviceAccountApiKey,
+        serviceAccountPrivateKey,
+        ClientCertificate(clientCertificate),
+        clientPrivateKey,
+        oauthClientId,
+        oauthClientSecret
+    )
+
     val version = 1
 
     fun createJti() = UUID.randomUUID().toString()
