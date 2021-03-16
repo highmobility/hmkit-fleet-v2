@@ -18,13 +18,13 @@ ext {
     coroutinesVersion = "1.4.0"
     koin_version = '2.2.0-rc-4'
     ver = [
-            "hmkit-fleet"   : "0.1.1",
-            "hmkit-crypto"  : "0.0.1",
-            "hmkit-auto-api": "3.12.fleet-0",
+            "hmkit-fleet"            : "0.1.1",
+            "hmkit-crypto-telematics": "0.1.0",
+            "hmkit-auto-api"         : "3.12.fleet-0",
     ]
     deps = [
             "hmkit"  : "com.highmobility:hmkit-fleet:${ver."hmkit-fleet"}",
-            "crypto" : "com.highmobility:hmkit-crypto-telematics:${ver."hmkit-crypto"}",
+            "crypto" : "com.highmobility:hmkit-crypto-telematics:${ver."hmkit-crypto-telematics"}",
             "autoApi": "com.highmobility:hmkit-auto-api:${ver."hmkit-auto-api"}"
     ]
 }
@@ -52,7 +52,7 @@ dependencies {
     if (project.hasProperty('depLocation') == false || project.depLocation > 0) {
         api deps.crypto
     } else {
-        api project(":hmkit-crypto-java")
+        api project(":hmkit-crypto-telematics")
     }
 
     // web

@@ -96,7 +96,7 @@ data class ServiceAccountApiConfiguration(
     fun createIat() = (System.currentTimeMillis() / 1000)
 
     fun getServiceAccountHmPrivateKey(): PrivateKey {
-        return PrivateKey.fromPKCS8(serviceAccountPrivateKey)
+        return PrivateKey(serviceAccountPrivateKey, PrivateKey.Format.PKCS8)
     }
 
     fun getClientPrivateKey(): PrivateKey {
