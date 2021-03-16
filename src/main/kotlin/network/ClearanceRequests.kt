@@ -68,7 +68,7 @@ internal class ClearanceRequests(
 
         return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
             val jsonElement = Json.parseToJsonElement(responseBody) as JsonObject
-            val statuses = jsonElement["vins"] as JsonArray
+            val statuses = jsonElement["vehicles"] as JsonArray
             for (statusElement in statuses) {
                 val status =
                     Json.decodeFromJsonElement<ClearanceStatus>(statusElement)

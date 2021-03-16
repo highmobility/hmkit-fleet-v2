@@ -74,7 +74,7 @@ internal class ClearanceRequestsTest : BaseTest() {
             .setResponseCode(HttpURLConnection.HTTP_OK)
             .setBody(
                 "{\n" +
-                        "  \"vins\": [\n" +
+                        "  \"vehicles\": [\n" +
                         "    {\n" +
                         "      \"vin\": \"WBADT43452G296403\",\n" +
                         "      \"status\": \"pending\"\n" +
