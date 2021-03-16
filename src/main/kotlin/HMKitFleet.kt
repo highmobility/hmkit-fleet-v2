@@ -145,18 +145,21 @@ object HMKitFleet {
             get() {
                 return webUrl
                     ?: when (this) {
-                        PRODUCTION -> "https://api.high-mobility.com/v1"
+                        PRODUCTION -> prodUrl
                         SANDBOX -> "https://sandbox.api.high-mobility.com/v1"
                     }
             }
 
         companion object {
+            private const val prodUrl = "https://api.high-mobility.com/v1"
+
             /**
              * Override the web url, which is normally derived from the [HMKitFleet.environment]
              * value
              */
             @JvmField
             var webUrl: String? = null
+            internal const val jwtUrl = prodUrl
         }
     }
 
