@@ -25,7 +25,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import model.Brand
 import network.AccessCertificateRequests
 import network.AccessTokenRequests
 import network.Response
@@ -122,5 +121,12 @@ class HMKitFleetTest : BaseTest() {
 
         val access = HMKitFleet.revokeClearance(newVehicleAccess).get()
         assertTrue(access.response == true)
+    }
+
+    @Test
+    fun canSetCustomWebUrl() {
+        HMKitFleet.environment = HMKitFleet.Environment.PRODUCTION
+        HMKitFleet.Environment.webUrl = "asd"
+        assert(HMKitFleet.environment.url == "asd")
     }
 }

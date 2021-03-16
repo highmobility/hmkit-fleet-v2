@@ -92,6 +92,7 @@ internal class AuthTokenRequests(
         val jwtBody = buildJsonObject {
             put("ver", configuration.version)
             put("iss", configuration.serviceAccountApiKey)
+            // OAuth is always in prod
             put("aud", HMKitFleet.Environment.PRODUCTION.url)
             put("jti", configuration.createJti())
             put("iat", configuration.createIat())

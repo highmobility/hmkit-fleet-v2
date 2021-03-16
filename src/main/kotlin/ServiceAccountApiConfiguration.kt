@@ -25,7 +25,6 @@
 
 import com.highmobility.crypto.DeviceCertificate
 import com.highmobility.crypto.value.PrivateKey
-import com.highmobility.utils.Base64
 import com.highmobility.value.Bytes
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -35,9 +34,6 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.security.KeyFactory
-import java.security.interfaces.ECPrivateKey
-import java.security.spec.PKCS8EncodedKeySpec
 import java.util.*
 
 typealias ClientCertificate = DeviceCertificate

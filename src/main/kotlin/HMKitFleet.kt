@@ -21,9 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import com.highmobility.crypto.AccessCertificate
-import com.highmobility.crypto.DeviceCertificate
-import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.value.Bytes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
@@ -142,17 +139,25 @@ object HMKitFleet {
         }
 
     enum class Environment {
-        PRODUCTION, SANDBOX, DEV, DEV_SANDBOX;
+        PRODUCTION, SANDBOX;
 
         val url: String
             get() {
-                return when (this) {
-                    PRODUCTION -> "https://api.high-mobility.com/v1"
-                    SANDBOX -> "https://sandbox.api.high-mobility.com/v1"
-                    DEV -> "https://api.develop.high-mobility.net/v1"
-                    DEV_SANDBOX -> "https://sandbox.api.develop.high-mobility.net/v1"
-                }
+                return webUrl
+                    ?: when (this) {
+                        PRODUCTION -> "https://api.high-mobility.com/v1"
+                        SANDBOX -> "https://sandbox.api.high-mobility.com/v1"
+                    }
             }
+
+        companion object {
+            /**
+             * Override the web url, which is normally derived from the [HMKitFleet.environment]
+             * value
+             */
+            @JvmField
+            var webUrl: String? = null
+        }
     }
 
     private class KoinFactory : Koin.FleetSdkKoinComponent
