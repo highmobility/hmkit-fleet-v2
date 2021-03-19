@@ -30,13 +30,19 @@ import kotlinx.serialization.Serializable
 data class ClearanceStatus(val vin: String, val status: Status) {
     @Serializable
     enum class Status {
-        @SerialName("pending")
-        PENDING,
-
         @SerialName("approved")
         APPROVED,
 
-        @SerialName("failed")
-        FAILED
+        @SerialName("pending")
+        PENDING,
+
+        @SerialName("error")
+        ERROR,
+
+        @SerialName("revoked")
+        REVOKED,
+
+        @SerialName("rejected")
+        REJECTED
     }
 }
