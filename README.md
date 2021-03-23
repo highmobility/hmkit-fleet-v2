@@ -8,8 +8,8 @@ Telematics API to help car companies manage their fleet.
 * [Requirements](#requirements)
 * [Getting Started](#getting-started)
 * [Architecture](#architecture)
-* [Contributing](#contributing)
 * [Licence](#Licence)
+* [Contributing](#contributing)
 
 ### Requirements
 
@@ -17,7 +17,7 @@ Java 8+
 
 ### Getting Started
 
-Get started with HMKit Fleet 📘[browse the documentation](TODO:link to tutorial)
+Get started with HMKit Fleet 📘[browse the documentation](https://docs.high-mobility.com/guides/getting-started/fleet/)
 
 ### Architecture
 
@@ -28,10 +28,6 @@ owner package.
   and [HMKit crypto](https://github.com/highmobility/hmkit-crypto-java/tree/telematics)
   to encrypt messages.
 
-### Contributing
-
-Before starting please read our contribution rules 📘[Contributing](CONTRIBUTE.md)
-
 ### Setup
 
 * `git submodule update --init --recursive`
@@ -41,3 +37,7 @@ Before starting please read our contribution rules 📘[Contributing](CONTRIBUTE
 ### Licence
 
 This repository is using MIT licence. See more in 📘[LICENCE](LICENCE.md)
+
+### Contributing
+
+Before starting please read our contribution rules 📘[Contributing](CONTRIBUTE.md)
