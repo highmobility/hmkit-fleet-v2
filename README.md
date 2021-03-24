@@ -36,7 +36,7 @@ owner package.
 
 ### Licence
 
-This repository is using MIT licence. See more in 📘[LICENSE](LICENSE)
+This repository is using the MIT licence. See more in 📘[LICENSE](LICENSE)
 
 ### Contributing
 
