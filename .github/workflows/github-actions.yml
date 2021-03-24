@@ -20,6 +20,14 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.GH_SSH_PUBLIC }}
+        known_hosts: ${{ secrets.KNOWN_HOSTS }}
+        if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Update submodules
