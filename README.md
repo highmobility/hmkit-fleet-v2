@@ -36,8 +36,8 @@ owner package.
 
 ### Licence
 
-This repository is using MIT licence. See more in 📘[LICENCE](LICENCE)
+This repository is using MIT licence. See more in 📘[LICENSE](LICENSE)
 
 ### Contributing
 
-Before starting please read our contribution rules 📘[Contributing](CONTRIBUTING.md)
+Before starting, please read our contribution rules 📘[Contributing](CONTRIBUTING.md)
