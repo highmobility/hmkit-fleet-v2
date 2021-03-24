@@ -8,7 +8,7 @@ Telematics API to help car companies manage their fleet.
 * [Requirements](#requirements)
 * [Getting Started](#getting-started)
 * [Architecture](#architecture)
-* [Licence](#Licence)
+* [License](#License)
 * [Contributing](#contributing)
 
 ### Requirements
@@ -34,9 +34,9 @@ owner package.
 * import the Gradle project
 * run the tests `./gradlew test`
 
-### Licence
+### License
 
-This repository is using the MIT licence. See more in 📘[LICENSE](LICENSE)
+This repository is using the MIT license. See more in 📘[LICENSE](LICENSE)
 
 ### Contributing
 
