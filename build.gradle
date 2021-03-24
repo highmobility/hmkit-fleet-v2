@@ -7,25 +7,23 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
-        jcenter()
         maven { url "https://kotlin.bintray.com/kotlinx" }
-        maven { url "https://jfrog.high-mobility.com/artifactory/gradle-release-local/" }
     }
 }
 
 ext {
     depLocation = 0
     coroutinesVersion = "1.4.0"
-    koin_version = '2.2.0-rc-4'
+    koinVersion = '3.0.1-beta-2'
     ver = [
-            "hmkit-fleet"            : "0.1.1",
-            "hmkit-crypto-telematics": "0.1.0",
-            "hmkit-auto-api"         : "3.12.fleet-0",
+            "hmkit-fleet"            : "0.2",
+            "hmkit-crypto-telematics": "0.1",
+            "hmkit-auto-api"         : "3.12.1",
     ]
     deps = [
-            "hmkit"  : "com.highmobility:hmkit-fleet:${ver."hmkit-fleet"}",
-            "crypto" : "com.highmobility:hmkit-crypto-telematics:${ver."hmkit-crypto-telematics"}",
-            "autoApi": "com.highmobility:hmkit-auto-api:${ver."hmkit-auto-api"}"
+            "hmkit"  : "com.high-mobility:hmkit-fleet:${ver."hmkit-fleet"}",
+            "crypto" : "com.high-mobility:hmkit-crypto-telematics:${ver."hmkit-crypto-telematics"}",
+            "autoApi": "com.high-mobility:hmkit-auto-api:${ver."hmkit-auto-api"}"
     ]
 }
 
@@ -34,11 +32,9 @@ compileJava {
     targetCompatibility = 1.8
 }
 
-version '1.0-SNAPSHOT'
-
 apply from: "deploy.gradle"
 // deploy script
-apply from: "https://raw.githubusercontent.com/tonisives/tools/master/gradle/deploy-java-v2.gradle"
+apply from: "https://raw.githubusercontent.com/tonisives/tools/master/gradle/deploy-java-mavenCentral.gradle"
 apply from: "https://raw.githubusercontent.com/tonisives/tools/master/scripts/jupiter-test-shell-logging.gradle"
 
 dependencies {
@@ -60,14 +56,14 @@ dependencies {
     implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
 
     // Koin
-    implementation "org.koin:koin-core:$koin_version"
+    implementation "io.insert-koin:koin-core:$koinVersion"
 
     // logging
     implementation 'org.slf4j:slf4j-api:1.7.30'
 
     // test
-    testImplementation 'com.highmobility:hmkit-auto-api:3.12.0'
-    testImplementation "org.koin:koin-test:$koin_version"
+    testImplementation deps.autoApi
+    testImplementation "io.insert-koin:koin-test:$koinVersion"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
