@@ -57,10 +57,11 @@ object HMKitFleet {
      * @param controlMeasures Optional control measures for some vehicle brands.
      * @return The clearance status
      */
+    @JvmOverloads
     fun requestClearance(
         vin: String,
         brand: Brand,
-        controlMeasures: List<ControlMeasure>?
+        controlMeasures: List<ControlMeasure>? = null
     ): CompletableFuture<Response<ClearanceStatus>> = GlobalScope.future {
         logger.debug("HMKitFleet: requestClearance: $vin")
         koin.get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
