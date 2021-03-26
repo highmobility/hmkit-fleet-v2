@@ -31,7 +31,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import model.AccessToken
 import model.AuthToken
-import model.Brand
 import model.VehicleAccess
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
