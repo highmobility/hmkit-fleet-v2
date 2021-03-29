@@ -92,14 +92,14 @@ data class ServiceAccountApiConfiguration(
 
     val version = 1
 
-    fun createJti() = UUID.randomUUID().toString()
-    fun createIat() = (System.currentTimeMillis() / 1000)
+    internal fun createJti() = UUID.randomUUID().toString()
+    internal fun createIat() = (System.currentTimeMillis() / 1000)
 
-    fun getServiceAccountHmPrivateKey(): PrivateKey {
+    internal fun getServiceAccountHmPrivateKey(): PrivateKey {
         return PrivateKey(serviceAccountPrivateKey, PrivateKey.Format.PKCS8)
     }
 
-    fun getClientPrivateKey(): PrivateKey {
+    internal fun getClientPrivateKey(): PrivateKey {
         return PrivateKey(clientPrivateKey)
     }
 }
