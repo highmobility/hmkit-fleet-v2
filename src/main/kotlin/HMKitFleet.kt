@@ -31,6 +31,10 @@ import org.koin.core.component.inject
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 
+/**
+ * HMKitFleet is the access point for the Fleet SDK functionality. It is accessed by
+ * HMKitFleet.INSTANCE and it's field [configuration] should be set before accessing other functions
+ */
 object HMKitFleet {
     init {
         Koin.start()
