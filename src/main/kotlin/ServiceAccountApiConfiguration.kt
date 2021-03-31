@@ -38,6 +38,9 @@ import java.util.*
 
 typealias ClientCertificate = DeviceCertificate
 
+/**
+ * Values required for initialising the Fleet SDK.
+ */
 @Serializable
 data class ServiceAccountApiConfiguration(
     /**

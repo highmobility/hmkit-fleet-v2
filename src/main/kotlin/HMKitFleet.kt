@@ -44,6 +44,10 @@ object HMKitFleet {
     private val koin = KoinFactory()
 
     private val logger by koin.inject<Logger>()
+
+    /**
+     * The SDK environment. Default is Production.
+     */
     var environment: Environment = Environment.PRODUCTION
 
     internal var authToken: AuthToken? = null
@@ -135,7 +139,7 @@ object HMKitFleet {
     /**
      * Revoke the vehicle clearance. After this, the [VehicleAccess] object is invalid.
      *
-     * @param vehicleAccess The vehicle access object
+     * @param vehicleAccess The vehicle access object returned in [getVehicleAccess]
      * @return Whether clearance was successful
      */
     fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Response<Boolean>> =
@@ -143,10 +147,13 @@ object HMKitFleet {
             koin.get<AccessTokenRequests>().deleteAccessToken(vehicleAccess.accessToken)
         }
 
+    /**
+     * The Fleet SDK environment.
+     */
     enum class Environment {
         PRODUCTION, SANDBOX;
 
-        val url: String
+        internal val url: String
             get() {
                 return webUrl
                     ?: when (this) {
