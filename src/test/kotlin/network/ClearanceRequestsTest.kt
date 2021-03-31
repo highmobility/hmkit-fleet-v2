@@ -73,14 +73,16 @@ internal class ClearanceRequestsTest : BaseTest() {
         val mockResponse = MockResponse()
             .setResponseCode(HttpURLConnection.HTTP_OK)
             .setBody(
-                "{\n" +
-                        "  \"vehicles\": [\n" +
-                        "    {\n" +
-                        "      \"vin\": \"WBADT43452G296403\",\n" +
-                        "      \"status\": \"pending\"\n" +
-                        "    }\n" +
-                        "  ]\n" +
-                        "}"
+                """
+                {
+                  "vehicles": [
+                    {
+                      "vin": "WBADT43452G296403",
+                      "status": "pending"
+                    }
+                  ]
+                }
+                """.trimIndent()
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
@@ -153,16 +155,18 @@ internal class ClearanceRequestsTest : BaseTest() {
         val mockResponse = MockResponse()
             .setResponseCode(HttpURLConnection.HTTP_OK)
             .setBody(
-                "[\n" +
-                        "  {\n" +
-                        "    \"vin\": \"WBADT43452G296403\",\n" +
-                        "    \"status\": \"pending\"\n" +
-                        "  },\n" +
-                        "  {\n" +
-                        "    \"vin\": \"WBADT43452G296404\",\n" +
-                        "    \"status\": \"pending\"\n" +
-                        "  }\n" +
-                        "]"
+                """
+                [
+                  {
+                    "vin": "WBADT43452G296403",
+                    "status": "pending"
+                  },
+                  {
+                    "vin": "WBADT43452G296404",
+                    "status": "pending"
+                  }
+                ]
+                """.trimIndent()
             )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
