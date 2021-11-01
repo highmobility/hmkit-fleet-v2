@@ -21,11 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package com.highmobility.hmkitfleet
+
 import com.highmobility.value.Bytes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
-import model.*
-import network.*
+import com.highmobility.hmkitfleet.model.*
+import com.highmobility.hmkitfleet.network.*
 import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.slf4j.Logger

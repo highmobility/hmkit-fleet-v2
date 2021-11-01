@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package network
+package com.highmobility.hmkitfleet.network
 
-import ClientCertificate
 import com.highmobility.crypto.AccessCertificate
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.PrivateKey
+import com.highmobility.hmkitfleet.ClientCertificate
 import com.highmobility.value.Bytes
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject

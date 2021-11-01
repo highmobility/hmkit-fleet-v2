@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package network
+package com.highmobility.hmkitfleet.network
 
-import model.AuthToken
+import com.highmobility.hmkitfleet.model.AuthToken
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.Clock.systemUTC

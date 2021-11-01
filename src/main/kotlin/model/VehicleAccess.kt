@@ -23,7 +23,7 @@
  */
 @file:UseSerializers(AccessCertificateSerializer::class)
 
-package model
+package com.highmobility.hmkitfleet.model
 
 import com.highmobility.crypto.AccessCertificate
 import com.highmobility.value.Bytes

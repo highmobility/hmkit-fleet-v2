@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package network
+package com.highmobility.hmkitfleet.network
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -44,8 +44,8 @@ internal open class Requests(
     inline fun <T> tryParseResponse(
         response: Response,
         expectedResponseCode: Int,
-        block: (body: String) -> (network.Response<T>)
-    ): network.Response<T> {
+        block: (body: String) -> (com.highmobility.hmkitfleet.network.Response<T>)
+    ): com.highmobility.hmkitfleet.network.Response<T> {
         val responseBody = printResponse(response)
 
         return try {
@@ -84,7 +84,7 @@ internal open class Requests(
         return body!!
     }
 
-    fun <T> parseError(responseBody: String): network.Response<T> {
+    fun <T> parseError(responseBody: String): com.highmobility.hmkitfleet.network.Response<T> {
         val json = Json.parseToJsonElement(responseBody)
         if (json is JsonObject) {
             // there are 3 error formats

@@ -23,7 +23,7 @@
  */
 @file:UseSerializers(DateTimeSerializer::class)
 
-package model
+package com.highmobility.hmkitfleet.model
 
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind

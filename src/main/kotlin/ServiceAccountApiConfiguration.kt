@@ -23,6 +23,8 @@
  */
 @file:UseSerializers(DeviceCertificateSerializer::class)
 
+package com.highmobility.hmkitfleet
+
 import com.highmobility.crypto.DeviceCertificate
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.value.Bytes

@@ -1,4 +1,4 @@
-package network
+package com.highmobility.hmkitfleet.network
 
 import io.mockk.mockk
 import kotlinx.serialization.json.*

@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package network
+package com.highmobility.hmkitfleet.network
 
-import ServiceAccountApiConfiguration
+import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
-import model.AccessToken
+import com.highmobility.hmkitfleet.model.AccessToken
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody

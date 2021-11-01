@@ -21,19 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package network
+package com.highmobility.hmkitfleet.network
 
-import BaseTest
+import com.highmobility.hmkitfleet.BaseTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
-import model.Brand
-import model.ClearanceStatus
-import model.ControlMeasure
-import model.Odometer
-import notExpiredAuthToken
+import com.highmobility.hmkitfleet.model.Brand
+import com.highmobility.hmkitfleet.model.ClearanceStatus
+import com.highmobility.hmkitfleet.model.ControlMeasure
+import com.highmobility.hmkitfleet.model.Odometer
+import com.highmobility.hmkitfleet.notExpiredAuthToken
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

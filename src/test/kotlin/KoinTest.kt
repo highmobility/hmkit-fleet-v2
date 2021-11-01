@@ -22,6 +22,8 @@
  * THE SOFTWARE.
  */
 //import io.mockk.verify
+package com.highmobility.hmkitfleet
+
 import org.junit.experimental.categories.Category
 import org.junit.jupiter.api.Test
 import org.koin.test.category.CheckModuleTest

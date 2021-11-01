@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package network
+package com.highmobility.hmkitfleet.network
 
-import model.AuthToken
+import com.highmobility.hmkitfleet.model.AuthToken
 
 internal class Cache {
     var authToken: AuthToken? = null

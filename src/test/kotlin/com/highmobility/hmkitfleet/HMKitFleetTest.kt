@@ -21,14 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+package com.highmobility.hmkitfleet
+
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import network.AccessCertificateRequests
-import network.AccessTokenRequests
-import network.Response
-import network.genericError
+import com.highmobility.hmkitfleet.network.AccessCertificateRequests
+import com.highmobility.hmkitfleet.network.AccessTokenRequests
+import com.highmobility.hmkitfleet.network.Response
+import com.highmobility.hmkitfleet.network.genericError
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach

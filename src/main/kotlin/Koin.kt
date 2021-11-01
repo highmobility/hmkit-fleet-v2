@@ -21,13 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package com.highmobility.hmkitfleet
+
 import com.highmobility.crypto.Crypto
-import network.*
-import network.AccessCertificateRequests
-import network.AuthTokenRequests
-import network.Cache
-import network.ClearanceRequests
-import network.Requests
+import com.highmobility.hmkitfleet.network.*
+import com.highmobility.hmkitfleet.network.AccessCertificateRequests
+import com.highmobility.hmkitfleet.network.AuthTokenRequests
+import com.highmobility.hmkitfleet.network.Cache
+import com.highmobility.hmkitfleet.network.ClearanceRequests
+import com.highmobility.hmkitfleet.network.Requests
 import okhttp3.OkHttpClient
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
