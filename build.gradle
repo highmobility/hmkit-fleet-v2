@@ -14,9 +14,9 @@ allprojects {
 ext {
     depLocation = 0
     coroutinesVersion = "1.4.0"
-    koinVersion = '3.0.1-beta-2'
+    koinVersion = '3.1.4'
     ver = [
-            "hmkit-fleet"            : "0.3",
+            "hmkit-fleet"            : "0.3.1",
             "hmkit-crypto-telematics": "0.1",
             "hmkit-auto-api"         : "3.12.1",
     ]
@@ -30,6 +30,12 @@ ext {
 compileJava {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 apply from: "deploy.gradle"
