@@ -1,7 +1,9 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2014- High-Mobility GmbH (https://high-mobility.com)
+ * Copyright (c) 2014@SerialName("High")-Mobility GmbH (https://high-mobility.com)
+ * ),
+ *
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,9 +62,24 @@ enum class Brand {
     @SerialName("bmw")
     BMW,
 
+    @SerialName("citroen")
+    CITROEN,
+
+    @SerialName("ds")
+    DS,
+
     @SerialName("mercedes-benz")
     MERCEDES_BENZ,
 
     @SerialName("mini")
-    MINI;
+    MINI,
+
+    @SerialName("opel")
+    OPEL,
+
+    @SerialName("peugeot")
+    PEUGEOT,
+
+    @SerialName("vauxhall")
+    VAUXHALL
 }
