@@ -158,10 +158,12 @@ internal class ClearanceRequestsTest : BaseTest() {
                 """
                 [
                   {
+                    "brand":"bmw",
                     "vin": "WBADT43452G296403",
                     "status": "pending"
                   },
                   {
+                    "brand":"bmw",
                     "vin": "WBADT43452G296404",
                     "status": "pending"
                   }
@@ -189,6 +191,81 @@ internal class ClearanceRequestsTest : BaseTest() {
 
         assertTrue(status.response!![1].status == ClearanceStatus.Status.PENDING)
         assertTrue(status.response!![1].vin == "WBADT43452G296404")
+    }
+
+    @Test
+    fun parsesChangeLog() {
+        val mockResponse = MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setBody(
+                """[
+                {
+                   "brand":"bmw",
+                   "changelog":[
+                      {
+                         "status":"pending",
+                         "timestamp":"2022-03-30T12:27:25"
+                      },
+                      {
+                         "status":"approved",
+                         "timestamp":"2022-03-30T12:27:27"
+                      },
+                      {
+                         "status":"revoked",
+                         "timestamp":"2022-04-30T12:27:27"
+                      }
+                   ],
+                   "status":"revoked",
+                   "vin":"WBY8P210X07J49112"
+                },
+                {
+                   "brand":"bmw",
+                   "changelog":[
+                      {
+                         "status":"pending",
+                         "timestamp":"2022-04-01T12:27:25"
+                      },
+                      {
+                         "status":"approved",
+                         "timestamp":"2022-04-01T12:27:27"
+                      }
+                   ],
+                   "status":"approved",
+                   "vin":"WBY8P210X07J49112"
+                },
+                {
+                   "brand":"bmw",
+                   "changelog":[],
+                   "status":"approved",
+                   "vin":"WBY8P210X07J49112"
+                },
+                {
+                   "brand":"bmw",
+                   "status":"approved",
+                   "vin":"WBY8P210X07J49112"
+                }
+                ]""".trimIndent()
+            )
+
+        mockWebServer.enqueue(mockResponse)
+        val mockUrl = mockWebServer.url("").toString()
+        val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+
+        val status = runBlocking {
+            webService.getClearanceStatuses()
+        }
+
+        assertTrue(status.response!![0].status == ClearanceStatus.Status.REVOKED)
+        assertTrue(status.response!![0].vin == "WBY8P210X07J49112")
+        assertTrue(status.response!![0].brand == Brand.BMW)
+        assertTrue(status.response!![0].changelog.size == 3)
+
+        assertTrue(status.response!![1].status == ClearanceStatus.Status.APPROVED)
+        assertTrue(status.response!![1].vin == "WBY8P210X07J49112")
+        assertTrue(status.response!![1].changelog.size == 2)
+
+        assertTrue(status.response!![2].changelog.isEmpty())
+        assertTrue(status.response!![2].changelog.isEmpty())
     }
 
     @Test

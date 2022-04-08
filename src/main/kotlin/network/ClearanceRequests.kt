@@ -27,6 +27,7 @@ import kotlinx.serialization.json.*
 import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.ControlMeasure
 import com.highmobility.hmkitfleet.model.ClearanceStatus
+import com.highmobility.hmkitfleet.model.RequestClearanceResponse
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -48,7 +49,7 @@ internal class ClearanceRequests(
         vin: String,
         brand: Brand,
         controlMeasures: List<ControlMeasure>?
-    ): Response<ClearanceStatus> {
+    ): Response<RequestClearanceResponse> {
         val body = requestBody(vin, brand, controlMeasures)
         val authToken = authTokenRequests.getAuthToken()
 
@@ -71,7 +72,7 @@ internal class ClearanceRequests(
             val statuses = jsonElement["vehicles"] as JsonArray
             for (statusElement in statuses) {
                 val status =
-                    Json.decodeFromJsonElement<ClearanceStatus>(statusElement)
+                    Json.decodeFromJsonElement<RequestClearanceResponse>(statusElement)
                 if (status.vin == vin) {
                     return Response(status, null)
                 }

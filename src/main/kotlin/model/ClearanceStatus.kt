@@ -27,7 +27,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ClearanceStatus(val vin: String, val status: Status) {
+data class RequestClearanceResponse(val vin: String, val status: ClearanceStatus.Status)
+
+@Serializable
+data class ClearanceStatus(val vin: String, val status: Status, val brand:Brand? = null, val changelog:List<ChangeLogItem> = emptyList()) {
     @Serializable
     enum class Status {
         @SerialName("approved")
@@ -43,6 +46,15 @@ data class ClearanceStatus(val vin: String, val status: Status) {
         REVOKED,
 
         @SerialName("rejected")
-        REJECTED
+        REJECTED,
+
+        @SerialName("canceling")
+        CANCELING,
+
+        @SerialName("canceled")
+        CANCELED
     }
 }
+
+@Serializable
+data class ChangeLogItem(val status: ClearanceStatus.Status, val timestamp:String)

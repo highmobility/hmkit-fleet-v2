@@ -72,7 +72,7 @@ object HMKitFleet {
         vin: String,
         brand: Brand,
         controlMeasures: List<ControlMeasure>? = null
-    ): CompletableFuture<Response<ClearanceStatus>> = GlobalScope.future {
+    ): CompletableFuture<Response<RequestClearanceResponse>> = GlobalScope.future {
         logger.debug("HMKitFleet: requestClearance: $vin")
         koin.get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
     }
