@@ -81,5 +81,14 @@ enum class Brand {
     PEUGEOT,
 
     @SerialName("vauxhall")
-    VAUXHALL
+    VAUXHALL,
+
+    @SerialName("jeep")
+    JEEP,
+
+    @SerialName("fiat")
+    FIAT,
+
+    @SerialName("alfaromeo")
+    ALFAROMEO
 }
