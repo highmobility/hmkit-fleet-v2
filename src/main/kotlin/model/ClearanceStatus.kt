@@ -42,6 +42,9 @@ data class ClearanceStatus(val vin: String, val status: Status, val brand:Brand?
         @SerialName("error")
         ERROR,
 
+        @SerialName("revoking")
+        REVOKING,
+
         @SerialName("revoked")
         REVOKED,
 
