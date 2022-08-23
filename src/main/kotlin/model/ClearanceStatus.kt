@@ -39,6 +39,7 @@ data class ClearanceStatus(val vin: String, val status: Status, val brand:Brand?
         @SerialName("pending")
         PENDING,
 
+        @Deprecated("Use rejected/canceled instead")
         @SerialName("error")
         ERROR,
 
