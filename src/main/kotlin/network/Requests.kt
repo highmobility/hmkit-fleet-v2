@@ -66,7 +66,7 @@ internal open class Requests(
         // parse into json, so can log it out with pretty print
         val body = request.bodyAsString()
         var bodyInPrettyPrint = ""
-        if (body != null) {
+        if (!body.isNullOrBlank()) {
             val jsonElement = format.decodeFromString<JsonElement>(body)
             bodyInPrettyPrint = format.encodeToString(jsonElement)
         }

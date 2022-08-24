@@ -305,14 +305,10 @@ internal class ClearanceRequestsTest : BaseTest() {
             .setResponseCode(HttpURLConnection.HTTP_OK)
             .setBody(
                 """
-                {
-                  "vehicles": [
                     {
                       "vin": "$vin",
                       "status": "revoking"
                     }
-                  ]
-                }
                 """.trimIndent()
             )
         mockWebServer.enqueue(mockResponse)
@@ -365,5 +361,4 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         }
     }
-
 }
