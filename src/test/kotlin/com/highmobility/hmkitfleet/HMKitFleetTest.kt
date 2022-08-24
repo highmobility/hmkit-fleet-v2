@@ -24,14 +24,18 @@
 
 package com.highmobility.hmkitfleet
 
+import com.highmobility.hmkitfleet.model.ClearanceStatus
+import com.highmobility.hmkitfleet.model.RequestClearanceResponse
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import com.highmobility.hmkitfleet.network.AccessCertificateRequests
 import com.highmobility.hmkitfleet.network.AccessTokenRequests
+import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Response
 import com.highmobility.hmkitfleet.network.genericError
+import io.mockk.clearAllMocks
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -39,10 +43,12 @@ import org.junit.jupiter.api.Test
 import org.koin.core.context.stopKoin
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
+import org.slf4j.Logger
 
 class HMKitFleetTest : BaseTest() {
     private val accessCertificateRequests = mockk<AccessCertificateRequests>()
     private val accessTokenRequests = mockk<AccessTokenRequests>()
+    private val clearanceRequests = mockk<ClearanceRequests>()
 
     @BeforeEach
     fun setUp() {
@@ -51,6 +57,8 @@ class HMKitFleetTest : BaseTest() {
             modules(module {
                 single { accessCertificateRequests }
                 single { accessTokenRequests }
+                single { clearanceRequests }
+                single { mockk<Logger>(relaxed = true) }
             })
         }
     }
@@ -58,6 +66,7 @@ class HMKitFleetTest : BaseTest() {
     @AfterEach
     fun tearDown() {
         stopKoin()
+        clearAllMocks()
     }
 
     @Test
@@ -124,6 +133,17 @@ class HMKitFleetTest : BaseTest() {
 
         val access = HMKitFleet.revokeClearance(newVehicleAccess).get()
         assertTrue(access.response == true)
+    }
+
+    @Test
+    fun deleteClearance() = runBlocking {
+        coEvery {
+            clearanceRequests.deleteClearance(any())
+        } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
+
+        val delete = HMKitFleet.deleteClearance("vin1").get()
+        assertTrue(delete.response?.vin == "vin1")
+        assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
     }
 
     @Test

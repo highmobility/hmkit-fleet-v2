@@ -111,6 +111,10 @@ internal class ClearanceRequests(
         }
     }
 
+    suspend fun deleteClearance(vin: String): Response<RequestClearanceResponse> {
+        return Response(RequestClearanceResponse("vin", ClearanceStatus.Status.REVOKING))
+    }
+
     private fun requestBody(
         vin: String,
         brand: Brand,
