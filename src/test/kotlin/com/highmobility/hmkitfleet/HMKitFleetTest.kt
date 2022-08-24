@@ -36,6 +36,7 @@ import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Response
 import com.highmobility.hmkitfleet.network.genericError
 import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -66,7 +67,6 @@ class HMKitFleetTest : BaseTest() {
     @AfterEach
     fun tearDown() {
         stopKoin()
-        clearAllMocks()
     }
 
     @Test
