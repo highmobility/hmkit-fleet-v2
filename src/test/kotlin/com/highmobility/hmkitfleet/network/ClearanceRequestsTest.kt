@@ -68,6 +68,8 @@ internal class ClearanceRequestsTest : BaseTest() {
         mockWebServer.shutdown()
     }
 
+    // request clearance
+
     @Test
     fun requestClearanceSuccessResponse() {
         val mockResponse = MockResponse()
@@ -149,6 +151,8 @@ internal class ClearanceRequestsTest : BaseTest() {
             )
         }
     }
+
+    // get clearance statuses
 
     @Test
     fun getClearanceStatusesSuccessResponse() {
@@ -291,4 +295,75 @@ internal class ClearanceRequestsTest : BaseTest() {
             webService.getClearanceStatuses()
         }
     }
+
+    // delete clearance
+
+    @Test
+    fun deleteClearanceSuccessResponse() {
+        val vin = "WBADT43452G296403"
+        val mockResponse = MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setBody(
+                """
+                {
+                  "vehicles": [
+                    {
+                      "vin": "$vin",
+                      "status": "revoking"
+                    }
+                  ]
+                }
+                """.trimIndent()
+            )
+        mockWebServer.enqueue(mockResponse)
+        val mockUrl = mockWebServer.url("").toString()
+        val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+
+        val status = runBlocking {
+            webService.deleteClearance(vin)
+        }
+
+        coVerify { authTokenRequests.getAuthToken() }
+
+        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+        assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles/$vin"))
+
+        // verify request
+        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+
+        // verify response
+        assertTrue(status.response!!.status == ClearanceStatus.Status.REVOKING)
+        assertTrue(status.response!!.vin == vin)
+    }
+
+    @Test
+    fun deleteClearanceAuthTokenError() = runBlocking {
+        testAuthTokenErrorReturned(mockWebServer, authTokenRequests) { mockUrl ->
+            val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+            webService.deleteClearance(
+                "WBADT43452G296403"
+            )
+        }
+    }
+
+    @Test
+    fun deleteClearanceErrorResponse() = runBlocking {
+        testErrorResponseReturned(mockWebServer) { mockUrl ->
+            val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+            webService.deleteClearance(
+                "WBADT43452G296403"
+            )
+        }
+    }
+
+    @Test
+    fun deleteClearanceUnknownResponse() = runBlocking {
+        testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
+            val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+            webService.deleteClearance(
+                "WBADT43452G296403"
+            )
+        }
+    }
+
 }
