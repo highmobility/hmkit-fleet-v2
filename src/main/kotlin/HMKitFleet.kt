@@ -91,7 +91,11 @@ object HMKitFleet {
         }
 
     /**
-     * Delete the clearance for the given VIN. If the clearance is in a pending state, the activation process is canceled. If the vehicle is in an approved state, a revoke is attempted.
+     * Delete the clearance for the given VIN.
+     *
+     * If the clearance is in a pending state, the activation process is canceled.
+     * If the vehicle is in an approved state, a revoke is attempted. If the revoke is successful,
+     * the [VehicleAccess] object for this VIN becomes invalid.
      *
      * @param vin The vehicle VIN number
      * @return The clearance status
@@ -155,6 +159,7 @@ object HMKitFleet {
      * @param vehicleAccess The vehicle access object returned in [getVehicleAccess]
      * @return Whether clearance was successful
      */
+    @Deprecated("Use deleteClearance instead")
     fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Response<Boolean>> =
         GlobalScope.future {
             koin.get<AccessTokenRequests>().deleteAccessToken(vehicleAccess.accessToken)
