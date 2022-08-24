@@ -1,20 +1,18 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version "1.7.10"
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
-    id "com.jfrog.bintray" version "1.8.5"
 }
 
 allprojects {
     repositories {
         mavenCentral()
-        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }
 
 ext {
     depLocation = 0
-    coroutinesVersion = "1.4.0"
-    koinVersion = '3.1.4'
+    coroutinesVersion = '1.6.4'
+    koinVersion = '3.2.0'
     ver = [
             "hmkit-fleet"            : "0.4.1",
             "hmkit-crypto-telematics": "0.1",
@@ -49,35 +47,35 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
+    implementation('org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0')
 
-    if (project.hasProperty('depLocation') == false || project.depLocation > 0) {
+    if (!project.hasProperty('depLocation') || project.depLocation > 0) {
         api deps.crypto
     } else {
         api project(":hmkit-crypto-telematics")
     }
 
     // web
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation('com.squareup.okhttp3:okhttp:4.10.0')
     implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
 
     // Koin
     implementation "io.insert-koin:koin-core:$koinVersion"
 
     // logging
-    implementation 'org.slf4j:slf4j-api:1.7.30'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
 
     // test
     testImplementation deps.autoApi
     testImplementation "io.insert-koin:koin-test:$koinVersion"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
 
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
-    testImplementation 'org.slf4j:slf4j-simple:1.7.30'
-    testImplementation "io.mockk:mockk:1.10.3"
-    testImplementation "com.charleskorn.kaml:kaml:0.26.0"
-    testImplementation "com.squareup.okhttp3:mockwebserver:4.9.0"
+    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'io.mockk:mockk:1.12.5'
+    testImplementation 'com.charleskorn.kaml:kaml:0.47.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.10.0'
 }
