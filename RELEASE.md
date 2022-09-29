@@ -5,4 +5,5 @@
   * press Close
   * refresh until Activity processes are finished
   * press Release
-  * Release is available in 15 minutes. However, it is not searchable in the website for a little while. 
+  * Release is available in 15 minutes. However, it is not searchable in the [search.maven.org](https://search.maven.org) for a little while. 
+* update CHANGELOG.md and create a release from tag in GitHub. Auto generate release notes.
