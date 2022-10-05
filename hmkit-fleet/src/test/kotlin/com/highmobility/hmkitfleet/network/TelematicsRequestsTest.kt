@@ -49,6 +49,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
@@ -64,8 +65,8 @@ internal class TelematicsRequestsTest : BaseTest() {
     private val encryptedSentCommand = nonce
     private val encryptedReceivedCommand = nonce
 
-    private val decryptedReceivedCommand = Diagnostics.State.Builder()
-        .setOdometer(Property(Length(11000.0, Length.Unit.KILOMETERS))).build()
+    private val decryptedReceivedCommand =
+        Diagnostics.State.Builder().setOdometer(Property(Length(11000.0, Length.Unit.KILOMETERS))).build()
 
     private val certificate = mockk<ClientCertificate> {
         every { serial } returns DeviceSerial(nonce)
@@ -76,19 +77,13 @@ internal class TelematicsRequestsTest : BaseTest() {
         // random encryption ok here
         every {
             createTelematicsContainer(
-                Diagnostics.GetState(),
-                privateKey,
-                certificate.serial,
-                mockAccessCert,
-                nonce
+                Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce
             )
         } returns encryptedSentCommand
 
         every {
             getPayloadFromTelematicsContainer(
-                Bytes(encryptedReceivedCommand),
-                privateKey,
-                mockAccessCert
+                Bytes(encryptedReceivedCommand), privateKey, mockAccessCert
             )
         } returns decryptedReceivedCommand
     }
@@ -111,15 +106,9 @@ internal class TelematicsRequestsTest : BaseTest() {
 
         val baseUrl: HttpUrl = mockWebServer.url("")
 
-        val telematicsRequests =
-            TelematicsRequests(
-                client,
-                mockLogger,
-                baseUrl.toString(),
-                privateKey,
-                certificate,
-                crypto
-            )
+        val telematicsRequests = TelematicsRequests(
+            client, mockLogger, baseUrl.toString(), privateKey, certificate, crypto
+        )
 
         val response = runBlocking {
             telematicsRequests.sendCommand(Diagnostics.GetState(), mockAccessCert)
@@ -127,11 +116,7 @@ internal class TelematicsRequestsTest : BaseTest() {
 
         verify {
             crypto.createTelematicsContainer(
-                Diagnostics.GetState(),
-                privateKey,
-                certificate.serial,
-                mockAccessCert,
-                nonce
+                Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce
             )
         }
 
@@ -156,41 +141,35 @@ internal class TelematicsRequestsTest : BaseTest() {
         // verify command decrypted
         verify {
             crypto.getPayloadFromTelematicsContainer(
-                encryptedReceivedCommand,
-                privateKey,
-                mockAccessCert
+                encryptedReceivedCommand, privateKey, mockAccessCert
             )
         }
 
         // verify final telematics command response
-        assert(response.response!! == decryptedReceivedCommand)
+        assert(response.response?.response_data!! == decryptedReceivedCommand)
     }
 
     private fun mockTelematicsResponse() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-            .setBody(
-                """
+        val mockResponse = MockResponse().setResponseCode(HttpURLConnection.HTTP_OK).setBody(
+            """
                     {
                       "status": "ok",
                       "response_data": "${encryptedReceivedCommand.base64}",
                       "message": "Response received"
                     }
                 """.trimIndent()
-            )
+        )
         mockWebServer.enqueue(mockResponse)
     }
 
     private fun mockNonceResponse() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_CREATED)
-            .setBody(
-                """
+        val mockResponse = MockResponse().setResponseCode(HttpURLConnection.HTTP_CREATED).setBody(
+            """
                     {
                         "nonce": "${nonce.base64}"
                     }
                 """.trimIndent()
-            )
+        )
         mockWebServer.enqueue(mockResponse)
     }
 
@@ -198,39 +177,89 @@ internal class TelematicsRequestsTest : BaseTest() {
 
     @Test
     fun nonceErrorResponse() = runBlocking {
-        testErrorResponseReturned(mockWebServer) { mockUrl ->
-            val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
-            webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
-        }
+        val mockResponse = MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED).setBody(
+            "{\"errors\":" + "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," + "\"source\":\"assertion\"," + "\"title\":\"Not authorized\"}]}"
+        )
+        mockWebServer.enqueue(mockResponse)
+        val mockUrl = mockWebServer.url("").toString()
+
+        val webService = TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
+        val response = webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
+
+        Assertions.assertTrue(response.errors[0].title == "Not authorized")
     }
 
     @Test
     fun nonceUnknownResponse() = runBlocking {
-        testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-            val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
-            webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
-        }
+        val mockResponse = MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED).setBody(
+            """
+                    {"invalidKey":"invalidValue"}
+                """.trimIndent()
+        )
+        mockWebServer.enqueue(mockResponse)
+        val mockUrl = mockWebServer.url("").toString()
+
+        val webService = TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
+        val response = webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
+
+        val genericError = genericError("")
+        Assertions.assertTrue(response.errors[0].title == genericError.title)
     }
 
     @Test
     fun telematicsCommandErrorResponse() = runBlocking {
         mockNonceResponse()
-        testErrorResponseReturned(mockWebServer) { mockUrl ->
-            val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
-            webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
+
+        val mockResponse = MockResponse().setResponseCode(404).setBody(
+            """
+                {
+                    "message": "invalid_data",
+                    "response_data": "AAIz6waDffJYyCEZyYrwZnZXf8VAn66SGfEgJy7+AP4A/gD+AP4A/gD+AAMCAQT/",
+                    "status": "error"
+                }
+                """.trimIndent()
+        )
+        // successful nonce
+
+        mockWebServer.enqueue(mockResponse)
+        val mockUrl = mockWebServer.url("").toString()
+
+        val crypto = mockk<Crypto> {
+            every {
+                createTelematicsContainer(Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce)
+            } returns encryptedSentCommand
+
+            every {
+                getPayloadFromTelematicsContainer(
+                    Bytes("AAIz6waDffJYyCEZyYrwZnZXf8VAn66SGfEgJy7+AP4A/gD+AP4A/gD+AAMCAQT/"),
+                    privateKey,
+                    mockAccessCert
+                )
+            } returns decryptedReceivedCommand
         }
+
+        val webService = TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
+        val response = webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
+
+        Assertions.assertTrue(response.response?.message == "invalid_data")
+        Assertions.assertTrue(response.response?.response_data == decryptedReceivedCommand)
+        Assertions.assertTrue(response.response?.status == TelematicsCommandResponse.Status.ERROR)
     }
 
     @Test
     fun telematicsCommandUnknownResponse() = runBlocking {
         mockNonceResponse()
-        testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-            val webService =
-                TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
-            webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
-        }
+
+        val mockResponse = MockResponse().setResponseCode(404).setBody(
+            "{\"invalidKey\":\"invalidValue\"}"
+        )
+        mockWebServer.enqueue(mockResponse)
+        val mockUrl = mockWebServer.url("").toString()
+
+        val webService = TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
+        val response = webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
+
+        val genericError = genericError("")
+        Assertions.assertTrue(response.errors[0].title == genericError.title)
     }
 }

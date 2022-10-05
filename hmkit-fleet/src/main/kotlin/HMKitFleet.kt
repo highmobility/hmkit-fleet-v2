@@ -156,12 +156,12 @@ object HMKitFleet {
      *
      * @param vehicleAccess The vehicle access object returned in [getVehicleAccess]
      * @param command The command that is sent to the vehicle.
-     * @return The response command from the vehicle.
+     * @return The vehicle response or server error via the [TelematicsResponse] object.
      */
     fun sendCommand(
         command: Bytes,
         vehicleAccess: VehicleAccess
-    ): CompletableFuture<Response<Bytes>> = GlobalScope.future {
+    ): CompletableFuture<TelematicsResponse> = GlobalScope.future {
         koin.get<TelematicsRequests>().sendCommand(command, vehicleAccess.accessCertificate)
     }
 
