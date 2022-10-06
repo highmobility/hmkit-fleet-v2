@@ -74,18 +74,18 @@ internal val mockSerial = mockk<DeviceSerial> {
 
 internal val newAccessToken: AccessToken = Json.decodeFromString(
     "{\n" +
-            "  \"token_type\": \"bearer\",\n" +
-            "  \"scope\": \"diagnostics.mileage door_locks.locks windows.windows_positions\",\n" +
-            "  \"refresh_token\": \"7f7a9be0-04c9-4202-a59f-35d55079b6ba\",\n" +
-            "  \"expires_in\": 600,\n" +
-            "  \"access_token\": \"a50e89e5-093c-4727-8101-4c6e81addabe\"\n" +
-            "}"
+        "  \"token_type\": \"bearer\",\n" +
+        "  \"scope\": \"diagnostics.mileage door_locks.locks windows.windows_positions\",\n" +
+        "  \"refresh_token\": \"7f7a9be0-04c9-4202-a59f-35d55079b6ba\",\n" +
+        "  \"expires_in\": 600,\n" +
+        "  \"access_token\": \"a50e89e5-093c-4727-8101-4c6e81addabe\"\n" +
+        "}"
 )
 
 internal val mockAccessCert = mockk<AccessCertificate> {
     every { hex } returns "01030000030400000000000000040500000000000000050600000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000607010203070804050609090A0A0A0A0A0A0A0A0A0B00000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000B"
     every { base64 } returns "AQMAAAMEAAAAAAAAAAQFAAAAAAAAAAUGAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAGBwECAwcIBAUGCQkKCgoKCgoKCgoLAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAL"
-    every { gainerSerial} returns mockSerial
+    every { gainerSerial } returns mockSerial
 }
 
 internal val newVehicleAccess = VehicleAccess(

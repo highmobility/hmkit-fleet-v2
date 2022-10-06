@@ -23,17 +23,24 @@
  */
 package com.highmobility.hmkitfleet.network
 
+import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.BaseTest
 import com.highmobility.hmkitfleet.HMKitFleet
-import com.highmobility.crypto.Crypto
-import com.highmobility.utils.Base64
-import io.mockk.*
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
 import com.highmobility.hmkitfleet.mockSignature
 import com.highmobility.hmkitfleet.model.AuthToken
 import com.highmobility.hmkitfleet.notExpiredAuthToken
+import com.highmobility.utils.Base64
+import io.mockk.Runs
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse

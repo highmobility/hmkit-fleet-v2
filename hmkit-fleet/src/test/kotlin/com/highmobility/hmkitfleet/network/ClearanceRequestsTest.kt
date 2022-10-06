@@ -24,16 +24,21 @@
 package com.highmobility.hmkitfleet.network
 
 import com.highmobility.hmkitfleet.BaseTest
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.*
 import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.ControlMeasure
 import com.highmobility.hmkitfleet.model.Odometer
 import com.highmobility.hmkitfleet.notExpiredAuthToken
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
