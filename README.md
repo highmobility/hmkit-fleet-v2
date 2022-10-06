@@ -13,7 +13,8 @@ Telematics API to help car companies manage their fleet.
 
 ### Requirements
 
-Java 8+
+- Target is Java 8
+- Compiled with Kotlin and Java 17
 
 ### Getting Started
 

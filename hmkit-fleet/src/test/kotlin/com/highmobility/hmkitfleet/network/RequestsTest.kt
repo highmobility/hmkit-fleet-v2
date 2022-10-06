@@ -1,7 +1,10 @@
 package com.highmobility.hmkitfleet.network
 
 import io.mockk.mockk
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.junit.Test
 
 internal class RequestsTest {

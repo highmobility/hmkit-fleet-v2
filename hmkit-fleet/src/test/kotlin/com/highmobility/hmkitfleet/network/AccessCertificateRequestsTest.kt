@@ -23,10 +23,14 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.hmkitfleet.BaseTest
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.hmkitfleet.ClientCertificate
+import com.highmobility.hmkitfleet.BaseTest
+import com.highmobility.hmkitfleet.mockAccessCert
+import com.highmobility.hmkitfleet.mockSerial
+import com.highmobility.hmkitfleet.mockSignature
+import com.highmobility.hmkitfleet.newAccessToken
 import com.highmobility.value.Bytes
 import io.mockk.every
 import io.mockk.mockk
@@ -35,10 +39,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import com.highmobility.hmkitfleet.mockAccessCert
-import com.highmobility.hmkitfleet.mockSerial
-import com.highmobility.hmkitfleet.mockSignature
-import com.highmobility.hmkitfleet.newAccessToken
+
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
