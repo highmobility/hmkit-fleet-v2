@@ -1,9 +1,18 @@
 # Changelog
 
+## [0.6.0]
+
+- Parse the Telematics command response more specifically.   
+  It can return an errors array or a Telematics command response. Please
+  see [HMKitFleet.sendCommand](hmkit-fleet/src/main/kotlin/HMKitFleet.kt)
+  and  [TelematicsResponse](hmkit-fleet/src/main/kotlin/network/Response.kt)
+
 ## [0.5.1]
+
 - add ford brand for fleet vehicles
 
 ## [0.5.0]
+
 - add cancelClearance() method
 - deprecate revokeClearance() method
 - update dependencies to latest versions
