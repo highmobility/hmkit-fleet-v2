@@ -209,12 +209,13 @@ internal class TelematicsRequestsTest : BaseTest() {
     @Test
     fun telematicsCommandErrorResponse() = runBlocking {
         mockNonceResponse()
+        val unencryptedData = Bytes("AAIz6waDffJYyCEZyYrwZnZXf8VAn66SGfEgJy7+AP4A/gD+AP4A/gD+AAMCAQT/")
 
         val mockResponse = MockResponse().setResponseCode(404).setBody(
             """
                 {
                     "message": "invalid_data",
-                    "response_data": "AAIz6waDffJYyCEZyYrwZnZXf8VAn66SGfEgJy7+AP4A/gD+AP4A/gD+AAMCAQT/",
+                    "response_data": "${unencryptedData.base64}",
                     "status": "error"
                 }
                 """.trimIndent()
@@ -228,21 +229,13 @@ internal class TelematicsRequestsTest : BaseTest() {
             every {
                 createTelematicsContainer(Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce)
             } returns encryptedSentCommand
-
-            every {
-                getPayloadFromTelematicsContainer(
-                    Bytes("AAIz6waDffJYyCEZyYrwZnZXf8VAn66SGfEgJy7+AP4A/gD+AP4A/gD+AAMCAQT/"),
-                    privateKey,
-                    mockAccessCert
-                )
-            } returns decryptedReceivedCommand
         }
 
         val webService = TelematicsRequests(client, mockLogger, mockUrl, privateKey, certificate, crypto)
         val response = webService.sendCommand(Diagnostics.GetState(), mockAccessCert)
 
         Assertions.assertTrue(response.response?.message == "invalid_data")
-        Assertions.assertTrue(response.response?.responseData == decryptedReceivedCommand)
+        Assertions.assertTrue(response.response?.responseData == unencryptedData)
         Assertions.assertTrue(response.response?.status == TelematicsCommandResponse.Status.ERROR)
     }
 

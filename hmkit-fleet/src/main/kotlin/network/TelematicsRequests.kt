@@ -114,25 +114,24 @@ internal class TelematicsRequests(
 
         val responseObject = try {
             if (response.code == 200 || response.code == 400 || response.code == 404 || response.code == 408) {
-                val encryptedResponse = Json.decodeFromString<TelematicsCommandResponse>(responseBody)
+                val telematicsResponse = Json.decodeFromString<TelematicsCommandResponse>(responseBody)
 
-                // The server might return unencrypted data if something goes wrong with the binary protocol
-                // Try to decrypt the data, otherwise return data as is
-                val unencryptedResponseCommand = try {
+                // Server only returns encrypted data if status is OK
+                val decryptedData = if (telematicsResponse.status == TelematicsCommandResponse.Status.OK) {
                     crypto.getPayloadFromTelematicsContainer(
-                        Bytes(encryptedResponse.responseData),
+                        Bytes(telematicsResponse.responseData),
                         privateKey,
                         accessCertificate,
                     )
-                } catch (e: Exception) {
-                    encryptedResponse.responseData
+                } else {
+                    telematicsResponse.responseData
                 }
 
                 TelematicsResponse(
                     response = TelematicsCommandResponse(
-                        status = encryptedResponse.status,
-                        message = encryptedResponse.message,
-                        responseData = unencryptedResponseCommand
+                        status = telematicsResponse.status,
+                        message = telematicsResponse.message,
+                        responseData = decryptedData
                     )
                 )
             } else {
