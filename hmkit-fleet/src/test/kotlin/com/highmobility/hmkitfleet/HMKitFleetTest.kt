@@ -145,6 +145,17 @@ class HMKitFleetTest : BaseTest() {
     }
 
     @Test
+    fun getClearance() = runBlocking {
+        coEvery {
+            clearanceRequests.getClearanceStatus("vin1")
+        } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
+
+        val clearance = HMKitFleet.getClearanceStatus("vin1").get()
+        assertTrue(clearance.response?.vin == "vin1")
+        assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
+    }
+
+    @Test
     fun canSetCustomWebUrl() {
         HMKitFleet.environment = HMKitFleet.Environment.PRODUCTION
         HMKitFleet.Environment.webUrl = "asd"

@@ -82,13 +82,25 @@ object HMKitFleet {
      * [requestClearance]. After VIN is Approved, [getVehicleAccess] and subsequent [sendCommand]
      * can be sent.
      *
-     * @return The clearance status
+     * @return The clearance statuses
      */
     fun getClearanceStatuses(): CompletableFuture<Response<List<ClearanceStatus>>> =
         GlobalScope.future {
             logger.debug("HMKitFleet: getClearanceStatuses:")
             koin.get<ClearanceRequests>().getClearanceStatuses()
         }
+
+    /**
+     * Get the status of a [vin] that has previously been registered for data access clearance with
+     * [requestClearance]. After the [vin] is Approved, [getVehicleAccess] and subsequent [sendCommand]
+     * can be sent.
+     *
+     * @return The clearance status
+     */
+    fun getClearanceStatus(vin: String): CompletableFuture<Response<ClearanceStatus>> = GlobalScope.future {
+        logger.debug("HMKitFleet: getClearanceStatus($vin):")
+        koin.get<ClearanceRequests>().getClearanceStatus(vin)
+    }
 
     /**
      * Delete the clearance for the given VIN.
