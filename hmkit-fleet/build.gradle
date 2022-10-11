@@ -13,7 +13,7 @@ compileTestKotlin {
 
 apply from: "deploy.gradle"
 // deploy script
-apply from: "https://raw.githubusercontent.com/tonisives/tools/master/gradle/deploy-java-mavenCentral.gradle"
+apply from: "../gradle/deploy-ossrh.gradle"
 apply from: "https://raw.githubusercontent.com/tonisives/tools/master/scripts/jupiter-test-shell-logging.gradle"
 
 dependencies {
