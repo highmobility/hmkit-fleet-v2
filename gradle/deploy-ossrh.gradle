@@ -33,16 +33,8 @@ MAVEN_SIGNING_SECRET_KEY_RING_FILE
 * update ext.ver values in *all* build.gradle or use -Pversion property
 
 * Call `./gradlew -Prelease release` to publish to MavenCentral
-
 */
 
-// submodules need version+group in the `withXml { block`
-// use either ver."$deploy.id" or version
-def deployVersion = ver."$deploy.id"
-if (deployVersion == null) deployVersion = project.version
-
-version = deployVersion
-group = deploy.groupId
 
 apply plugin: "maven-publish"
 apply plugin: 'signing'
