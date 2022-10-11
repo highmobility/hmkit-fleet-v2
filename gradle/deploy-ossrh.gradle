@@ -1,6 +1,6 @@
 /*
-
 # MavenCentral release task for a Java/Android library
+from https://github.com/kit-data-manager/nexus-publish-example#automated-publishing-via-github-actions
 
 ## Requirements
 
@@ -18,6 +18,7 @@
     version = 1.0
 
 env variables
+
 ORG_GRADLE_PROJECT_sonatypeUsername
 ORG_GRADLE_PROJECT_sonatypePassword
 
@@ -31,7 +32,7 @@ MAVEN_SIGNING_SECRET_KEY_RING_FILE
 
 * update ext.ver values in *all* build.gradle or use -Pversion property
 
-* Call `./gradlew publishReleasePublicationToMavenCentralRepository` to publish to MavenCentral
+* Call `./gradlew -Prelease release` to publish to MavenCentral
 
 */
 
@@ -45,16 +46,36 @@ group = deploy.groupId
 
 apply plugin: "maven-publish"
 apply plugin: 'signing'
+apply plugin: 'net.researchgate.release'
+
 apply from: "$projectDir/deploy.gradle"
 
 def isAndroid = project.plugins.findPlugin("com.android.library")
 
-// prefer values from gradle.properties, but support env also
-def mavenSigningKeyId = project.hasProperty("mavenSigningKeyId") ? project.mavenSigningKeyId: System.getenv("OSSRH_USERNAME")
-def mavenSigningPassword = project.hasProperty("mavenSigningPassword") ? project.mavenSigningPassword: System.getenv("OSSRH_PASSWORD")
-def mavenSigningSecretKeyRingFile = project.hasProperty("mavenSigningSecretKeyRingFile") ? project.mavenSigningSecretKeyRingFile: System.getenv("MAVEN_SIGNING_KEY_ID")
-def mavenOssrhUsername = project.hasProperty("mavenOssrhUsername") ? project.mavenOssrhUsername: System.getenv("MAVEN_SIGNING_PASSWORD")
-def mavenOssrhPassword = project.hasProperty("mavenOssrhPassword") ? project.mavenOssrhPassword: System.getenv("MAVEN_SIGNING_SECRET_KEY_RING_FILE")
+// plugin net.researchgate.release(https://github.com/researchgate/gradle-release)
+// It updates the version and creates automatic commits
+release {
+    //define template for tagging, e.g. v1.0.0
+    tagTemplate = 'v${version}'
+    //set source file of version property
+    versionPropertyFile = 'gradle.properties'
+    //set possible properties which may contain the version
+    versionProperties = ['version', 'mainversion']
+    git {
+        // branch from where to release (default: master)
+        // https://github.com/researchgate/gradle-release/issues/357
+        // TODO: use main
+        requireBranch.set('feature/ci-release')
+    }
+}
+
+//for plugin io.github.gradle-nexus.publish-plugin
+//see https://github.com/gradle-nexus/publish-plugin
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
 
 publishing {
     publications {
@@ -120,10 +141,8 @@ publishing {
                                 dependencyNode.appendNode('artifactId', it.name)
 
                                 if (it.version == "unspecified") {
-                                    throw new GradleException("dependency version is unspecified " +
-                                            "for $deploy.id submodule $it.name, node $it")
-                                }
-                                else {
+                                    throw new GradleException("dependency version is unspecified " + "for $deploy.id submodule $it.name, node $it")
+                                } else {
                                     dependencyNode.appendNode('version', it.version)
                                 }
                             }
@@ -133,16 +152,18 @@ publishing {
             }
         }
     }
-
-    repositories {
-        sonatype()
-    }
 }
 
-ext["signing.keyId"] = mavenSigningKeyId
-ext["signing.password"] = mavenSigningPassword
-ext["signing.secretKeyRingFile"] = mavenSigningSecretKeyRingFile
-
 signing {
-    sign publishing.publications
+    if (project.hasProperty("signingKey")) {
+        def signingKey = findProperty("signingKey")
+        //read property 'signingPassword'
+        def signingPassword = findProperty("signingPassword")
+        //Select to use in-memory ascii-armored keys
+        useInMemoryPgpKeys(signingKey, signingPassword)
+
+        sign publishing.publications
+    } else {
+        println 'WARNING: No property \'signingKey\' found. Artifact signing will be skipped.'
+    }
 }
