@@ -35,8 +35,6 @@ import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Response
 import com.highmobility.hmkitfleet.network.genericError
-import io.mockk.clearAllMocks
-import io.mockk.clearMocks
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -144,6 +142,17 @@ class HMKitFleetTest : BaseTest() {
         val delete = HMKitFleet.deleteClearance("vin1").get()
         assertTrue(delete.response?.vin == "vin1")
         assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
+    }
+
+    @Test
+    fun getClearance() = runBlocking {
+        coEvery {
+            clearanceRequests.getClearanceStatus("vin1")
+        } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
+
+        val clearance = HMKitFleet.getClearanceStatus("vin1").get()
+        assertTrue(clearance.response?.vin == "vin1")
+        assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
     }
 
     @Test

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.2]
+- add getClearanceStatus:vin method
+- undeprecate ClearanceStatus.Status.ERROR
+
 ## [0.5.1]
 - add ford brand for fleet vehicles
 

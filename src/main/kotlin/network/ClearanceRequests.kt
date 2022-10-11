@@ -112,6 +112,29 @@ internal class ClearanceRequests(
         }
     }
 
+    suspend fun getClearanceStatus(vin: String): Response<ClearanceStatus> {
+        // GET /v1/fleets/vehicles/{vin}
+        val authToken = authTokenRequests.getAuthToken()
+
+        if (authToken.error != null) return Response(null, authToken.error)
+
+        val request = Request.Builder()
+            .url("${baseUrl}/fleets/vehicles/${vin}")
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer ${authToken.response?.authToken}")
+            .build()
+
+        printRequest(request)
+
+        val call = client.newCall(request)
+        val response = call.await()
+
+        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
+            val status = Json.decodeFromString<ClearanceStatus>(responseBody)
+            Response(status)
+        }
+    }
+
     suspend fun deleteClearance(vin: String): Response<RequestClearanceResponse> {
         // DELETE /v1/fleets/vehicles/{vin}
         val authToken = authTokenRequests.getAuthToken()
