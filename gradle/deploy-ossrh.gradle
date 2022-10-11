@@ -14,18 +14,33 @@ deployLicenseName="MIT"
 deployLicenseUrl="https://opensource.org/licenses/MIT"
 deployId="the package id"
 
-env variables
-
+env variables in Github Actions
 ORG_GRADLE_PROJECT_sonatypeUsername
 ORG_GRADLE_PROJECT_sonatypePassword
 MAVEN_SIGNING_KEY_ID
 MAVEN_SIGNING_PASSWORD
 MAVEN_SIGNING_SECRET_KEY_RING_FILE
+~/.gradle/gradle.properties with
+sonatypeUsername=
+sonatypePassword=
+signingKey=
+signingPassword=
+signing.secretKeyRingFile=
 
 * gpg keypair created and uploaded to hkp://pool.sks-keyservers.net
 
-# Release process:
+## Local release process:
+- update the release version automatically
+$ ./gradlew :hmkit-fleet:release -Prelease.useAutomaticVersion=true
+or input the release number
+$ ./gradlew :hmkit-fleet:release -Prelease
+Then new commit and tag will be created and pushed to github
 
+- checkout to this new tag
+$ git checkout tags/v0.0.0
+- publish to sonatype without closing
+$ ./gradlew :hmkit-fleet:publishToSonatype -Prelease
+- to publish to sonatype and automatically release (DANGER) add closeAndReleaseSonatypeStagingRepository to the end
 */
 
 
