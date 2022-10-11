@@ -281,7 +281,7 @@ internal class ClearanceRequestsTest : BaseTest() {
     }
 
     @Test
-    fun getClearanceErrorResponse() = runBlocking {
+    fun getClearanceStatusesErrorResponse() = runBlocking {
         testErrorResponseReturned(mockWebServer) { mockUrl ->
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.getClearanceStatuses()
@@ -289,10 +289,80 @@ internal class ClearanceRequestsTest : BaseTest() {
     }
 
     @Test
-    fun getClearanceUnknownResponse() = runBlocking {
+    fun getClearanceStatusesUnknownResponse() = runBlocking {
         testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
             val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.getClearanceStatuses()
+        }
+    }
+
+    // get clearance status
+
+    @Test
+    fun getClearanceStatusSuccessResponse() {
+        val vin = "WBADT43452G296403"
+        val mockResponse = MockResponse()
+            .setResponseCode(HttpURLConnection.HTTP_OK)
+            .setBody(
+                """
+                  {
+                    "brand":"bmw",
+                    "vin": "$vin",
+                    "status": "pending",
+                    "changelog": [
+                        {
+                          "timestamp": "string",
+                          "status": "approved"
+                        }
+                    ]
+                  }
+                """.trimIndent()
+            )
+        mockWebServer.enqueue(mockResponse)
+        val mockUrl = mockWebServer.url("").toString()
+        val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+
+        val status = runBlocking {
+            webService.getClearanceStatus(vin)
+        }
+
+        coVerify { authTokenRequests.getAuthToken() }
+
+        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+
+        assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles/$vin"))
+        assertTrue(recordedRequest.method == "GET")
+
+        assertTrue(status.response!!.status == ClearanceStatus.Status.PENDING)
+        assertTrue(status.response?.vin == vin)
+        assertTrue(status.response?.brand == Brand.BMW)
+
+        assertTrue(status.response?.changelog?.get(0)?.status == ClearanceStatus.Status.APPROVED)
+
+    }
+
+    @Test
+    fun getClearanceStatusAuthTokenError() = runBlocking {
+        testAuthTokenErrorReturned(mockWebServer, authTokenRequests) { mockUrl ->
+            val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+            webService.getClearanceStatus("vin")
+        }
+    }
+
+    @Test
+    fun getClearanceStatusErrorResponse() = runBlocking {
+        testErrorResponseReturned(mockWebServer) { mockUrl ->
+            val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+            webService.getClearanceStatus("vin")
+        }
+    }
+
+    @Test
+    fun getClearanceStatusUnknownResponse() = runBlocking {
+        testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
+            val webService = ClearanceRequests(client, mockLogger, mockUrl, authTokenRequests)
+            webService.getClearanceStatus("vin")
         }
     }
 
