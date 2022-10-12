@@ -67,7 +67,7 @@ release {
     //define template for tagging, e.g. v1.0.0
     tagTemplate = 'v${version}'
     //set source file of version property
-    versionPropertyFile = 'gradle.properties'
+    versionPropertyFile = '../gradle.properties'
     //set possible properties which may contain the version
     versionProperties = ['version', 'mainversion']
     git {
