@@ -1,7 +1,6 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version "1.7.20"
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.20'
-    id "io.github.gradle-nexus.publish-plugin"
 }
 
 compileKotlin {
@@ -12,9 +11,9 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_17
 }
 
-apply from: "deploy.gradle"
-// deploy script
+// publish settings
 apply from: "../gradle/deploy-ossrh.gradle"
+
 apply from: "https://raw.githubusercontent.com/tonisives/tools/master/scripts/jupiter-test-shell-logging.gradle"
 
 dependencies {

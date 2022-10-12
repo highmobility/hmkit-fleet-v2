@@ -3,10 +3,23 @@ plugins {
     id 'net.researchgate.release' version '3.0.2'
 }
 
-allprojects {
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
+
+group = "com.high-mobility"
+
+subprojects {
     repositories {
         mavenCentral()
     }
+
+    // nexus-publish plugin needs to be in root build.gradle and it
+    // also needs the correct group to create the repository
+    // https://github.com/gradle-nexus/publish-plugin/issues/81
+    group = "com.high-mobility"
 }
 
 ext {

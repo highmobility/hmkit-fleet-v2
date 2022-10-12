@@ -20,6 +20,9 @@ ORG_GRADLE_PROJECT_sonatypePassword
 MAVEN_SIGNING_KEY_ID
 MAVEN_SIGNING_PASSWORD
 MAVEN_SIGNING_SECRET_KEY_RING_FILE
+
+OR
+
 ~/.gradle/gradle.properties with
 sonatypeUsername=
 sonatypePassword=
@@ -30,6 +33,7 @@ signing.secretKeyRingFile=
 * gpg keypair created and uploaded to hkp://pool.sks-keyservers.net
 
 ## Local release process:
+
 - update the release version automatically
 $ ./gradlew :hmkit-fleet:release -Prelease.useAutomaticVersion=true
 or input the release number
@@ -48,6 +52,12 @@ apply plugin: "maven-publish"
 apply plugin: 'signing'
 apply plugin: 'net.researchgate.release'
 
+def deploySiteUrl="https://github.com/highmobility/hmkit-fleet"
+def deployGitUrl="https://github.com/highmobility/hmkit-fleet"
+def deployGroupId="com.high-mobility"
+def deployLicenseName="MIT"
+def deployLicenseUrl="https://opensource.org/licenses/MIT"
+def deployId=name
 
 def isAndroid = project.plugins.findPlugin("com.android.library")
 
@@ -68,17 +78,10 @@ release {
     }
 }
 
-//for plugin io.github.gradle-nexus.publish-plugin
-//see https://github.com/gradle-nexus/publish-plugin
-nexusPublishing {
-    repositories {
-        sonatype()
-    }
-}
-
 publishing {
     publications {
         release(MavenPublication) {
+
             // get aar or jar for android/java libs
             if (isAndroid) {
                 task sourceJar(type: Jar) {
@@ -154,14 +157,11 @@ publishing {
 }
 
 signing {
-    if (project.hasProperty("signingKey")) {
-        def signingKey = findProperty("signingKey")
-        //read property 'signingPassword'
-        def signingPassword = findProperty("signingPassword")
-        //Select to use in-memory ascii-armored keys
-        useInMemoryPgpKeys(signingKey, signingPassword)
-
-        sign publishing.publications
+    if (project.hasProperty("signing.keyId")) {
+//        def signingKey = findProperty("signing.keyId")
+//        def signingPassword = findProperty("signing.password")
+//        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.release
     } else {
         println 'WARNING: No property \'signingKey\' found. Artifact signing will be skipped.'
     }

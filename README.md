@@ -35,6 +35,10 @@ owner package.
 * import the Gradle project
 * run the tests `./gradlew test`
 
+### Deployment
+
+check `./gradle/deploy-ossrh.gradle`
+
 ### License
 
 This repository is using the MIT license. See more in 📘[LICENSE](LICENSE)
