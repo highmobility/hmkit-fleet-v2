@@ -137,9 +137,8 @@ publishing {
 
 signing {
     if (project.hasProperty("signing.keyId")) {
-//        def signingKey = findProperty("signing.keyId")
-//        def signingPassword = findProperty("signing.password")
-//        useInMemoryPgpKeys(signingKey, signingPassword)
+        def signingKey = findProperty("signing.keyId")
+        def signingPassword = findProperty("signing.password")
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign publishing.publications.release
     } else {
