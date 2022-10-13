@@ -34,7 +34,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Publish package
-        run: ./gradlew -Prelease publishToSonatype #closeAndReleaseSonatypeStagingRepository
+        run: ./gradlew -Prelease :hmkit-fleet:publishToSonatype #closeAndReleaseSonatypeStagingRepository
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_PASSWORD }}
