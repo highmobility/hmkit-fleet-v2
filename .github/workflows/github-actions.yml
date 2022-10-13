@@ -5,9 +5,9 @@ name: Run tests
 
 on:
   push:
-    branches: "master"
+    branches: "main"
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -42,5 +42,5 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: git submodule update --init --recursive
       
-      - name: Build with Gradle
+      - name: Test
         run: ./gradlew build
