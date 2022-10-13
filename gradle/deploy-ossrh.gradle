@@ -32,14 +32,16 @@ signing.secretKeyRingFile=
 
 * gpg keypair created and uploaded to hkp://pool.sks-keyservers.net
 
-## Local release process:
+##  release process:
 
 - update the release version automatically
 $ ./gradlew :hmkit-fleet:release -Prelease.useAutomaticVersion=true
-or input the release number
-$ ./gradlew :hmkit-fleet:release -Prelease
-Then new commit and tag will be created and pushed to github
+New commit and tag will be created and pushed to github
 
+### github release
+draft a new release with this tag. release will be published automatically.
+
+### local release
 - checkout to this new tag
 $ git checkout tags/v0.0.0
 - publish to sonatype without closing
