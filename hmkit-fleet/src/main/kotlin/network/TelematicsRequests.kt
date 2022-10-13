@@ -28,6 +28,7 @@ import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.hmkitfleet.ClientCertificate
 import com.highmobility.value.Bytes
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -46,37 +47,22 @@ internal class TelematicsRequests(
     private val certificate: ClientCertificate,
     private val crypto: Crypto
 ) : Requests(
-    client,
-    logger, baseUrl
+    client, logger, baseUrl
 ) {
     suspend fun sendCommand(
-        command: Bytes,
-        accessCertificate: AccessCertificate
-    ): Response<Bytes> {
+        command: Bytes, accessCertificate: AccessCertificate
+    ): TelematicsResponse {
         val nonce = getNonce()
 
-        if (nonce.error != null) return Response(null, nonce.error)
-
-        val encryptedCommand =
-            crypto.createTelematicsContainer(
-                command,
-                privateKey,
-                certificate.serial,
-                accessCertificate,
-                Bytes(nonce.response!!)
-            )
-
-        val encryptedCommandResponse = postCommand(encryptedCommand, accessCertificate)
-
-        if (encryptedCommandResponse.error != null) return encryptedCommandResponse
-
-        val decryptedResponseCommand = crypto.getPayloadFromTelematicsContainer(
-            encryptedCommandResponse.response!!,
-            privateKey,
-            accessCertificate,
+        if (nonce.error != null) return TelematicsResponse(
+            null, listOf(Error(nonce.error.title))
         )
 
-        return Response(decryptedResponseCommand)
+        val encryptedCommand = crypto.createTelematicsContainer(
+            command, privateKey, certificate.serial, accessCertificate, Bytes(nonce.response!!)
+        )
+
+        return postCommand(encryptedCommand, accessCertificate)
     }
 
     private suspend fun getNonce(): Response<String> {
@@ -89,8 +75,7 @@ internal class TelematicsRequests(
                         "serial_number" to certificate.serial.hex
                     )
                 )
-            )
-            .build()
+            ).build()
 
         printRequest(request)
 
@@ -107,7 +92,7 @@ internal class TelematicsRequests(
     private suspend fun postCommand(
         encryptedCommand: Bytes,
         accessCertificate: AccessCertificate,
-    ): Response<Bytes> {
+    ): TelematicsResponse {
         val request = Request.Builder()
             .url("${baseUrl}/telematics_commands")
             .headers(baseHeaders)
@@ -119,19 +104,45 @@ internal class TelematicsRequests(
                         "data" to encryptedCommand.base64
                     )
                 )
-            )
-            .build()
+            ).build()
 
         printRequest(request)
 
         val call = client.newCall(request)
         val response = call.await()
+        val responseBody = printResponse(response)
 
-        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { body ->
-            val jsonResponse = Json.parseToJsonElement(body) as JsonObject
-            val encryptedResponseCommand =
-                jsonResponse.jsonObject["response_data"]?.jsonPrimitive?.content
-            Response(Bytes(encryptedResponseCommand), null)
+        val responseObject = try {
+            if (response.code == 200 || response.code == 400 || response.code == 404 || response.code == 408) {
+                val telematicsResponse = Json.decodeFromString<TelematicsCommandResponse>(responseBody)
+
+                // Server only returns encrypted data if status is OK
+                val decryptedData = if (telematicsResponse.status == TelematicsCommandResponse.Status.OK) {
+                    crypto.getPayloadFromTelematicsContainer(
+                        Bytes(telematicsResponse.responseData),
+                        privateKey,
+                        accessCertificate,
+                    )
+                } else {
+                    telematicsResponse.responseData
+                }
+
+                TelematicsResponse(
+                    response = TelematicsCommandResponse(
+                        status = telematicsResponse.status,
+                        message = telematicsResponse.message,
+                        responseData = decryptedData
+                    )
+                )
+            } else {
+                // try to parse the normal server error format.
+                // it will throw and will be caught if server returned unknown format
+                TelematicsResponse(errors = Json.decodeFromString(responseBody))
+            }
+        } catch (e: Exception) {
+            TelematicsResponse(errors = listOf(Error(title = "Unknown server response", detail = e.message)))
         }
+
+        return responseObject
     }
 }

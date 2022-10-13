@@ -1,12 +1,25 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version "1.7.10"
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.10'
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+    id 'net.researchgate.release' version '3.0.2'
 }
 
-allprojects {
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
+
+group = "com.high-mobility"
+
+subprojects {
     repositories {
         mavenCentral()
     }
+
+    // nexus-publish plugin needs to be in root build.gradle and it
+    // also needs the correct group to create the repository
+    // https://github.com/gradle-nexus/publish-plugin/issues/81
+    group = "com.high-mobility"
 }
 
 ext {
@@ -14,7 +27,7 @@ ext {
     coroutinesVersion = '1.6.4'
     koinVersion = '3.2.0'
     ver = [
-            "hmkit-fleet"            : "0.5.2",
+            "hmkit-fleet"            : "0.6.0-dev2",
             "hmkit-crypto-telematics": "0.1",
             "hmkit-auto-api"         : "13.1.1",
     ]
@@ -23,59 +36,4 @@ ext {
             "crypto" : "com.high-mobility:hmkit-crypto-telematics:${ver."hmkit-crypto-telematics"}",
             "autoApi": "com.high-mobility:hmkit-auto-api:${ver."hmkit-auto-api"}"
     ]
-}
-
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-
-apply from: "deploy.gradle"
-// deploy script
-apply from: "https://raw.githubusercontent.com/tonisives/tools/master/gradle/deploy-java-mavenCentral.gradle"
-apply from: "https://raw.githubusercontent.com/tonisives/tools/master/scripts/jupiter-test-shell-logging.gradle"
-
-dependencies {
-    // kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
-
-    implementation('org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0')
-
-    if (!project.hasProperty('depLocation') || project.depLocation > 0) {
-        api deps.crypto
-    } else {
-        api project(":hmkit-crypto-telematics")
-    }
-
-    // web
-    implementation('com.squareup.okhttp3:okhttp:4.10.0')
-    implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
-
-    // Koin
-    implementation "io.insert-koin:koin-core:$koinVersion"
-
-    // logging
-    implementation 'org.slf4j:slf4j-api:1.7.36'
-
-    // test
-    testImplementation deps.autoApi
-    testImplementation "io.insert-koin:koin-test:$koinVersion"
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
-
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
-
-    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
-    testImplementation 'io.mockk:mockk:1.12.5'
-    testImplementation 'com.charleskorn.kaml:kaml:0.47.0'
-    testImplementation 'com.squareup.okhttp3:mockwebserver:4.10.0'
 }

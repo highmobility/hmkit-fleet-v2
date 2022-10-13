@@ -39,7 +39,7 @@ data class ClearanceStatus(val vin: String, val status: Status, val brand:Brand?
         @SerialName("pending")
         PENDING,
 
-        // This state can only happen during creation (request)
+        // Error can only happen during requestClearance
         @SerialName("error")
         ERROR,
 

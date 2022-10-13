@@ -26,15 +26,15 @@ package com.highmobility.hmkitfleet
 
 import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
 import com.highmobility.hmkitfleet.network.AccessCertificateRequests
 import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Response
 import com.highmobility.hmkitfleet.network.genericError
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach

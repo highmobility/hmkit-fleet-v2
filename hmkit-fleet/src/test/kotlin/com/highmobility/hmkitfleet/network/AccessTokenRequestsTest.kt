@@ -24,6 +24,8 @@
 package com.highmobility.hmkitfleet.network
 
 import com.highmobility.hmkitfleet.BaseTest
+import com.highmobility.hmkitfleet.newAccessToken
+import com.highmobility.hmkitfleet.notExpiredAuthToken
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -32,8 +34,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import com.highmobility.hmkitfleet.newAccessToken
-import com.highmobility.hmkitfleet.notExpiredAuthToken
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
