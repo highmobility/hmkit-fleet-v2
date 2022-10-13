@@ -4,15 +4,8 @@ from https://github.com/kit-data-manager/nexus-publish-example#automated-publish
 
 ## Requirements
 
-* gradle.properties file in the module's folder with
-
+- gradle.properties file in the project's root folder with
 version=0.0.1
-deploySiteUrl="site url"
-deployGitUrl="git url"
-deployGroupId="package name"
-deployLicenseName="MIT"
-deployLicenseUrl="https://opensource.org/licenses/MIT"
-deployId="the package id"
 
 env variables in Github Actions
 ORG_GRADLE_PROJECT_sonatypeUsername
@@ -26,27 +19,13 @@ OR
 ~/.gradle/gradle.properties with
 sonatypeUsername=
 sonatypePassword=
-signingKey=
-signingPassword=
+signing.keyId=
+signing.password=
 signing.secretKeyRingFile=
+to deploy locally
 
-* gpg keypair created and uploaded to hkp://pool.sks-keyservers.net
+- gpg keypair created and uploaded to hkp://pool.sks-keyservers.net
 
-##  release process:
-
-- update the release version automatically
-$ ./gradlew :hmkit-fleet:release -Prelease.useAutomaticVersion=true
-New commit and tag will be created and pushed to github
-
-### github release
-draft a new release with this tag. release will be published automatically.
-
-### local release
-- checkout to this new tag
-$ git checkout tags/v0.0.0
-- publish to sonatype without closing
-$ ./gradlew :hmkit-fleet:publishToSonatype -Prelease
-- to publish to sonatype and automatically release (DANGER) add closeAndReleaseSonatypeStagingRepository to the end
 */
 
 
@@ -75,8 +54,7 @@ release {
     git {
         // branch from where to release (default: master)
         // https://github.com/researchgate/gradle-release/issues/357
-        // TODO: use main
-        requireBranch.set('feature/ci-release')
+        requireBranch.set('main')
     }
 }
 
