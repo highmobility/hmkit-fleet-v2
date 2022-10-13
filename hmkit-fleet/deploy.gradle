@@ -1,8 +1,0 @@
-ext.deploy = [
-        "siteUrl"    : "https://github.com/highmobility/hmkit-fleet",
-        "gitUrl"     : "https://github.com/highmobility/hmkit-fleet",
-        "groupId"    : "com.high-mobility",
-        "licenseName": "MIT",
-        "licenseUrl" : "https://opensource.org/licenses/MIT",
-        "id"         : "hmkit-fleet",
-]

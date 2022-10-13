@@ -1,7 +1,25 @@
-allprojects {
+plugins {
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+    id 'net.researchgate.release' version '3.0.2'
+}
+
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
+
+group = "com.high-mobility"
+
+subprojects {
     repositories {
         mavenCentral()
     }
+
+    // nexus-publish plugin needs to be in root build.gradle and it
+    // also needs the correct group to create the repository
+    // https://github.com/gradle-nexus/publish-plugin/issues/81
+    group = "com.high-mobility"
 }
 
 ext {
@@ -9,7 +27,7 @@ ext {
     coroutinesVersion = '1.6.4'
     koinVersion = '3.2.0'
     ver = [
-            "hmkit-fleet"            : "0.5.2",
+            "hmkit-fleet"            : "0.6.0-dev2",
             "hmkit-crypto-telematics": "0.1",
             "hmkit-auto-api"         : "13.1.1",
     ]
