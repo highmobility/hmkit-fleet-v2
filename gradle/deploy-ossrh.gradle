@@ -140,7 +140,8 @@ signing {
 //        def signingKey = findProperty("signing.keyId")
 //        def signingPassword = findProperty("signing.password")
 //        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.release
     } else {
         println 'WARNING: No property \'signingKey\' found. Artifact signing will be skipped.'
     }
