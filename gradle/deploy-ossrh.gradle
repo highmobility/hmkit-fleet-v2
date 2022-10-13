@@ -28,7 +28,6 @@ to deploy locally
 
 */
 
-
 apply plugin: "maven-publish"
 apply plugin: 'signing'
 apply plugin: 'net.researchgate.release'
@@ -141,7 +140,7 @@ signing {
 //        def signingKey = findProperty("signing.keyId")
 //        def signingPassword = findProperty("signing.password")
 //        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.release
+        sign publishing.publications
     } else {
         println 'WARNING: No property \'signingKey\' found. Artifact signing will be skipped.'
     }
