@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.6.0]
+## [0.6.1]
 
 - Parse the Telematics command response more specifically.   
   It can return an errors array or a Telematics command response. Please
