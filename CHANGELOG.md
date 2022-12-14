@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.2]
+- Fix error `NoSuchMethodError: kotlinx.coroutines.AbstractCoroutine.<init>`
+
 ## [0.6.1]
 
 - Parse the Telematics command response more specifically.   
