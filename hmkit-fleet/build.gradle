@@ -11,6 +11,10 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_17
 }
 
+test {
+    testLogging.exceptionFormat = 'full'
+}
+
 // publish settings
 apply from: "../gradle/deploy-ossrh.gradle"
 apply from: "https://raw.githubusercontent.com/tonisives/tools/master/scripts/jupiter-test-shell-logging.gradle"
@@ -31,7 +35,6 @@ dependencies {
 
     // web
     implementation('com.squareup.okhttp3:okhttp:4.10.0')
-    implementation("ru.gildor.coroutines:kotlin-coroutines-okhttp:1.0")
 
     // Koin
     implementation "io.insert-koin:koin-core:$koinVersion"

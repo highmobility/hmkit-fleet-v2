@@ -37,7 +37,7 @@ owner package.
 
 ### Deployment
 
-check `./gradle/deploy-ossrh.gradle`
+check `./gradle/deploy-process.md`
 
 ### License
 

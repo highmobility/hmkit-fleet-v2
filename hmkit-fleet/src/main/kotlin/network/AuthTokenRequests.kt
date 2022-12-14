@@ -37,7 +37,7 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.Logger
-import ru.gildor.coroutines.okhttp.await
+import utils.await
 import java.net.HttpURLConnection
 
 internal class AuthTokenRequests(
