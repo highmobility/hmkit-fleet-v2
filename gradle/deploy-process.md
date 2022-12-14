@@ -12,7 +12,8 @@ action. We don't do automatic releases on every push in order to reduce release 
         - omit `useAutomaticVersion=true` to set a specific version in gradle dialog
     - **manually**
         - update version in `$projectRoot/gradle.properties` and push tag manually
-- create a release in GitHub. Package is pushed to OSSRH staging automatically.
+        - create a release in GitHub. Package is pushed to OSSRH staging automatically.
+- now release is created after action completes.
 - close and release manually in OSSRH staging.
 
 ## Make a test release locally to staging
