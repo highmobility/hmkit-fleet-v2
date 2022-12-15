@@ -13,8 +13,8 @@ action. We don't do automatic releases on every push in order to reduce release 
     - **manually**
         - update version in `$projectRoot/gradle.properties` and push tag manually
 - create a release in GitHub.
-  - Now package is pushed to OSSRH via Github Actions
-- close and release manually in OSSRH.
+    - Now package is pushed to MavenCentral via Github Actions.
+    - You can check OSSRH whether release was successful or not.
 
 ## Make a test release locally to staging
 
