@@ -35,7 +35,7 @@ owner package.
 * import the Gradle project
 * run the tests `./gradlew test`
 
-### Deployment
+### Release/Deployment
 
 check `./gradle/deploy-process.md`
 
