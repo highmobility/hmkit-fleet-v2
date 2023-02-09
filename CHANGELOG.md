@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.3]
+- Add Renault brand
+
 ## [0.6.2]
 - Fix error `NoSuchMethodError: kotlinx.coroutines.AbstractCoroutine.<init>`
 

@@ -93,5 +93,8 @@ enum class Brand {
     ALFAROMEO,
 
     @SerialName("ford")
-    FORD
+    FORD,
+
+    @SerialName("renault")
+    RENAULT
 }
