@@ -5,7 +5,7 @@ We don't do automatic releases on every push in order to reduce release count if
 
 ## Steps
 - update CHANGELOG.md
-- merge a pull request
+- merge a pull request to main
 - update version and create a tag. use either one of these
     - **with a gradle task**
         - call `./gradlew :hmkit-fleet:release -Prelease.useAutomaticVersion=true` to increment minor version and push
@@ -13,7 +13,7 @@ We don't do automatic releases on every push in order to reduce release count if
         - omit `useAutomaticVersion=true` to set a specific version in gradle dialog
     - **manually**
         - update version in `$projectRoot/gradle.properties` and push tag manually
-- create a release in GitHub from this tag
+- create a release in GitHub from this tag. Use `Generate release notes`
     - Action starts that pushes the package to MavenCentral.
     - You can check OSSRH whether release was successful or not.
 
