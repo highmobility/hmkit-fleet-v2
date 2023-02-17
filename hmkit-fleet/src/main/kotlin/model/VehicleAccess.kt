@@ -96,5 +96,8 @@ enum class Brand {
     FORD,
 
     @SerialName("renault")
-    RENAULT
+    RENAULT,
+
+    @SerialName("sandbox")
+    SANDBOX
 }
