@@ -201,7 +201,8 @@ object HMKitFleet {
              */
             @JvmField
             var webUrl: String? = null
-            internal const val jwtUrl = prodUrl
+            internal val jwtUrl: String?
+                get() = webUrl
         }
     }
 

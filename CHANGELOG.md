@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.4]
+- Add Sandbox brand
+- Fix authentication for sandbox
+
 ## [0.6.3]
 - Add Renault brand
 
