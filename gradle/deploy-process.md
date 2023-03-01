@@ -5,7 +5,7 @@ We don't do automatic releases on every push in order to reduce release count if
 
 ## Steps
 - update CHANGELOG.md
-- merge a pull request to main
+- merge a pull request to main and checkout main locally
 - update version and create a tag. use either one of these
     - **with a gradle task**
         - call `./gradlew :hmkit-fleet:release -Prelease.useAutomaticVersion=true` to increment minor version and push
