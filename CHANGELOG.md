@@ -1,6 +1,9 @@
 # Changelog
 
 ## [0.6.5]
+- fix JWT Authorization error in sandbox
+
+## [0.6.5]
 - Compile for Java 8
 
 ## [0.6.4]
