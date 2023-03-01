@@ -43,4 +43,4 @@ jobs:
         run: git submodule update --init --recursive
       
       - name: Test
-        run: ./gradlew build
+        run: ./gradlew :hmkit-fleet:build

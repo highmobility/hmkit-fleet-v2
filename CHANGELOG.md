@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.5]
+- Compile for Java 8
+
 ## [0.6.4]
 - Add Sandbox brand
 - Fix authentication for sandbox

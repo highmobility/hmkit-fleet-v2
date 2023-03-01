@@ -3,12 +3,10 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.20'
 }
 
-compileKotlin {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8
-}
-
-compileTestKotlin {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_17
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
 
 test {
