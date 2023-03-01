@@ -94,7 +94,7 @@ internal class AuthTokenRequests(
             put("ver", configuration.version)
             put("iss", configuration.serviceAccountApiKey)
             // OAuth is always in prod
-            put("aud", HMKitFleet.Environment.jwtUrl)
+            put("aud", HMKitFleet.environment.url)
             put("jti", configuration.createJti())
             put("iat", configuration.createIat())
         }.toString()
