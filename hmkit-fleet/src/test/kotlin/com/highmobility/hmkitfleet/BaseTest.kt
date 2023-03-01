@@ -110,7 +110,7 @@ open class BaseTest : KoinTest {
             throw InstantiationException("Please add Service account credentials to $credentialsFilePath")
         }
 
-        val credentialsContent = Files.readString(credentialsFilePath)
+        val credentialsContent = String(Files.readAllBytes(credentialsFilePath))
 
         val configuration =
             spyk(
