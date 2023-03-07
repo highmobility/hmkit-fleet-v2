@@ -20,6 +20,12 @@ Telematics API to help car companies manage their fleet.
 
 Get started with HMKit Fleet 📘[browse the documentation](https://docs.high-mobility.com/guides/getting-started/fleet/)
 
+```
+dependencies {
+  implementation('com.high-mobility:hmkit-fleet:{version}')
+}
+```
+
 ### Architecture
 
 **General**: HMKit Fleet is a Kotlin library that combines 3 different API-s into a single fleet
