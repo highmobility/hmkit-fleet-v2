@@ -1,6 +1,9 @@
 # Changelog
 
-## [0.6.5]
+## [0.6.7]
+- fix request clearance error parsing
+
+## [0.6.6]
 - fix JWT Authorization error in sandbox
 
 ## [0.6.5]
