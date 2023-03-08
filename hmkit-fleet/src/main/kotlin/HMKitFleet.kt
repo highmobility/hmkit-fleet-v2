@@ -35,7 +35,7 @@ import java.util.concurrent.CompletableFuture
 
 /**
  * HMKitFleet is the access point for the Fleet SDK functionality. It is accessed by
- * HMKitFleet.INSTANCE and it's field [configuration] should be set before accessing other functions
+ * HMKitFleet.INSTANCE. It's field [configuration] should be set before accessing other functions
  */
 object HMKitFleet {
     init {
@@ -58,6 +58,21 @@ object HMKitFleet {
      * Set the Service Account Configuration before calling other methods.
      */
     lateinit var configuration: ServiceAccountApiConfiguration
+
+    /**
+     * Get the eligibility status for a specific VIN. This can be used to find out if the vehicle has the necessary connectivity to transmit data.
+     *
+     * @param vin The vehicle VIN number
+     * @param brand The vehicle brand
+     * @return The eligibility status
+     */
+    fun getEligibility(
+        vin: String,
+        brand: Brand
+    ): CompletableFuture<Response<EligibilityStatus>> = GlobalScope.future {
+        logger.debug("HMKitFleet: getEligibility: $vin")
+        koin.get<UtilityRequests>().getEligibility(vin, brand)
+    }
 
     /**
      * Start the data access clearance process for a vehicle.

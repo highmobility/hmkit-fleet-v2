@@ -86,6 +86,14 @@ internal object Koin {
                 get()
             )
         }
+        single {
+            UtilityRequests(
+                get(),
+                get(),
+                HMKitFleet.environment.url,
+                get()
+            )
+        }
     }
 
     lateinit var koinApplication: KoinApplication
