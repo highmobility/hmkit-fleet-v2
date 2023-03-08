@@ -27,7 +27,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RequestClearanceResponse(val vin: String, val status: ClearanceStatus.Status)
+data class RequestClearanceResponse(
+    val vin: String,
+    val status: ClearanceStatus.Status,
+    /**
+     * Filled when status is ERROR
+     */
+    val description:String? = null
+)
 
 @Serializable
 data class ClearanceStatus(val vin: String, val status: Status, val brand:Brand? = null, val changelog:List<ChangeLogItem> = emptyList()) {
