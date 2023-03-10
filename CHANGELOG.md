@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.7.0]
+- Add eligibility check for fleet vehicles
+
 ## [0.6.7]
 - fix request clearance error parsing
 
