@@ -85,7 +85,7 @@ internal class UtilityRequestsTest : BaseTest() {
         val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
 
         val response = runBlocking {
-            webService.getEligibility("WBADT43452G296403", Brand.MERCEDES_BENZ)
+            webService.getEligibility("WBADT43452G296403", Brand.BMW)
         }
 
         coVerify { authTokenRequests.getAuthToken() }
@@ -97,7 +97,7 @@ internal class UtilityRequestsTest : BaseTest() {
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
         assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "mercedes-benz")
+        assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")
 
         // verify response
         val status = response.response!!
@@ -134,7 +134,7 @@ internal class UtilityRequestsTest : BaseTest() {
         val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
 
         val status = runBlocking {
-            webService.getEligibility("WBADT43452G296403", Brand.MERCEDES_BENZ)
+            webService.getEligibility("WBADT43452G296403", Brand.BMW)
         }.response!!
 
         coVerify { authTokenRequests.getAuthToken() }
@@ -146,7 +146,7 @@ internal class UtilityRequestsTest : BaseTest() {
         assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
         val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
         assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "mercedes-benz")
+        assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")
 
         // verify response
         assertTrue(status.vin == "WBADT43452G296403")
@@ -165,7 +165,7 @@ internal class UtilityRequestsTest : BaseTest() {
             val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.getEligibility(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ,
+                Brand.BMW,
             )
         }
     }
@@ -176,7 +176,7 @@ internal class UtilityRequestsTest : BaseTest() {
             val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.getEligibility(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ,
+                Brand.BMW,
             )
         }
     }
@@ -187,7 +187,7 @@ internal class UtilityRequestsTest : BaseTest() {
             val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
             webService.getEligibility(
                 "WBADT43452G296403",
-                Brand.MERCEDES_BENZ,
+                Brand.BMW,
             )
         }
     }
