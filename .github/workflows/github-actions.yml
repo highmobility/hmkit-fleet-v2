@@ -5,9 +5,11 @@ name: Run tests
 
 on:
   push:
-    branches: "main"
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   test:
@@ -41,6 +43,11 @@ jobs:
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: git submodule update --init --recursive
-      
+
       - name: Test
         run: ./gradlew :hmkit-fleet:build
+
+      - name: Upload codecov report
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
