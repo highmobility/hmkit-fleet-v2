@@ -36,18 +36,15 @@ jobs:
           # ' will not escape "" inside the yaml file
           echo '${{ secrets.CREDENTIALS_YAML }}' > ~/.config/high-mobility/fleet-sdk/credentials.yaml
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
       - name: Update submodules
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: git submodule update --init --recursive
 
-      - name: Test
-        run: ./gradlew :hmkit-fleet:build
+      - name: Build and test
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: hmkit-fleet:test
 
       - name: Upload codecov report
         uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
