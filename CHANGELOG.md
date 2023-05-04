@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.7.2]
+- Add Toyota brand
+
 ## [0.7.0]
 - Add eligibility check for fleet vehicles
 
