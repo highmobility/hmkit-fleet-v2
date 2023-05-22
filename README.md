@@ -1,3 +1,5 @@
+This is the HMKitFleet v1 branch. See the [v0 branch](https://github.com/highmobility/hmkit-fleet/tree/v0) for the previous version.
+
 # HMKit Fleet
 
 HMKit Fleet is a Kotlin/Java library that combines different API-s: OAuth, Service Account API and
