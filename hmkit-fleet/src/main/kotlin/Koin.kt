@@ -38,21 +38,24 @@ import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
-internal object Koin {
-    val koinModules = module {
+internal class Modules(
+    configuration: ServiceAccountApiConfiguration,
+    environment: HMKitFleet.Environment
+) {
+    private val koinModules = module {
         single { LoggerFactory.getLogger(HMKitFleet::class.java) }
         single { OkHttpClient() }
-        single { HMKitFleet.environment }
+        single { environment }
         single { Crypto() }
-        single { Requests(get(), get(), HMKitFleet.environment.url) }
+        single { Requests(get(), get(), environment.url) }
         single { Cache() }
         single {
             AuthTokenRequests(
                 get(),
                 get(),
                 get(),
-                HMKitFleet.environment.url,
-                HMKitFleet.configuration,
+                environment.url,
+                configuration,
                 get()
             )
         }
@@ -60,19 +63,19 @@ internal object Koin {
             AccessTokenRequests(
                 get(),
                 get(),
-                HMKitFleet.environment.url,
+                environment.url,
                 get(),
-                HMKitFleet.configuration
+                configuration
             )
         }
-        single { ClearanceRequests(get(), get(), HMKitFleet.environment.url, get()) }
+        single { ClearanceRequests(get(), get(), environment.url, get()) }
         single {
             AccessCertificateRequests(
                 get(),
                 get(),
-                HMKitFleet.environment.url,
-                HMKitFleet.configuration.getClientPrivateKey(),
-                HMKitFleet.configuration.clientCertificate,
+                environment.url,
+                configuration.getClientPrivateKey(),
+                configuration.clientCertificate,
                 get()
             )
         }
@@ -80,9 +83,9 @@ internal object Koin {
             TelematicsRequests(
                 get(),
                 get(),
-                HMKitFleet.environment.url,
-                HMKitFleet.configuration.getClientPrivateKey(),
-                HMKitFleet.configuration.clientCertificate,
+                environment.url,
+                configuration.getClientPrivateKey(),
+                configuration.clientCertificate,
                 get()
             )
         }
@@ -90,23 +93,19 @@ internal object Koin {
             UtilityRequests(
                 get(),
                 get(),
-                HMKitFleet.environment.url,
+                environment.url,
                 get()
             )
         }
     }
 
-    lateinit var koinApplication: KoinApplication
+    private lateinit var koinApplication: KoinApplication
 
-    fun start() {
+    fun start(): Koin {
         koinApplication = koinApplication {
             modules(koinModules)
         }
-    }
 
-    interface FleetSdkKoinComponent : KoinComponent {
-        override fun getKoin(): Koin {
-            return koinApplication.koin
-        }
+        return koinApplication.koin
     }
 }

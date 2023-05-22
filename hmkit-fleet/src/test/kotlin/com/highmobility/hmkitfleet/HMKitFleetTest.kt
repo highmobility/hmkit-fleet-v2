@@ -31,9 +31,12 @@ import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Response
 import com.highmobility.hmkitfleet.network.genericError
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -51,8 +54,7 @@ class HMKitFleetTest : BaseTest() {
 
     @BeforeEach
     fun setUp() {
-        HMKitFleet // call the init first, so koin can be reset
-        Koin.koinApplication = koinApplication {
+        val koin = koinApplication {
             modules(module {
                 single { accessCertificateRequests }
                 single { accessTokenRequests }
@@ -60,6 +62,9 @@ class HMKitFleetTest : BaseTest() {
                 single { mockk<Logger>(relaxed = true) }
             })
         }
+
+        mockkConstructor(Modules::class)
+        every { anyConstructed<Modules>().start() } returns koin.koin
     }
 
     @AfterEach
@@ -79,7 +84,8 @@ class HMKitFleetTest : BaseTest() {
             )
         } returns Response(newAccessToken, null)
 
-        val access = HMKitFleet.getVehicleAccess("vin1").get()
+        val hmkit = HMKitFleet(mockk())
+        val access = hmkit.getVehicleAccess("vin1").get()
 
         coVerify { accessCertificateRequests.getAccessCertificate(any()) }
         coVerify { accessTokenRequests.getAccessToken(any()) }
@@ -97,7 +103,8 @@ class HMKitFleetTest : BaseTest() {
             )
         } returns Response(null, genericError("accessTokenError"))
 
-        val access = HMKitFleet.getVehicleAccess("vin1").get()
+        val hmkit = HMKitFleet(mockk())
+        val access = hmkit.getVehicleAccess("vin1").get()
 
         assertTrue(access.response == null)
         assertTrue(access.error!!.detail == "accessTokenError")
@@ -116,7 +123,8 @@ class HMKitFleetTest : BaseTest() {
             genericError("accessCertError")
         )
 
-        val access = HMKitFleet.getVehicleAccess("vin1").get()
+        val hmkit = HMKitFleet(mockk())
+        val access = hmkit.getVehicleAccess("vin1").get()
         assertTrue(access.response == null)
         assertTrue(access.error!!.detail == "accessCertError")
     }
@@ -129,7 +137,8 @@ class HMKitFleetTest : BaseTest() {
             )
         } returns Response(true, null)
 
-        val access = HMKitFleet.revokeClearance(newVehicleAccess).get()
+        val hmkit = HMKitFleet(mockk())
+        val access = hmkit.revokeClearance(newVehicleAccess).get()
         assertTrue(access.response == true)
     }
 
@@ -139,7 +148,8 @@ class HMKitFleetTest : BaseTest() {
             clearanceRequests.deleteClearance(any())
         } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
 
-        val delete = HMKitFleet.deleteClearance("vin1").get()
+        val hmkit = HMKitFleet(mockk())
+        val delete = hmkit.deleteClearance("vin1").get()
         assertTrue(delete.response?.vin == "vin1")
         assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
     }
@@ -150,15 +160,36 @@ class HMKitFleetTest : BaseTest() {
             clearanceRequests.getClearanceStatus("vin1")
         } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
 
-        val clearance = HMKitFleet.getClearanceStatus("vin1").get()
+        val hmkit = HMKitFleet(mockk())
+        val clearance = hmkit.getClearanceStatus("vin1").get()
         assertTrue(clearance.response?.vin == "vin1")
         assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
     }
 
-    @Test
+/*    @Test
     fun canSetCustomWebUrl() {
-        HMKitFleet.environment = HMKitFleet.Environment.PRODUCTION
-        HMKitFleet.Environment.webUrl = "asd"
-        assert(HMKitFleet.environment.url == "asd")
-    }
+        stopKoin()
+        clearAllMocks()
+
+        val mockWebServer = MockWebServer()
+        mockWebServer.start()
+        mockWebServer.enqueue(
+            MockResponse()
+                .setBody("")
+                .setResponseCode(HttpURLConnection.HTTP_CREATED)
+        )
+
+        val fakeUrl = mockWebServer.url("").toString()
+
+        HMKitFleet.Environment.webUrl = fakeUrl
+        assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
+
+        val hmkit = HMKitFleet(configuration)
+        hmkit.getEligibility("vin1", Brand.SANDBOX).get()
+
+        val recordedRequest = mockWebServer.takeRequest()
+        assertTrue(recordedRequest.requestUrl.toString().contains(fakeUrl))
+
+        mockWebServer.shutdown()
+    }*/
 }

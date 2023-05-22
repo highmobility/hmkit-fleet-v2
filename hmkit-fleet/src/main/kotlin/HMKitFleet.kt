@@ -35,29 +35,20 @@ import java.util.concurrent.CompletableFuture
 
 /**
  * HMKitFleet is the access point for the Fleet SDK functionality. It is accessed by
- * HMKitFleet.INSTANCE. It's field [configuration] should be set before accessing other functions
+ * creating a new HMKitFleet object with a [ServiceAccountApiConfiguration].
  */
-object HMKitFleet {
-    init {
-        Koin.start()
-    }
-
-    // use a separate class so public API doesn't need implement KoinComponent
-    private val koin = KoinFactory()
-
-    private val logger by koin.inject<Logger>()
-
+class HMKitFleet @JvmOverloads constructor(
+    /**
+     * The configuration for the Fleet SDK. Get the values from the High-Mobility console.
+     */
+    configuration: ServiceAccountApiConfiguration,
     /**
      * The SDK environment. Default is Production.
      */
-    var environment: Environment = Environment.PRODUCTION
-
-    internal var authToken: AuthToken? = null
-
-    /**
-     * Set the Service Account Configuration before calling other methods.
-     */
-    lateinit var configuration: ServiceAccountApiConfiguration
+    val environment: Environment = Environment.PRODUCTION
+) {
+    private val koin = Modules(configuration, environment).start()
+    private val logger by koin.inject<Logger>()
 
     /**
      * Get the eligibility status for a specific VIN. This can be used to find out if the vehicle has the necessary connectivity to transmit data.
@@ -218,6 +209,4 @@ object HMKitFleet {
             var webUrl: String? = null
         }
     }
-
-    private class KoinFactory : Koin.FleetSdkKoinComponent
 }
