@@ -6,7 +6,7 @@ This is the changelog for v1 releases. See v0 changelog in the [v0 branch](https
 
 ### Added
 
-- Initialize HMKitFleet with the `new` keyword
+- Initialize HMKitFleet with the `new` keyword. [PR](https://github.com/highmobility/hmkit-fleet/pull/19)
 ```java
 HMKitFleet hmkit = new HMKitFleet(
   apiConfiguration,
