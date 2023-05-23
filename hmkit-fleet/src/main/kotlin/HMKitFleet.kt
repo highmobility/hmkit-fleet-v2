@@ -42,12 +42,18 @@ class HMKitFleet @JvmOverloads constructor(
      * The configuration for the Fleet SDK. Get the values from the High-Mobility console.
      */
     configuration: ServiceAccountApiConfiguration,
+
     /**
      * The SDK environment. Default is Production.
      */
-    val environment: Environment = Environment.PRODUCTION
+    val environment: Environment = Environment.PRODUCTION,
+
+    /**
+     * More options for configuring the HMKit. Default is [HMKitConfiguration.defaultConfiguration].
+     */
+    hmKitConfiguration: HMKitConfiguration = HMKitConfiguration.defaultConfiguration()
 ) {
-    private val koin = Modules(configuration, environment).start()
+    private val koin = Modules(configuration, environment, hmKitConfiguration).start()
     private val logger by koin.inject<Logger>()
 
     /**

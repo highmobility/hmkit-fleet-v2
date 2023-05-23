@@ -34,7 +34,7 @@ dependencies {
     }
 
     // web
-    implementation('com.squareup.okhttp3:okhttp:4.10.0')
+    api('com.squareup.okhttp3:okhttp:4.10.0')
 
     // Koin
     implementation "io.insert-koin:koin-core:$koinVersion"

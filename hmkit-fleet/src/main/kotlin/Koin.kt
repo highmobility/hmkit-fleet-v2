@@ -40,11 +40,12 @@ import org.slf4j.LoggerFactory
 
 internal class Modules(
     configuration: ServiceAccountApiConfiguration,
-    environment: HMKitFleet.Environment
+    environment: HMKitFleet.Environment,
+    hmKitConfiguration: HMKitConfiguration
 ) {
     private val koinModules = module {
         single { LoggerFactory.getLogger(HMKitFleet::class.java) }
-        single { OkHttpClient() }
+        single { hmKitConfiguration.client }
         single { environment }
         single { Crypto() }
         single { Requests(get(), get(), environment.url) }
