@@ -23,12 +23,20 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import kotlinx.serialization.json.*
 import com.highmobility.hmkitfleet.model.Brand
-import com.highmobility.hmkitfleet.model.ControlMeasure
 import com.highmobility.hmkitfleet.model.ClearanceStatus
+import com.highmobility.hmkitfleet.model.ControlMeasure
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -44,7 +52,8 @@ internal class ClearanceRequests(
     private val authTokenRequests: AuthTokenRequests
 ) : Requests(
     client,
-    logger, baseUrl
+    logger,
+    baseUrl
 ) {
     suspend fun requestClearance(
         vin: String,
@@ -57,7 +66,7 @@ internal class ClearanceRequests(
         if (authToken.error != null) return Response(null, authToken.error)
 
         val request = Request.Builder()
-            .url("${baseUrl}/fleets/vehicles")
+            .url("$baseUrl/fleets/vehicles")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response?.authToken}")
             .post(body)
@@ -89,7 +98,7 @@ internal class ClearanceRequests(
         if (authToken.error != null) return Response(null, authToken.error)
 
         val request = Request.Builder()
-            .url("${baseUrl}/fleets/vehicles")
+            .url("$baseUrl/fleets/vehicles")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response?.authToken}")
             .build()
@@ -119,7 +128,7 @@ internal class ClearanceRequests(
         if (authToken.error != null) return Response(null, authToken.error)
 
         val request = Request.Builder()
-            .url("${baseUrl}/fleets/vehicles/${vin}")
+            .url("$baseUrl/fleets/vehicles/$vin")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response?.authToken}")
             .build()
@@ -142,7 +151,7 @@ internal class ClearanceRequests(
         if (authToken.error != null) return Response(null, authToken.error)
 
         val request = Request.Builder()
-            .url("${baseUrl}/fleets/vehicles/$vin")
+            .url("$baseUrl/fleets/vehicles/$vin")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response?.authToken}")
             .delete()

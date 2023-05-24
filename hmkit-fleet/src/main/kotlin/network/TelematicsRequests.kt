@@ -47,19 +47,29 @@ internal class TelematicsRequests(
     private val certificate: ClientCertificate,
     private val crypto: Crypto
 ) : Requests(
-    client, logger, baseUrl
+    client,
+    logger,
+    baseUrl
 ) {
     suspend fun sendCommand(
-        command: Bytes, accessCertificate: AccessCertificate
+        command: Bytes,
+        accessCertificate: AccessCertificate
     ): TelematicsResponse {
         val nonce = getNonce()
 
-        if (nonce.error != null) return TelematicsResponse(
-            null, listOf(Error(nonce.error.title))
-        )
+        if (nonce.error != null) {
+            return TelematicsResponse(
+                null,
+                listOf(Error(nonce.error.title))
+            )
+        }
 
         val encryptedCommand = crypto.createTelematicsContainer(
-            command, privateKey, certificate.serial, accessCertificate, Bytes(nonce.response!!)
+            command,
+            privateKey,
+            certificate.serial,
+            accessCertificate,
+            Bytes(nonce.response!!)
         )
 
         return postCommand(encryptedCommand, accessCertificate)
@@ -67,7 +77,7 @@ internal class TelematicsRequests(
 
     private suspend fun getNonce(): Response<String> {
         val request = Request.Builder()
-            .url("${baseUrl}/nonces")
+            .url("$baseUrl/nonces")
             .headers(baseHeaders)
             .post(
                 requestBody(
@@ -94,7 +104,7 @@ internal class TelematicsRequests(
         accessCertificate: AccessCertificate,
     ): TelematicsResponse {
         val request = Request.Builder()
-            .url("${baseUrl}/telematics_commands")
+            .url("$baseUrl/telematics_commands")
             .headers(baseHeaders)
             .post(
                 requestBody(

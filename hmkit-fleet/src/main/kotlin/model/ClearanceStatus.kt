@@ -33,11 +33,16 @@ data class RequestClearanceResponse(
     /**
      * Filled when status is ERROR
      */
-    val description:String? = null
+    val description: String? = null
 )
 
 @Serializable
-data class ClearanceStatus(val vin: String, val status: Status, val brand:Brand? = null, val changelog:List<ChangeLogItem> = emptyList()) {
+data class ClearanceStatus(
+    val vin: String,
+    val status: Status,
+    val brand: Brand? = null,
+    val changelog: List<ChangeLogItem> = emptyList()
+) {
     @Serializable
     enum class Status {
         @SerialName("approved")
@@ -68,4 +73,4 @@ data class ClearanceStatus(val vin: String, val status: Status, val brand:Brand?
 }
 
 @Serializable
-data class ChangeLogItem(val status: ClearanceStatus.Status, val timestamp:String)
+data class ChangeLogItem(val status: ClearanceStatus.Status, val timestamp: String)

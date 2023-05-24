@@ -26,7 +26,6 @@ package com.highmobility.hmkitfleet.network
 import com.highmobility.autoapi.Diagnostics
 import com.highmobility.autoapi.property.Property
 import com.highmobility.autoapi.value.measurement.Length
-import com.highmobility.crypto.AccessCertificate
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.DeviceSerial
 import com.highmobility.crypto.value.Issuer
@@ -76,15 +75,21 @@ internal class TelematicsRequestsTest : BaseTest() {
         // random encryption ok here
         every {
             it.createTelematicsContainer(
-                Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce
+                Diagnostics.GetState(),
+                privateKey,
+                certificate.serial,
+                mockAccessCert,
+                nonce
             )
         } returns encryptedSentCommand
 
-        println("mock ${Diagnostics.GetState()} ${privateKey} ${certificate.serial} ${mockAccessCert} ${nonce}")
+        println("mock ${Diagnostics.GetState()} $privateKey ${certificate.serial} $mockAccessCert $nonce")
 
         every {
             it.getPayloadFromTelematicsContainer(
-                Bytes(encryptedReceivedCommand), privateKey, mockAccessCert
+                Bytes(encryptedReceivedCommand),
+                privateKey,
+                mockAccessCert
             )
         } returns decryptedReceivedCommand
     }
@@ -108,7 +113,12 @@ internal class TelematicsRequestsTest : BaseTest() {
         val baseUrl: HttpUrl = mockWebServer.url("")
 
         val telematicsRequests = TelematicsRequests(
-            client, mockLogger, baseUrl.toString(), privateKey, certificate, crypto
+            client,
+            mockLogger,
+            baseUrl.toString(),
+            privateKey,
+            certificate,
+            crypto
         )
 
         val response = runBlocking {
@@ -117,7 +127,11 @@ internal class TelematicsRequestsTest : BaseTest() {
 
         verify {
             crypto.createTelematicsContainer(
-                Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce
+                Diagnostics.GetState(),
+                privateKey,
+                certificate.serial,
+                mockAccessCert,
+                nonce
             )
         }
 
@@ -142,7 +156,9 @@ internal class TelematicsRequestsTest : BaseTest() {
         // verify command decrypted
         verify {
             crypto.getPayloadFromTelematicsContainer(
-                encryptedReceivedCommand, privateKey, mockAccessCert
+                encryptedReceivedCommand,
+                privateKey,
+                mockAccessCert
             )
         }
 
@@ -158,7 +174,7 @@ internal class TelematicsRequestsTest : BaseTest() {
                       "response_data": "${encryptedReceivedCommand.base64}",
                       "message": "Response received"
                     }
-                """.trimIndent()
+            """.trimIndent()
         )
         mockWebServer.enqueue(mockResponse)
     }
@@ -169,7 +185,7 @@ internal class TelematicsRequestsTest : BaseTest() {
                     {
                         "nonce": "${nonce.base64}"
                     }
-                """.trimIndent()
+            """.trimIndent()
         )
         mockWebServer.enqueue(mockResponse)
     }
@@ -195,7 +211,7 @@ internal class TelematicsRequestsTest : BaseTest() {
         val mockResponse = MockResponse().setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED).setBody(
             """
                     {"invalidKey":"invalidValue"}
-                """.trimIndent()
+            """.trimIndent()
         )
         mockWebServer.enqueue(mockResponse)
         val mockUrl = mockWebServer.url("").toString()
@@ -219,7 +235,7 @@ internal class TelematicsRequestsTest : BaseTest() {
                     "response_data": "${unencryptedData.base64}",
                     "status": "error"
                 }
-                """.trimIndent()
+            """.trimIndent()
         )
         // successful nonce
 
@@ -259,7 +275,7 @@ internal class TelematicsRequestsTest : BaseTest() {
                     "detail": "detail1"
                   }
                 ]
-                """.trimIndent()
+            """.trimIndent()
         )
         // successful nonce
 
@@ -297,7 +313,7 @@ internal class TelematicsRequestsTest : BaseTest() {
                     "response_data": "AAKmNHIgCtR0hrKisC6a185zHW9RLMFyrZr3vEH+AP4AAQH+AP4A/gAF0sTqC04m6PDp6NXc1fRzPSsWCLajtlYraiDimxVTZQqrbo+8/v//",
                     "status": "error"
                 }
-                """.trimIndent()
+            """.trimIndent()
         )
         // successful nonce
 
@@ -305,7 +321,9 @@ internal class TelematicsRequestsTest : BaseTest() {
         val mockUrl = mockWebServer.url("").toString()
 
         val unencryptedResponse =
-            Bytes("AAKmNHIgCtR0hrKisC6a185zHW9RLMFyrZr3vEH+AP4AAQH+AP4A/gAF0sTqC04m6PDp6NXc1fRzPSsWCLajtlYraiDimxVTZQqrbo+8/v//")
+            Bytes(
+                "AAKmNHIgCtR0hrKisC6a185zHW9RLMFyrZr3vEH+AP4AAQH+AP4A/gAF0sTqC04m6PDp6NXc1fRzPSsWCLajtlYraiDimxVTZQqrbo+8/v//"
+            )
         val crypto = mockk<Crypto> {
             every {
                 createTelematicsContainer(

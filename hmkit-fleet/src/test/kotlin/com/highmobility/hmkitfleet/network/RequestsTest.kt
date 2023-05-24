@@ -30,13 +30,16 @@ internal class RequestsTest {
     @Test
     fun parsesErrorFormat2() {
         val error = buildJsonObject {
-            put("errors", buildJsonArray {
-                addJsonObject {
-                    put("title", "title")
-                    put("source", "source")
-                    put("detail", "detail")
+            put(
+                "errors",
+                buildJsonArray {
+                    addJsonObject {
+                        put("title", "title")
+                        put("source", "source")
+                        put("detail", "detail")
+                    }
                 }
-            })
+            )
         }
 
         val requests = Requests(mockk(), mockk(), "mockk()")

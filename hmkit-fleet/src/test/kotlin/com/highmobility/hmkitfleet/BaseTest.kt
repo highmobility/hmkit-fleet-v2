@@ -28,12 +28,12 @@ import com.charleskorn.kaml.Yaml
 import com.highmobility.crypto.AccessCertificate
 import com.highmobility.crypto.value.DeviceSerial
 import com.highmobility.crypto.value.Signature
-import io.mockk.*
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import com.highmobility.hmkitfleet.model.AccessToken
 import com.highmobility.hmkitfleet.model.AuthToken
 import com.highmobility.hmkitfleet.model.VehicleAccess
+import io.mockk.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.koin.test.KoinTest
@@ -145,7 +145,6 @@ open class BaseTest : KoinTest {
 
     @AfterEach
     fun after() {
-
     }
 
     fun errorLogExpected(runnable: Runnable) {

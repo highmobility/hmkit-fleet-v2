@@ -30,10 +30,8 @@ import com.highmobility.hmkitfleet.network.AuthTokenRequests
 import com.highmobility.hmkitfleet.network.Cache
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Requests
-import okhttp3.OkHttpClient
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
-import org.koin.core.component.KoinComponent
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory

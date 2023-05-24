@@ -40,7 +40,6 @@ import io.mockk.mockkConstructor
 import io.mockk.unmockkConstructor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
@@ -62,12 +61,14 @@ class HMKitFleetTest : BaseTest() {
     @BeforeEach
     fun setUp() {
         val koin = koinApplication {
-            modules(module {
-                single { accessCertificateRequests }
-                single { accessTokenRequests }
-                single { clearanceRequests }
-                single { mockk<Logger>(relaxed = true) }
-            })
+            modules(
+                module {
+                    single { accessCertificateRequests }
+                    single { accessTokenRequests }
+                    single { clearanceRequests }
+                    single { mockk<Logger>(relaxed = true) }
+                }
+            )
         }
 
         mockkConstructor(Modules::class)

@@ -26,7 +26,7 @@ suspend fun Call.await(): Response {
             try {
                 cancel()
             } catch (ex: Throwable) {
-                //Ignore cancel exception
+                // Ignore cancel exception
             }
         }
     }

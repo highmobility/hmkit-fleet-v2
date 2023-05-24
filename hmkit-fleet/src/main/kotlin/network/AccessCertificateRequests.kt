@@ -27,9 +27,9 @@ import com.highmobility.crypto.AccessCertificate
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.hmkitfleet.ClientCertificate
+import com.highmobility.hmkitfleet.model.AccessToken
 import com.highmobility.value.Bytes
 import kotlinx.serialization.json.*
-import com.highmobility.hmkitfleet.model.AccessToken
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -47,7 +47,8 @@ internal class AccessCertificateRequests(
     private val crypto: Crypto
 ) : Requests(
     client,
-    logger, baseUrl
+    logger,
+    baseUrl
 ) {
     val apiDeviceCertKey = "device_access_certificate"
 
@@ -55,7 +56,7 @@ internal class AccessCertificateRequests(
         accessToken: AccessToken,
     ): Response<AccessCertificate> {
         val request = Request.Builder()
-            .url("${baseUrl}/access_certificates")
+            .url("$baseUrl/access_certificates")
             .header("Content-Type", "application/json")
             .post(requestBody(accessToken, certificate, privateKey, crypto))
             .build()

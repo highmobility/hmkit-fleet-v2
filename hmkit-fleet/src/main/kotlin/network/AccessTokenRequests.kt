@@ -24,9 +24,9 @@
 package com.highmobility.hmkitfleet.network
 
 import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
+import com.highmobility.hmkitfleet.model.AccessToken
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
-import com.highmobility.hmkitfleet.model.AccessToken
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -43,7 +43,8 @@ internal class AccessTokenRequests(
     private val configuration: ServiceAccountApiConfiguration,
 ) : Requests(
     client,
-    logger, baseUrl
+    logger,
+    baseUrl
 ) {
     suspend fun getAccessToken(
         vin: String
@@ -53,7 +54,7 @@ internal class AccessTokenRequests(
         if (authToken.response == null) return Response(null, authToken.error)
 
         val request = Request.Builder()
-            .url("${baseUrl}/fleets/access_tokens")
+            .url("$baseUrl/fleets/access_tokens")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response.authToken}")
             .post(getTokenBody(vin))
@@ -73,7 +74,7 @@ internal class AccessTokenRequests(
 
     suspend fun deleteAccessToken(accessToken: AccessToken): Response<Boolean> {
         val request = Request.Builder()
-            .url("${baseUrl}/access_tokens")
+            .url("$baseUrl/access_tokens")
             .header("Content-Type", "application/json")
             .method("DELETE", deleteTokenBody(accessToken))
             .build()

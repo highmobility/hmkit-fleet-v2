@@ -253,7 +253,8 @@ internal class ClearanceRequestsTest : BaseTest() {
                    "status":"approved",
                    "vin":"WBY8P210X07J49112"
                 }
-                ]""".trimIndent()
+                ]
+                """.trimIndent()
             )
 
         mockWebServer.enqueue(mockResponse)
@@ -344,7 +345,6 @@ internal class ClearanceRequestsTest : BaseTest() {
         assertTrue(status.response?.brand == Brand.BMW)
 
         assertTrue(status.response?.changelog?.get(0)?.status == ClearanceStatus.Status.APPROVED)
-
     }
 
     @Test

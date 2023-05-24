@@ -73,14 +73,14 @@ internal open class Requests(
 
         logger.debug(
             "sending ${request.method} ${request.url}:" +
-                    "\nheaders: ${request.headers}" +
-                    "body: $bodyInPrettyPrint"
+                "\nheaders: ${request.headers}" +
+                "body: $bodyInPrettyPrint"
         )
     }
 
     fun printResponse(response: Response): String {
         val body = response.body?.string()
-        logger.debug("${response.request.url} response:\n${response.code}: ${body}")
+        logger.debug("${response.request.url} response:\n${response.code}: $body")
         return body!!
     }
 

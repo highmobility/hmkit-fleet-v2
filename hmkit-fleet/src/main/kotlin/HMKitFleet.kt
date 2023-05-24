@@ -23,13 +23,11 @@
  */
 package com.highmobility.hmkitfleet
 
+import com.highmobility.hmkitfleet.model.*
+import com.highmobility.hmkitfleet.network.*
 import com.highmobility.value.Bytes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
-import com.highmobility.hmkitfleet.model.*
-import com.highmobility.hmkitfleet.network.*
-import org.koin.core.component.get
-import org.koin.core.component.inject
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 

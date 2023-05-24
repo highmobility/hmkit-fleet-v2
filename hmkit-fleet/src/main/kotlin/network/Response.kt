@@ -34,7 +34,8 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 data class Response<T>(
-    val response: T? = null, val error: Error? = null
+    val response: T? = null,
+    val error: Error? = null
 )
 
 /**
@@ -59,7 +60,9 @@ data class TelematicsResponse(
 @Serializable
 data class TelematicsCommandResponse(
     val message: String,
-    @Serializable(with = BytesSerializer::class) @SerialName("response_data") val responseData: Bytes,
+    @Serializable(with = BytesSerializer::class)
+    @SerialName("response_data")
+    val responseData: Bytes,
     @Serializable(with = Status.Serializer::class) val status: Status
 ) {
     enum class Status {

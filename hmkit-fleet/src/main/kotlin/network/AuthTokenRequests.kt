@@ -25,14 +25,12 @@ package com.highmobility.hmkitfleet.network
 
 import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
-import com.highmobility.hmkitfleet.HMKitFleet
-
+import com.highmobility.hmkitfleet.model.AuthToken
 import com.highmobility.utils.Base64
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import com.highmobility.hmkitfleet.model.AuthToken
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -61,7 +59,7 @@ internal class AuthTokenRequests(
             .build()
 
         val request = Request.Builder()
-            .url("${baseUrl}/auth_tokens")
+            .url("$baseUrl/auth_tokens")
             .header("Content-Type", "application/json")
             .post(body)
             .build()

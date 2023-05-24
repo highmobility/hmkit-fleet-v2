@@ -23,14 +23,11 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import kotlinx.serialization.json.*
 import com.highmobility.hmkitfleet.model.Brand
-import com.highmobility.hmkitfleet.model.ControlMeasure
-import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.EligibilityStatus
-import com.highmobility.hmkitfleet.model.RequestClearanceResponse
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -46,7 +43,8 @@ internal class UtilityRequests(
     private val authTokenRequests: AuthTokenRequests
 ) : Requests(
     client,
-    logger, baseUrl
+    logger,
+    baseUrl
 ) {
     suspend fun getEligibility(
         vin: String,
@@ -58,7 +56,7 @@ internal class UtilityRequests(
         if (authToken.error != null) return Response(null, authToken.error)
 
         val request = Request.Builder()
-            .url("${baseUrl}/eligibility")
+            .url("$baseUrl/eligibility")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${authToken.response?.authToken}")
             .post(body)

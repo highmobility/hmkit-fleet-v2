@@ -151,7 +151,9 @@ internal class AuthTokenRequestsTest : BaseTest() {
 
         assertTrue(status.error!!.title == "Not authorized")
         assertTrue(status.error!!.source == "assertion")
-        assertTrue(status.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key.")
+        assertTrue(
+            status.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key."
+        )
     }
 
     @Test

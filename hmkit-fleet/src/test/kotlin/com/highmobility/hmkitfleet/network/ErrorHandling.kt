@@ -51,7 +51,9 @@ internal inline fun <T> testErrorResponseReturned(
 
     assertTrue(response.error!!.title == "Not authorized")
     assertTrue(response.error!!.source == "assertion")
-    assertTrue(response.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key.")
+    assertTrue(
+        response.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key."
+    )
 }
 
 /**
