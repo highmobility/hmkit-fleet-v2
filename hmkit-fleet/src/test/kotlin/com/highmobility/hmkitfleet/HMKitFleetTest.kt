@@ -24,6 +24,7 @@
 
 package com.highmobility.hmkitfleet
 
+import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse
 import com.highmobility.hmkitfleet.network.AccessCertificateRequests
@@ -38,6 +39,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
 import kotlinx.coroutines.runBlocking
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -46,6 +49,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.Logger
+import java.net.HttpURLConnection
 
 class HMKitFleetTest : BaseTest() {
     private val accessCertificateRequests = mockk<AccessCertificateRequests>()
@@ -166,7 +170,7 @@ class HMKitFleetTest : BaseTest() {
         assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
     }
 
-/*    @Test
+    @Test
     fun canSetCustomWebUrl() {
         stopKoin()
         clearAllMocks()
@@ -179,7 +183,7 @@ class HMKitFleetTest : BaseTest() {
                 .setResponseCode(HttpURLConnection.HTTP_CREATED)
         )
 
-        val fakeUrl = mockWebServer.url("").toString()
+        val fakeUrl = mockWebServer.url("canSetCustomWebUrl").toString()
 
         HMKitFleet.Environment.webUrl = fakeUrl
         assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
@@ -191,5 +195,5 @@ class HMKitFleetTest : BaseTest() {
         assertTrue(recordedRequest.requestUrl.toString().contains(fakeUrl))
 
         mockWebServer.shutdown()
-    }*/
+    }
 }
