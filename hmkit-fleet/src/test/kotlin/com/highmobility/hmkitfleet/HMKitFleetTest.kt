@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package com.highmobility.hmkitfleet
 
 import com.highmobility.hmkitfleet.model.Brand
@@ -38,7 +37,10 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
+import io.mockk.unmockkConstructor
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
@@ -51,6 +53,7 @@ import org.koin.dsl.module
 import org.slf4j.Logger
 import java.net.HttpURLConnection
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HMKitFleetTest : BaseTest() {
     private val accessCertificateRequests = mockk<AccessCertificateRequests>()
     private val accessTokenRequests = mockk<AccessTokenRequests>()
@@ -74,7 +77,11 @@ class HMKitFleetTest : BaseTest() {
     @AfterEach
     fun tearDown() {
         stopKoin()
+        unmockkConstructor(Modules::class)
+        clearAllMocks()
     }
+
+    // this or any other single runBlocking test somehow messes up telematicsRequestTest
 
     @Test
     fun testGetVehicleAccessRequests() = runBlocking {
@@ -90,7 +97,6 @@ class HMKitFleetTest : BaseTest() {
 
         val hmkit = HMKitFleet(mockk())
         val access = hmkit.getVehicleAccess("vin1").get()
-
         coVerify { accessCertificateRequests.getAccessCertificate(any()) }
         coVerify { accessTokenRequests.getAccessToken(any()) }
 

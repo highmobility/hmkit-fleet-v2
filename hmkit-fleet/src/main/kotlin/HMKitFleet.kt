@@ -49,7 +49,7 @@ class HMKitFleet @JvmOverloads constructor(
     val environment: Environment = Environment.PRODUCTION,
 
     /**
-     * More options for configuring the HMKit. Default is [HMKitConfiguration.defaultConfiguration].
+     * More options for configuring the HMKit. Use the [HMKitConfiguration.Builder] to create the object.
      */
     hmKitConfiguration: HMKitConfiguration = HMKitConfiguration.defaultConfiguration()
 ) {

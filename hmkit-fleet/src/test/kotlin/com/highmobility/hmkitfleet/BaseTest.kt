@@ -61,17 +61,6 @@ internal fun expiredAuthToken(): AuthToken {
     )
 }
 
-internal val mockSignature = mockk<Signature> {
-    every { base64UrlSafe } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-    every { base64 } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-    every { hex } returns "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-}
-
-internal val mockSerial = mockk<DeviceSerial> {
-    every { hex } returns "AAAAAAAAAAAAAAAAAA"
-    every { base64 } returns "qqqqqqqqqqqq"
-}
-
 internal val newAccessToken: AccessToken = Json.decodeFromString(
     "{\n" +
         "  \"token_type\": \"bearer\",\n" +
@@ -80,18 +69,6 @@ internal val newAccessToken: AccessToken = Json.decodeFromString(
         "  \"expires_in\": 600,\n" +
         "  \"access_token\": \"a50e89e5-093c-4727-8101-4c6e81addabe\"\n" +
         "}"
-)
-
-internal val mockAccessCert = mockk<AccessCertificate> {
-    every { hex } returns "01030000030400000000000000040500000000000000050600000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000607010203070804050609090A0A0A0A0A0A0A0A0A0B00000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000B"
-    every { base64 } returns "AQMAAAMEAAAAAAAAAAQFAAAAAAAAAAUGAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAGBwECAwcIBAUGCQkKCgoKCgoKCgoLAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAL"
-    every { gainerSerial } returns mockSerial
-}
-
-internal val newVehicleAccess = VehicleAccess(
-    testVin,
-    newAccessToken,
-    mockAccessCert
 )
 
 open class BaseTest : KoinTest {
@@ -123,6 +100,30 @@ open class BaseTest : KoinTest {
     }
 
     val mockLogger = mockk<Logger>()
+
+    // have to be in base so they are created again for each test class
+    internal val mockSignature = mockk<Signature> {
+        every { base64UrlSafe } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
+        every { base64 } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
+        every { hex } returns "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+
+    internal val mockSerial = mockk<DeviceSerial> {
+        every { hex } returns "AAAAAAAAAAAAAAAAAA"
+        every { base64 } returns "qqqqqqqqqqqq"
+    }
+
+    internal val mockAccessCert = mockk<AccessCertificate> {
+        every { hex } returns "01030000030400000000000000040500000000000000050600000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000607010203070804050609090A0A0A0A0A0A0A0A0A0B00000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000B"
+        every { base64 } returns "AQMAAAMEAAAAAAAAAAQFAAAAAAAAAAUGAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAGBwECAwcIBAUGCQkKCgoKCgoKCgoLAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAL"
+        every { gainerSerial } returns mockSerial
+    }
+
+    internal val newVehicleAccess = VehicleAccess(
+        testVin,
+        newAccessToken,
+        mockAccessCert
+    )
 
     @BeforeEach
     fun before() {

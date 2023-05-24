@@ -25,8 +25,6 @@ package com.highmobility.hmkitfleet.network
 
 import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.BaseTest
-import com.highmobility.hmkitfleet.HMKitFleet
-import com.highmobility.hmkitfleet.mockSignature
 import com.highmobility.hmkitfleet.model.AuthToken
 import com.highmobility.hmkitfleet.notExpiredAuthToken
 import com.highmobility.utils.Base64
@@ -131,9 +129,9 @@ internal class AuthTokenRequestsTest : BaseTest() {
             .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
             .setBody(
                 "{\"errors\":" +
-                        "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
-                        "\"source\":\"assertion\"," +
-                        "\"title\":\"Not authorized\"}]}"
+                    "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
+                    "\"source\":\"assertion\"," +
+                    "\"title\":\"Not authorized\"}]}"
             )
         mockWebServer.enqueue(mockResponse)
         val baseUrl: HttpUrl = mockWebServer.url("")

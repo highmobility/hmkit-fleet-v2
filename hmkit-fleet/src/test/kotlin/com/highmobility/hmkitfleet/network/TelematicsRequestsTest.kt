@@ -26,14 +26,13 @@ package com.highmobility.hmkitfleet.network
 import com.highmobility.autoapi.Diagnostics
 import com.highmobility.autoapi.property.Property
 import com.highmobility.autoapi.value.measurement.Length
+import com.highmobility.crypto.AccessCertificate
 import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.DeviceSerial
 import com.highmobility.crypto.value.Issuer
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.hmkitfleet.BaseTest
 import com.highmobility.hmkitfleet.ClientCertificate
-import com.highmobility.hmkitfleet.mockAccessCert
-import com.highmobility.hmkitfleet.mockSignature
 import com.highmobility.value.Bytes
 import io.mockk.every
 import io.mockk.mockk
@@ -73,16 +72,18 @@ internal class TelematicsRequestsTest : BaseTest() {
         every { issuer } returns Issuer("00000000")
     }
 
-    private val crypto = mockk<Crypto> {
+    private val crypto = mockk<Crypto>().also {
         // random encryption ok here
         every {
-            createTelematicsContainer(
+            it.createTelematicsContainer(
                 Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce
             )
         } returns encryptedSentCommand
 
+        println("mock ${Diagnostics.GetState()} ${privateKey} ${certificate.serial} ${mockAccessCert} ${nonce}")
+
         every {
-            getPayloadFromTelematicsContainer(
+            it.getPayloadFromTelematicsContainer(
                 Bytes(encryptedReceivedCommand), privateKey, mockAccessCert
             )
         } returns decryptedReceivedCommand
@@ -227,7 +228,13 @@ internal class TelematicsRequestsTest : BaseTest() {
 
         val crypto = mockk<Crypto> {
             every {
-                createTelematicsContainer(Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce)
+                createTelematicsContainer(
+                    Diagnostics.GetState(),
+                    privateKey,
+                    certificate.serial,
+                    mockAccessCert,
+                    nonce
+                )
             } returns encryptedSentCommand
         }
 
@@ -261,7 +268,13 @@ internal class TelematicsRequestsTest : BaseTest() {
 
         val crypto = mockk<Crypto> {
             every {
-                createTelematicsContainer(Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce)
+                createTelematicsContainer(
+                    Diagnostics.GetState(),
+                    privateKey,
+                    certificate.serial,
+                    mockAccessCert,
+                    nonce
+                )
             } returns encryptedSentCommand
         }
 
@@ -295,7 +308,13 @@ internal class TelematicsRequestsTest : BaseTest() {
             Bytes("AAKmNHIgCtR0hrKisC6a185zHW9RLMFyrZr3vEH+AP4AAQH+AP4A/gAF0sTqC04m6PDp6NXc1fRzPSsWCLajtlYraiDimxVTZQqrbo+8/v//")
         val crypto = mockk<Crypto> {
             every {
-                createTelematicsContainer(Diagnostics.GetState(), privateKey, certificate.serial, mockAccessCert, nonce)
+                createTelematicsContainer(
+                    Diagnostics.GetState(),
+                    privateKey,
+                    certificate.serial,
+                    mockAccessCert,
+                    nonce
+                )
             } returns encryptedSentCommand
 
             // fail the response parsing

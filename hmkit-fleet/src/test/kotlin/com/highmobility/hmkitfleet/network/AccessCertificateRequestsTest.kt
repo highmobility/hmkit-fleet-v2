@@ -27,9 +27,6 @@ import com.highmobility.crypto.Crypto
 import com.highmobility.crypto.value.PrivateKey
 import com.highmobility.hmkitfleet.ClientCertificate
 import com.highmobility.hmkitfleet.BaseTest
-import com.highmobility.hmkitfleet.mockAccessCert
-import com.highmobility.hmkitfleet.mockSerial
-import com.highmobility.hmkitfleet.mockSignature
 import com.highmobility.hmkitfleet.newAccessToken
 import com.highmobility.value.Bytes
 import io.mockk.every
