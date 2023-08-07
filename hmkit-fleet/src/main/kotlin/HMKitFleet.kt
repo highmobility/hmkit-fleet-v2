@@ -34,6 +34,8 @@ import java.util.concurrent.CompletableFuture
 /**
  * HMKitFleet is the access point for the Fleet SDK functionality. It is accessed by
  * creating a new HMKitFleet object with a [ServiceAccountApiConfiguration].
+ *
+ * @sample com.highmobility.hmkitfleet.samples.createHmkitInMain
  */
 class HMKitFleet @JvmOverloads constructor(
     /**
@@ -214,3 +216,5 @@ class HMKitFleet @JvmOverloads constructor(
         }
     }
 }
+
+

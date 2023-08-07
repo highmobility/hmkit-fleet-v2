@@ -1,0 +1,46 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Run tests
+
+on:
+  push:
+    branches:
+      - main
+      - v2
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 17
+          cache: gradle
+
+
+      - name: Setup SSH Keys and known_hosts to access submodules
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GH_SSH_PRIVATE }}"
+
+      - name: Update submodules
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: git submodule update --init --recursive
+
+      - name: Create docs
+        run: ./gradlew :hmkit-fleet:dokkaHtml
+
+      - name: Deploy to Github Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: hmkit-fleet/build/dokka/html
