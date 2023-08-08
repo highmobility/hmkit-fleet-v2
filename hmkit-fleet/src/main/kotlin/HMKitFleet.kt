@@ -37,6 +37,7 @@ import com.highmobility.hmkitfleet.network.TelematicsRequests
 import com.highmobility.hmkitfleet.network.TelematicsResponse
 import com.highmobility.hmkitfleet.network.UtilityRequests
 import com.highmobility.value.Bytes
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import org.slf4j.Logger
@@ -77,6 +78,7 @@ class HMKitFleet @JvmOverloads constructor(
     hmKitConfiguration: HMKitConfiguration = HMKitConfiguration.defaultConfiguration()
 ) {
     private val koin = Modules(configuration, environment, hmKitConfiguration).start()
+    private val scope = koin.get<CoroutineScope>()
     private val logger by koin.inject<Logger>()
 
     /**
@@ -90,7 +92,7 @@ class HMKitFleet @JvmOverloads constructor(
     fun getEligibility(
         vin: String,
         brand: Brand
-    ): CompletableFuture<Response<EligibilityStatus>> = GlobalScope.future {
+    ): CompletableFuture<Response<EligibilityStatus>> = scope.future {
         logger.debug("HMKitFleet: getEligibility: $vin")
         koin.get<UtilityRequests>().getEligibility(vin, brand)
     }
@@ -108,7 +110,7 @@ class HMKitFleet @JvmOverloads constructor(
         vin: String,
         brand: Brand,
         controlMeasures: List<ControlMeasure>? = null
-    ): CompletableFuture<Response<RequestClearanceResponse>> = GlobalScope.future {
+    ): CompletableFuture<Response<RequestClearanceResponse>> = scope.future {
         logger.debug("HMKitFleet: requestClearance: $vin")
         koin.get<ClearanceRequests>().requestClearance(vin, brand, controlMeasures)
     }
@@ -120,11 +122,10 @@ class HMKitFleet @JvmOverloads constructor(
      *
      * @return The clearance statuses
      */
-    fun getClearanceStatuses(): CompletableFuture<Response<List<ClearanceStatus>>> =
-        GlobalScope.future {
-            logger.debug("HMKitFleet: getClearanceStatuses:")
-            koin.get<ClearanceRequests>().getClearanceStatuses()
-        }
+    fun getClearanceStatuses(): CompletableFuture<Response<List<ClearanceStatus>>> = scope.future {
+        logger.debug("HMKitFleet: getClearanceStatuses:")
+        koin.get<ClearanceRequests>().getClearanceStatuses()
+    }
 
     /**
      * Get the status of a [vin] that has previously been registered for data access clearance with
@@ -133,7 +134,7 @@ class HMKitFleet @JvmOverloads constructor(
      *
      * @return The clearance status
      */
-    fun getClearanceStatus(vin: String): CompletableFuture<Response<ClearanceStatus>> = GlobalScope.future {
+    fun getClearanceStatus(vin: String): CompletableFuture<Response<ClearanceStatus>> = scope.future {
         logger.debug("HMKitFleet: getClearanceStatus($vin):")
         koin.get<ClearanceRequests>().getClearanceStatus(vin)
     }
@@ -148,7 +149,7 @@ class HMKitFleet @JvmOverloads constructor(
      * @param vin The vehicle VIN number
      * @return The clearance status
      */
-    fun deleteClearance(vin: String) = GlobalScope.future {
+    fun deleteClearance(vin: String) = scope.future {
         logger.debug("HMKitFleet: delete clearance $vin:")
         koin.get<ClearanceRequests>().deleteClearance(vin)
     }
@@ -163,7 +164,7 @@ class HMKitFleet @JvmOverloads constructor(
      * @return The vehicle access object
      */
     fun getVehicleAccess(vin: String):
-        CompletableFuture<Response<VehicleAccess>> = GlobalScope.future {
+        CompletableFuture<Response<VehicleAccess>> = scope.future {
         val accessToken = koin.get<AccessTokenRequests>().getAccessToken(vin)
 
         if (accessToken.response != null) {
@@ -197,7 +198,7 @@ class HMKitFleet @JvmOverloads constructor(
     fun sendCommand(
         command: Bytes,
         vehicleAccess: VehicleAccess
-    ): CompletableFuture<TelematicsResponse> = GlobalScope.future {
+    ): CompletableFuture<TelematicsResponse> = scope.future {
         koin.get<TelematicsRequests>().sendCommand(command, vehicleAccess.accessCertificate)
     }
 
@@ -209,7 +210,7 @@ class HMKitFleet @JvmOverloads constructor(
      */
     @Deprecated("Use deleteClearance instead")
     fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Response<Boolean>> =
-        GlobalScope.future {
+        scope.future {
             koin.get<AccessTokenRequests>().deleteAccessToken(vehicleAccess.accessToken)
         }
 

@@ -32,6 +32,8 @@ import com.highmobility.hmkitfleet.network.AuthTokenRequests
 import com.highmobility.hmkitfleet.network.Cache
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Requests
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
 import org.koin.dsl.koinApplication
@@ -99,6 +101,9 @@ internal class Modules(
             )
         }
 
+        single {
+            CoroutineScope(Dispatchers.IO)
+        }
     }
 
     private lateinit var koinApplication: KoinApplication
