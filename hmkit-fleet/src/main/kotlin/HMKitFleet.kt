@@ -23,8 +23,19 @@
  */
 package com.highmobility.hmkitfleet
 
-import com.highmobility.hmkitfleet.model.*
-import com.highmobility.hmkitfleet.network.*
+import com.highmobility.hmkitfleet.model.Brand
+import com.highmobility.hmkitfleet.model.ClearanceStatus
+import com.highmobility.hmkitfleet.model.ControlMeasure
+import com.highmobility.hmkitfleet.model.EligibilityStatus
+import com.highmobility.hmkitfleet.model.RequestClearanceResponse
+import com.highmobility.hmkitfleet.model.VehicleAccess
+import com.highmobility.hmkitfleet.network.AccessCertificateRequests
+import com.highmobility.hmkitfleet.network.AccessTokenRequests
+import com.highmobility.hmkitfleet.network.ClearanceRequests
+import com.highmobility.hmkitfleet.network.Response
+import com.highmobility.hmkitfleet.network.TelematicsRequests
+import com.highmobility.hmkitfleet.network.TelematicsResponse
+import com.highmobility.hmkitfleet.network.UtilityRequests
 import com.highmobility.value.Bytes
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
@@ -35,7 +46,19 @@ import java.util.concurrent.CompletableFuture
  * HMKitFleet is the access point for the Fleet SDK functionality. It is accessed by
  * creating a new HMKitFleet object with a [ServiceAccountApiConfiguration].
  *
- * @sample com.highmobility.hmkitfleet.samples.createHmkitInMain
+ * ```
+ * HMKitFleet fleet = new HMKitFleet(
+ *     ServiceAccountApiConfiguration(
+ *         "serviceAccountApiKey",
+ *         "serviceAccountPrivateKey",
+ *         "clientCertificate",
+ *         "clientPrivateKey",
+ *         "oauthClientId",
+ *         "oauthClientSecret"
+ *     ),
+ *     HMKitFleet.Environment.SANDBOX
+ * );
+ * ```
  */
 class HMKitFleet @JvmOverloads constructor(
     /**
@@ -57,7 +80,8 @@ class HMKitFleet @JvmOverloads constructor(
     private val logger by koin.inject<Logger>()
 
     /**
-     * Get the eligibility status for a specific VIN. This can be used to find out if the vehicle has the necessary connectivity to transmit data.
+     * Get the eligibility status for a specific VIN. This can be used to find out if the vehicle has the necessary
+     * connectivity to transmit data.
      *
      * @param vin The vehicle VIN number
      * @param brand The vehicle brand

@@ -24,7 +24,9 @@
 package com.highmobility.hmkitfleet
 
 import com.highmobility.crypto.Crypto
-import com.highmobility.hmkitfleet.network.*
+import com.highmobility.hmkitfleet.network.AccessTokenRequests
+import com.highmobility.hmkitfleet.network.TelematicsRequests
+import com.highmobility.hmkitfleet.network.UtilityRequests
 import com.highmobility.hmkitfleet.network.AccessCertificateRequests
 import com.highmobility.hmkitfleet.network.AuthTokenRequests
 import com.highmobility.hmkitfleet.network.Cache
@@ -96,6 +98,7 @@ internal class Modules(
                 get()
             )
         }
+
     }
 
     private lateinit var koinApplication: KoinApplication
