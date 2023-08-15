@@ -47,8 +47,8 @@ internal data class AuthToken(
     val validUntil: ZonedDateTime
 ) {
     fun isExpired(): Boolean {
-        if (ZonedDateTime.now(systemUTC()).isAfter(validUntil)) return true
-        return false
+        val now = ZonedDateTime.now(systemUTC())
+        return now.isAfter(validUntil.minusMinutes(1))
     }
 }
 

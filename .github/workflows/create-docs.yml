@@ -36,7 +36,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Create docs
-        run: ./gradlew :hmkit-fleet:dokkaHtml
+        run: ./gradlew :hmkit-fleet:dokkaJavadoc
 
       - name: Deploy to Github Pages
         uses: JamesIves/github-pages-deploy-action@v4

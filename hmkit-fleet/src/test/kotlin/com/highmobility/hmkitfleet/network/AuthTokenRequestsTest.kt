@@ -21,6 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+@file:Suppress("MaxLineLength")
+
 package com.highmobility.hmkitfleet.network
 
 import com.highmobility.crypto.Crypto

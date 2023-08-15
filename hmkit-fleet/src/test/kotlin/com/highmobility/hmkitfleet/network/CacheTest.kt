@@ -42,10 +42,17 @@ internal class CacheTest {
         ZonedDateTime.now(systemUTC()).minusMinutes(60)
     )
 
+    private val expiredWithBuffer = AuthToken(
+        "",
+        ZonedDateTime.now(systemUTC()).minusMinutes(10),
+        ZonedDateTime.now(systemUTC()).plusSeconds(30)
+    )
+
     @Test
     fun testAuthTokenExpiration() {
         assertTrue(notExpiredToken.isExpired() == false)
         assertTrue(expiredToken.isExpired() == true)
+        assertTrue(expiredWithBuffer.isExpired() == true)
     }
 
     @Test
