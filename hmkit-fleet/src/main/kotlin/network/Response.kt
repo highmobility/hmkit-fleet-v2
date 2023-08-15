@@ -41,7 +41,9 @@ data class Response<T>(
 /**
  * Telematics command response object.
  *
- * Either [response] or [errors] with at least 1 error is present. Never both of these. Please note that the [TelematicsCommandResponse] object could contain an error from the car. In that case the [errors] list will still be empty.
+ * Either [response] or [errors] with at least 1 error is present. Never both of these. Please note that the
+ * [TelematicsCommandResponse] object could contain an error from the car. In that case the [errors] list will still be
+ * empty.
  */
 data class TelematicsResponse(
     /**

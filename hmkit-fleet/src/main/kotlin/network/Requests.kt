@@ -23,11 +23,24 @@
  */
 package com.highmobility.hmkitfleet.network
 
+import com.highmobility.crypto.Crypto
+import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
+import com.highmobility.utils.Base64
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
-import okhttp3.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.Buffer
@@ -36,7 +49,7 @@ import org.slf4j.Logger
 internal open class Requests(
     val client: OkHttpClient,
     val logger: Logger,
-    val baseUrl: String
+    val baseUrl: String,
 ) {
     val mediaType = "application/json; charset=utf-8".toMediaType()
     val baseHeaders = Headers.Builder().add("Content-Type", "application/json").build()
@@ -120,6 +133,29 @@ internal open class Requests(
         }
 
         return completeBody.toString().toRequestBody(mediaType)
+    }
+
+    internal fun getJwt(configuration: ServiceAccountApiConfiguration, crypto: Crypto): String {
+        val header = buildJsonObject {
+            put("alg", "ES256")
+            put("typ", "JWT")
+        }.toString()
+
+        val jwtBody = buildJsonObject {
+            put("ver", 2) // configuration.version)
+            put("iss", configuration.serviceAccountPrivateKeyId)
+            put("aud", baseUrl)
+            put("jti", configuration.createJti())
+            put("iat", configuration.createIat())
+        }.toString()
+
+        val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
+        val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
+        val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
+        val privateKey = configuration.getServiceAccountHmPrivateKey()
+        val jwtSignature = crypto.signJWT(jwtContent.toByteArray(), privateKey)
+
+        return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)
     }
 }
 

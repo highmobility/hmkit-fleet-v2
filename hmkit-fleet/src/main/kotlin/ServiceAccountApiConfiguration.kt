@@ -21,81 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@file:UseSerializers(DeviceCertificateSerializer::class)
-
 package com.highmobility.hmkitfleet
 
-import com.highmobility.crypto.DeviceCertificate
 import com.highmobility.crypto.value.PrivateKey
-import com.highmobility.value.Bytes
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseSerializers
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.util.*
 
-typealias ClientCertificate = DeviceCertificate
-
 /**
- * Values required for initialising the Fleet SDK.
+ * Decode the service account private key from JSON.
  */
 @Serializable
-data class ServiceAccountApiConfiguration(
-    /**
-     * Service account API key
-     */
-    val serviceAccountApiKey: String,
-    /**
-     * This private key is downloaded when creating a Service Account API key. It should be in
-     * PKCS 8 format
-     */
-    val serviceAccountPrivateKey: String,
+class ServiceAccountApiConfiguration {
+    @SerialName("private_key")
+    private val serviceAccountPrivateKey: String
 
-    /**
-     * The client certificate
-     */
-    val clientCertificate: ClientCertificate,
+    @SerialName("id")
+    val serviceAccountPrivateKeyId: String
 
-    /**
-     * This key is paired with the app's client certificate. It should be the 32 bytes of the
-     * ANSI X9.62 Prime 256v1 curve in hex or base64.
-     */
-    val clientPrivateKey: String,
+    constructor(privateKeyJson: String) {
+        val json = Json.decodeFromString<JsonObject>(privateKeyJson)
 
-    /**
-     * The OAuth client ID.
-     */
-    val oauthClientId: String,
+        // PKCS 8 format
+        serviceAccountPrivateKey = json["private_key"]!!.jsonPrimitive.content
+        serviceAccountPrivateKeyId = json["id"]!!.jsonPrimitive.content
+    }
 
-    /**
-     * The OAuth client secret.
-     */
-    val oauthClientSecret: String
-) {
-    /**
-     * Client Certificate in base64 or hex
-     */
-    constructor(
-        serviceAccountApiKey: String,
-        serviceAccountPrivateKey: String,
-        clientCertificate: String,
-        clientPrivateKey: String,
-        oauthClientId: String,
-        oauthClientSecret: String
-    ) : this(
-        serviceAccountApiKey,
-        serviceAccountPrivateKey,
-        ClientCertificate(clientCertificate),
-        clientPrivateKey,
-        oauthClientId,
-        oauthClientSecret
-    )
-
-    val version = 1
+    val version = 2
 
     internal fun createJti() = UUID.randomUUID().toString()
     internal fun createIat() = (System.currentTimeMillis() / 1000)
@@ -104,20 +59,15 @@ data class ServiceAccountApiConfiguration(
         return PrivateKey(serviceAccountPrivateKey, PrivateKey.Format.PKCS8)
     }
 
-    internal fun getClientPrivateKey(): PrivateKey {
-        return PrivateKey(clientPrivateKey)
-    }
-}
-
-object DeviceCertificateSerializer : KSerializer<DeviceCertificate> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: DeviceCertificate) {
-        encoder.encodeString((value as Bytes).toString())
+    fun toJsonString(): String {
+        return Json.encodeToString(serializer(), this)
     }
 
-    override fun deserialize(decoder: Decoder): DeviceCertificate {
-        return DeviceCertificate(Bytes(decoder.decodeString()))
+    companion object {
+        private val json = Json { ignoreUnknownKeys = true }
+
+        fun fromJson(json: String): ServiceAccountApiConfiguration {
+            return this.json.decodeFromString(serializer(), json)
+        }
     }
 }

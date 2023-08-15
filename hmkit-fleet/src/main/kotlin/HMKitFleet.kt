@@ -28,44 +28,33 @@ import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.ControlMeasure
 import com.highmobility.hmkitfleet.model.EligibilityStatus
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse
-import com.highmobility.hmkitfleet.model.VehicleAccess
-import com.highmobility.hmkitfleet.network.AccessCertificateRequests
-import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Response
-import com.highmobility.hmkitfleet.network.TelematicsRequests
-import com.highmobility.hmkitfleet.network.TelematicsResponse
 import com.highmobility.hmkitfleet.network.UtilityRequests
-import com.highmobility.value.Bytes
+import com.highmobility.hmkitfleet.network.VehicleDataRequests
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 
 /**
  * HMKitFleet is the access point for the Fleet SDK functionality. It is accessed by
- * creating a new HMKitFleet object with a [ServiceAccountApiConfiguration].
+ * creating a new HMKitFleet object with a service account private key JSON string.
  *
  * ```
  * HMKitFleet fleet = new HMKitFleet(
- *     ServiceAccountApiConfiguration(
- *         "serviceAccountApiKey",
- *         "serviceAccountPrivateKey",
- *         "clientCertificate",
- *         "clientPrivateKey",
- *         "oauthClientId",
- *         "oauthClientSecret"
- *     ),
+ *     readStringContents(service-account-private-key-{id}.json),
  *     HMKitFleet.Environment.SANDBOX
  * );
  * ```
  */
 class HMKitFleet @JvmOverloads constructor(
     /**
-     * The configuration for the Fleet SDK. Get the values from the High-Mobility console.
+     * The service-account-private-key-{id}.json string downloaded from High-Mobility console.
+     *
+     * The required fields are `private_key` and `id`
      */
-    configuration: ServiceAccountApiConfiguration,
+    configuration: String,
 
     /**
      * The SDK environment. Default is Production.
@@ -77,7 +66,7 @@ class HMKitFleet @JvmOverloads constructor(
      */
     hmKitConfiguration: HMKitConfiguration = HMKitConfiguration.defaultConfiguration()
 ) {
-    private val koin = Modules(configuration, environment, hmKitConfiguration).start()
+    private val koin = Koin(configuration, environment, hmKitConfiguration).start()
     private val scope = koin.get<CoroutineScope>()
     private val logger by koin.inject<Logger>()
 
@@ -154,65 +143,11 @@ class HMKitFleet @JvmOverloads constructor(
         koin.get<ClearanceRequests>().deleteClearance(vin)
     }
 
-    /**
-     * Get Vehicle Access object. This can be queried for vehicles with [getClearanceStatuses]
-     * Approved. The returned object can be used with [sendCommand] or [revokeClearance].
-     *
-     * The user should securely store this object for later use.
-     *
-     * @param vin The vehicle VIN number
-     * @return The vehicle access object
-     */
-    fun getVehicleAccess(vin: String):
-        CompletableFuture<Response<VehicleAccess>> = scope.future {
-        val accessToken = koin.get<AccessTokenRequests>().getAccessToken(vin)
-
-        if (accessToken.response != null) {
-            val accessCertificate = koin.get<AccessCertificateRequests>().getAccessCertificate(
-                accessToken.response,
-            )
-
-            if (accessCertificate.response != null) {
-                val vehicleAccess =
-                    VehicleAccess(
-                        vin,
-                        accessToken.response,
-                        accessCertificate.response
-                    )
-                Response(vehicleAccess, null)
-            } else {
-                Response(null, accessCertificate.error)
-            }
-        } else {
-            Response(null, accessToken.error)
-        }
+    fun getVehicleState(
+        vin: String
+    ): CompletableFuture<Response<String>> = scope.future {
+        koin.get<VehicleDataRequests>().getVehicleStatus(vin)
     }
-
-    /**
-     * Send a telematics command to the vehicle.
-     *
-     * @param vehicleAccess The vehicle access object returned in [getVehicleAccess]
-     * @param command The command that is sent to the vehicle.
-     * @return The vehicle response or server error via the [TelematicsResponse] object.
-     */
-    fun sendCommand(
-        command: Bytes,
-        vehicleAccess: VehicleAccess
-    ): CompletableFuture<TelematicsResponse> = scope.future {
-        koin.get<TelematicsRequests>().sendCommand(command, vehicleAccess.accessCertificate)
-    }
-
-    /**
-     * Revoke the vehicle clearance. After this, the [VehicleAccess] object is invalid.
-     *
-     * @param vehicleAccess The vehicle access object returned in [getVehicleAccess]
-     * @return Whether clearance was successful
-     */
-    @Deprecated("Use deleteClearance instead")
-    fun revokeClearance(vehicleAccess: VehicleAccess): CompletableFuture<Response<Boolean>> =
-        scope.future {
-            koin.get<AccessTokenRequests>().deleteAccessToken(vehicleAccess.accessToken)
-        }
 
     /**
      * The Fleet SDK environment.
@@ -241,5 +176,3 @@ class HMKitFleet @JvmOverloads constructor(
         }
     }
 }
-
-

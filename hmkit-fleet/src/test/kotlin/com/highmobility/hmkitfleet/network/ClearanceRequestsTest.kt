@@ -49,6 +49,55 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 
+private const val CHANGE_LOG = """[
+                {
+                   "brand":"bmw",
+                   "changelog":[
+                      {
+                         "status":"pending",
+                         "timestamp":"2022-03-30T12:27:25"
+                      },
+                      {
+                         "status":"approved",
+                         "timestamp":"2022-03-30T12:27:27"
+                      },
+                      {
+                         "status":"revoked",
+                         "timestamp":"2022-04-30T12:27:27"
+                      }
+                   ],
+                   "status":"revoked",
+                   "vin":"WBY8P210X07J49112"
+                },
+                {
+                   "brand":"bmw",
+                   "changelog":[
+                      {
+                         "status":"pending",
+                         "timestamp":"2022-04-01T12:27:25"
+                      },
+                      {
+                         "status":"approved",
+                         "timestamp":"2022-04-01T12:27:27"
+                      }
+                   ],
+                   "status":"approved",
+                   "vin":"WBY8P210X07J49112"
+                },
+                {
+                   "brand":"bmw",
+                   "changelog":[],
+                   "status":"approved",
+                   "vin":"WBY8P210X07J49112"
+                },
+                {
+                   "brand":"bmw",
+                   "status":"approved",
+                   "vin":"WBY8P210X07J49112"
+                }
+                ]
+                """
+
 internal class ClearanceRequestsTest : BaseTest() {
     val mockWebServer = MockWebServer()
     val client = OkHttpClient()
@@ -207,54 +256,7 @@ internal class ClearanceRequestsTest : BaseTest() {
         val mockResponse = MockResponse()
             .setResponseCode(HttpURLConnection.HTTP_OK)
             .setBody(
-                """[
-                {
-                   "brand":"bmw",
-                   "changelog":[
-                      {
-                         "status":"pending",
-                         "timestamp":"2022-03-30T12:27:25"
-                      },
-                      {
-                         "status":"approved",
-                         "timestamp":"2022-03-30T12:27:27"
-                      },
-                      {
-                         "status":"revoked",
-                         "timestamp":"2022-04-30T12:27:27"
-                      }
-                   ],
-                   "status":"revoked",
-                   "vin":"WBY8P210X07J49112"
-                },
-                {
-                   "brand":"bmw",
-                   "changelog":[
-                      {
-                         "status":"pending",
-                         "timestamp":"2022-04-01T12:27:25"
-                      },
-                      {
-                         "status":"approved",
-                         "timestamp":"2022-04-01T12:27:27"
-                      }
-                   ],
-                   "status":"approved",
-                   "vin":"WBY8P210X07J49112"
-                },
-                {
-                   "brand":"bmw",
-                   "changelog":[],
-                   "status":"approved",
-                   "vin":"WBY8P210X07J49112"
-                },
-                {
-                   "brand":"bmw",
-                   "status":"approved",
-                   "vin":"WBY8P210X07J49112"
-                }
-                ]
-                """.trimIndent()
+                CHANGE_LOG.trimIndent()
             )
 
         mockWebServer.enqueue(mockResponse)

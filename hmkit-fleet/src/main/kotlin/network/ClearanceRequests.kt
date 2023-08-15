@@ -84,7 +84,7 @@ internal class ClearanceRequests(
                 val status =
                     Json.decodeFromJsonElement<RequestClearanceResponse>(statusElement)
                 if (status.vin == vin) {
-                    return Response(status, null)
+                    return@tryParseResponse Response(status, null)
                 }
             }
             Response(null, genericError())

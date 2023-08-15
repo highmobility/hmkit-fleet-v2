@@ -31,7 +31,7 @@ class HMKitConfigurationTest : BaseTest() {
         val hmkitConf = HMKitConfiguration.Builder().client(client).build()
 
         val hmkit = HMKitFleet(
-            configuration,
+            configuration.toJsonString(),
             HMKitFleet.Environment.SANDBOX,
             hmkitConf
         )

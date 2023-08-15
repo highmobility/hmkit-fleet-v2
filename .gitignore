@@ -89,3 +89,4 @@ obj
 credentials
 vehicleAccess.yaml
 vehicleAccess.json
+private-key.json

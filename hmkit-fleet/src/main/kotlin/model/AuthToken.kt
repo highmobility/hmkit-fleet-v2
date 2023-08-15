@@ -21,43 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@file:UseSerializers(DateTimeSerializer::class)
+@file:UseSerializers(ZonedDateTimeSerializer::class)
 
 package com.highmobility.hmkitfleet.model
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.Clock.systemUTC
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @Serializable
 internal data class AuthToken(
     @SerialName("auth_token")
     val authToken: String,
     @SerialName("valid_from")
-    val validFrom: LocalDateTime,
+    val validFrom: ZonedDateTime,
     @SerialName("valid_until")
-    val validUntil: LocalDateTime
+    val validUntil: ZonedDateTime
 ) {
     fun isExpired(): Boolean {
-        if (LocalDateTime.now(systemUTC()).isAfter(validUntil)) return true
+        if (ZonedDateTime.now(systemUTC()).isAfter(validUntil)) return true
         return false
     }
 }
 
-internal object DateTimeSerializer : KSerializer<LocalDateTime> {
+internal object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+    override fun serialize(encoder: Encoder, value: ZonedDateTime) {
         encoder.encodeString(value.toString())
     }
 
-    override fun deserialize(decoder: Decoder): LocalDateTime {
-        return LocalDateTime.parse(decoder.decodeString())
+    override fun deserialize(decoder: Decoder): ZonedDateTime {
+        return ZonedDateTime.parse(decoder.decodeString())
     }
 }

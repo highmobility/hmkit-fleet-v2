@@ -24,14 +24,12 @@
 package com.highmobility.hmkitfleet
 
 import com.highmobility.crypto.Crypto
-import com.highmobility.hmkitfleet.network.AccessTokenRequests
-import com.highmobility.hmkitfleet.network.TelematicsRequests
 import com.highmobility.hmkitfleet.network.UtilityRequests
-import com.highmobility.hmkitfleet.network.AccessCertificateRequests
 import com.highmobility.hmkitfleet.network.AuthTokenRequests
 import com.highmobility.hmkitfleet.network.Cache
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Requests
+import com.highmobility.hmkitfleet.network.VehicleDataRequests
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.Koin
@@ -40,12 +38,13 @@ import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
-internal class Modules(
-    configuration: ServiceAccountApiConfiguration,
+internal class Koin(
+    configuration: String,
     environment: HMKitFleet.Environment,
     hmKitConfiguration: HMKitConfiguration
 ) {
     private val koinModules = module {
+        val configuration = ServiceAccountApiConfiguration(configuration)
         single { LoggerFactory.getLogger(HMKitFleet::class.java) }
         single { hmKitConfiguration.client }
         single { environment }
@@ -62,36 +61,8 @@ internal class Modules(
                 get()
             )
         }
-        single {
-            AccessTokenRequests(
-                get(),
-                get(),
-                environment.url,
-                get(),
-                configuration
-            )
-        }
         single { ClearanceRequests(get(), get(), environment.url, get()) }
-        single {
-            AccessCertificateRequests(
-                get(),
-                get(),
-                environment.url,
-                configuration.getClientPrivateKey(),
-                configuration.clientCertificate,
-                get()
-            )
-        }
-        single {
-            TelematicsRequests(
-                get(),
-                get(),
-                environment.url,
-                configuration.getClientPrivateKey(),
-                configuration.clientCertificate,
-                get()
-            )
-        }
+
         single {
             UtilityRequests(
                 get(),
@@ -100,10 +71,16 @@ internal class Modules(
                 get()
             )
         }
-
         single {
-            CoroutineScope(Dispatchers.IO)
+            VehicleDataRequests(
+                get(),
+                get(),
+                environment.url,
+                get()
+            )
         }
+
+        single { CoroutineScope(Dispatchers.IO) }
     }
 
     private lateinit var koinApplication: KoinApplication

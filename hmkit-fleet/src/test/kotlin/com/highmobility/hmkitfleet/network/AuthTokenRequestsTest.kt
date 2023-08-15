@@ -206,7 +206,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
         )
     }
 
-    fun getJwtContent(): String {
+    private fun getJwtContent(): String {
         every { configuration.createJti() } returns "jti"
         every { configuration.createIat() } returns 1001
 
@@ -217,7 +217,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
 
         val jwtBody = buildJsonObject {
             put("ver", configuration.version)
-            put("iss", configuration.serviceAccountApiKey)
+            put("iss", configuration.serviceAccountPrivateKeyId)
             put("aud", mockWebServer.url("").toString())
             put("jti", configuration.createJti())
             put("iat", configuration.createIat())

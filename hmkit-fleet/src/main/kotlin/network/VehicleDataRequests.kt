@@ -23,71 +23,43 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.crypto.Crypto
-import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
-import com.highmobility.hmkitfleet.model.AuthToken
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
 import utils.await
 import java.net.HttpURLConnection
 
-internal class AuthTokenRequests(
+internal class VehicleDataRequests(
     client: OkHttpClient,
-    private val crypto: Crypto,
     logger: Logger,
     baseUrl: String,
-    private val configuration: ServiceAccountApiConfiguration,
-    private val cache: Cache,
+    private val authTokenRequests: AuthTokenRequests,
 ) : Requests(
     client,
     logger,
     baseUrl,
 ) {
-    private fun getUrlEncodedJsonRequest(): Request {
-        val body = buildJsonObject {
-            put("assertion", getJwt(configuration, crypto))
-        }
+    suspend fun getVehicleStatus(
+        vin: String,
+    ): Response<String> {
+        val authToken = authTokenRequests.getAuthToken()
 
-        val newBody = Json.encodeToString(body).toRequestBody("application/json".toMediaType())
-
+        if (authToken.error != null) return Response(null, authToken.error)
+        println("auth: Bearer ${authToken.response?.authToken}")
         val request = Request.Builder()
-            .url("$baseUrl/auth_tokens")
+            .url("$baseUrl/vehicle-data/autoapi-13/$vin")
             .header("Content-Type", "application/json")
-            .post(newBody)
+            .header("Authorization", "Bearer ${authToken.response?.authToken}")
+            .get()
             .build()
 
-        return request
-    }
-
-    suspend fun getAuthToken(): Response<AuthToken> {
-        val cachedToken = cache.authToken
-        if (cachedToken != null) return Response(cachedToken)
-
-        val request = getUrlEncodedJsonRequest()
-
         printRequest(request)
+
         val call = client.newCall(request)
-
         val response = call.await()
-        val responseBody = printResponse(response)
 
-        return try {
-            if (response.code == HttpURLConnection.HTTP_CREATED) {
-                cache.authToken = Json.decodeFromString(responseBody)
-                Response(cache.authToken)
-            } else {
-                parseError(responseBody)
-            }
-        } catch (e: java.lang.Exception) {
-            val detail = e.message.toString()
-            Response(null, genericError(detail))
+        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
+            Response(responseBody, null)
         }
     }
 }
