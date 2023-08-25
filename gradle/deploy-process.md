@@ -19,5 +19,5 @@ Release is done via a merged pull request to main/v0 and then creating a release
 
 ## Steps for v0
 
+- ❗merge and release the v0 first if releasing both. This way it shows up in the changelog before v1.
 - Same steps as in v1, but merge the PR to the `v0` branch.
-- Release the v0 first if releasing both. This way it shows up in the changelog before v1.
