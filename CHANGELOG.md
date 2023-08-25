@@ -2,6 +2,12 @@
 
 This is the changelog for v1 releases. See v0 changelog in the [v0 branch](https://github.com/highmobility/hmkit-fleet/tree/v0).
 
+## [1.0.1] - 2023-08-25
+
+### Added
+
+- Lexus brand to the `Brand` enum
+
 ## [1.0.0] - 2023-05-22
 
 ### Added
