@@ -12,37 +12,37 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class HMKitConfigurationTest : BaseTest() {
-    @Test
-    fun customHttpClientTest() {
-        val call = mockk<Call> {
-            every {
-                enqueue(any())
-            } answers {
-                firstArg<Callback>().onResponse(
-                    this@mockk,
-                    mockk(relaxed = true)
-                )
-            }
-        }
-
-        val client = mockk<OkHttpClient> {
-            every { newCall(any()) } returns call
-        }
-        val hmkitConf = HMKitConfiguration.Builder().client(client).build()
-
-        val hmkit = HMKitFleet(
-            configuration.toJsonString(),
-            HMKitFleet.Environment.SANDBOX,
-            hmkitConf
+  @Test
+  fun customHttpClientTest() {
+    val call = mockk<Call> {
+      every {
+        enqueue(any())
+      } answers {
+        firstArg<Callback>().onResponse(
+          this@mockk,
+          mockk(relaxed = true)
         )
-
-        // verify mock without throwing succeeds
-        hmkit.getClearanceStatus("vin1").get()
-
-        // now throw exception on new call and verify it is thrown
-        every { client.newCall(any()) } throws Exception("test")
-        assertThrows<Exception> {
-            hmkit.getClearanceStatus("vin1").get()
-        }
+      }
     }
+
+    val client = mockk<OkHttpClient> {
+      every { newCall(any()) } returns call
+    }
+    val hmkitConf = HMKitConfiguration.Builder().client(client).build()
+
+    val hmkit = HMKitFleet(
+      configuration.toJsonString(),
+      HMKitFleet.Environment.SANDBOX,
+      hmkitConf
+    )
+
+    // verify mock without throwing succeeds
+    hmkit.getClearanceStatus("vin1").get()
+
+    // now throw exception on new call and verify it is thrown
+    every { client.newCall(any()) } throws Exception("test")
+    assertThrows<Exception> {
+      hmkit.getClearanceStatus("vin1").get()
+    }
+  }
 }

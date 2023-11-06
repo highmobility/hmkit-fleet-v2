@@ -46,30 +46,30 @@ import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 
 internal class UtilityRequestsTest : BaseTest() {
-    val mockWebServer = MockWebServer()
-    val client = OkHttpClient()
-    val authToken = notExpiredAuthToken()
-    val authTokenRequests = mockk<AuthTokenRequests>()
+  val mockWebServer = MockWebServer()
+  val client = OkHttpClient()
+  val authToken = notExpiredAuthToken()
+  val authTokenRequests = mockk<AuthTokenRequests>()
 
-    @BeforeEach
-    fun setUp() {
-        mockWebServer.start()
-        coEvery { authTokenRequests.getAuthToken() } returns Response(authToken)
-    }
+  @BeforeEach
+  fun setUp() {
+    mockWebServer.start()
+    coEvery { authTokenRequests.getAuthToken() } returns Response(authToken)
+  }
 
-    @AfterEach
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
+  @AfterEach
+  fun tearDown() {
+    mockWebServer.shutdown()
+  }
 
-    // get eligibility
+  // get eligibility
 
-    @Test
-    fun getEligibilitySuccess() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-            .setBody(
-                """
+  @Test
+  fun getEligibilitySuccess() {
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_OK)
+      .setBody(
+        """
                 {
                   "vin": "WBADT43452G296403",
                   "eligible": true,
@@ -79,43 +79,43 @@ internal class UtilityRequestsTest : BaseTest() {
                   ]
                 }
                 """.trimIndent()
-            )
-        mockWebServer.enqueue(mockResponse)
-        val mockUrl = mockWebServer.url("").toString()
-        val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+      )
+    mockWebServer.enqueue(mockResponse)
+    val mockUrl = mockWebServer.url("").toString()
+    val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
 
-        val response = runBlocking {
-            webService.getEligibility("WBADT43452G296403", Brand.BMW)
-        }
-
-        coVerify { authTokenRequests.getAuthToken() }
-
-        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-        assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
-
-        // verify request
-        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
-        val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
-        assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")
-
-        // verify response
-        val status = response.response!!
-        assertTrue(status.vin == "WBADT43452G296403")
-        assertTrue(status.eligible)
-        assertTrue(status.dataDelivery.size == 2)
-        assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PULL } != null)
-        assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PUSH } != null)
-        assertTrue(status.connectivityStatus == null)
-        assertTrue(status.primaryUserAssigned == null)
+    val response = runBlocking {
+      webService.getEligibility("WBADT43452G296403", Brand.BMW)
     }
 
-    @Test
-    fun getEligibilitySuccessOptionalValues() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-            .setBody(
-                """
+    coVerify { authTokenRequests.getAuthToken() }
+
+    val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+    assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
+
+    // verify request
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
+    assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
+    assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")
+
+    // verify response
+    val status = response.response!!
+    assertTrue(status.vin == "WBADT43452G296403")
+    assertTrue(status.eligible)
+    assertTrue(status.dataDelivery.size == 2)
+    assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PULL } != null)
+    assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PUSH } != null)
+    assertTrue(status.connectivityStatus == null)
+    assertTrue(status.primaryUserAssigned == null)
+  }
+
+  @Test
+  fun getEligibilitySuccessOptionalValues() {
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_OK)
+      .setBody(
+        """
                 {
                   "vin": "WBADT43452G296403",
                   "eligible": true,
@@ -127,68 +127,68 @@ internal class UtilityRequestsTest : BaseTest() {
                   "primary_user_assigned": true
                 }
                 """.trimIndent()
-            )
+      )
 
-        mockWebServer.enqueue(mockResponse)
-        val mockUrl = mockWebServer.url("").toString()
-        val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+    mockWebServer.enqueue(mockResponse)
+    val mockUrl = mockWebServer.url("").toString()
+    val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
 
-        val status = runBlocking {
-            webService.getEligibility("WBADT43452G296403", Brand.BMW)
-        }.response!!
+    val status = runBlocking {
+      webService.getEligibility("WBADT43452G296403", Brand.BMW)
+    }.response!!
 
-        coVerify { authTokenRequests.getAuthToken() }
+    coVerify { authTokenRequests.getAuthToken() }
 
-        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-        assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
+    val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+    assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
 
-        // verify request
-        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
-        val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
-        assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
-        assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")
+    // verify request
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
+    assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
+    assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")
 
-        // verify response
-        assertTrue(status.vin == "WBADT43452G296403")
-        assertTrue(status.eligible)
-        assertTrue(status.dataDelivery.size == 2)
-        assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PULL } != null)
-        assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PUSH } != null)
+    // verify response
+    assertTrue(status.vin == "WBADT43452G296403")
+    assertTrue(status.eligible)
+    assertTrue(status.dataDelivery.size == 2)
+    assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PULL } != null)
+    assertTrue(status.dataDelivery.find { it == EligibilityStatus.DataDelivery.PUSH } != null)
 
-        assertTrue(status.connectivityStatus == EligibilityStatus.ConnectivityStatus.DEACTIVATED)
-        assertTrue(status.primaryUserAssigned == true)
+    assertTrue(status.connectivityStatus == EligibilityStatus.ConnectivityStatus.DEACTIVATED)
+    assertTrue(status.primaryUserAssigned == true)
+  }
+
+  @Test
+  fun requestClearanceAuthTokenError() = runBlocking {
+    testAuthTokenErrorReturned(mockWebServer, authTokenRequests) { mockUrl ->
+      val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+      webService.getEligibility(
+        "WBADT43452G296403",
+        Brand.BMW,
+      )
     }
+  }
 
-    @Test
-    fun requestClearanceAuthTokenError() = runBlocking {
-        testAuthTokenErrorReturned(mockWebServer, authTokenRequests) { mockUrl ->
-            val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
-            webService.getEligibility(
-                "WBADT43452G296403",
-                Brand.BMW,
-            )
-        }
+  @Test
+  fun requestClearanceErrorResponse() = runBlocking {
+    testErrorResponseReturned(mockWebServer) { mockUrl ->
+      val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+      webService.getEligibility(
+        "WBADT43452G296403",
+        Brand.BMW,
+      )
     }
+  }
 
-    @Test
-    fun requestClearanceErrorResponse() = runBlocking {
-        testErrorResponseReturned(mockWebServer) { mockUrl ->
-            val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
-            webService.getEligibility(
-                "WBADT43452G296403",
-                Brand.BMW,
-            )
-        }
+  @Test
+  fun requestClearanceUnknownResponse() = runBlocking {
+    testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
+      val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+      webService.getEligibility(
+        "WBADT43452G296403",
+        Brand.BMW,
+      )
     }
-
-    @Test
-    fun requestClearanceUnknownResponse() = runBlocking {
-        testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-            val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
-            webService.getEligibility(
-                "WBADT43452G296403",
-                Brand.BMW,
-            )
-        }
-    }
+  }
 }

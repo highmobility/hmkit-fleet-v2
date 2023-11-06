@@ -39,28 +39,28 @@ import java.time.ZonedDateTime
 
 @Serializable
 internal data class AuthToken(
-    @SerialName("auth_token")
-    val authToken: String,
-    @SerialName("valid_from")
-    val validFrom: ZonedDateTime,
-    @SerialName("valid_until")
-    val validUntil: ZonedDateTime
+  @SerialName("auth_token")
+  val authToken: String,
+  @SerialName("valid_from")
+  val validFrom: ZonedDateTime,
+  @SerialName("valid_until")
+  val validUntil: ZonedDateTime
 ) {
-    fun isExpired(): Boolean {
-        val now = ZonedDateTime.now(systemUTC())
-        return now.isAfter(validUntil.minusMinutes(1))
-    }
+  fun isExpired(): Boolean {
+    val now = ZonedDateTime.now(systemUTC())
+    return now.isAfter(validUntil.minusMinutes(1))
+  }
 }
 
 internal object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: ZonedDateTime) {
-        encoder.encodeString(value.toString())
-    }
+  override fun serialize(encoder: Encoder, value: ZonedDateTime) {
+    encoder.encodeString(value.toString())
+  }
 
-    override fun deserialize(decoder: Decoder): ZonedDateTime {
-        return ZonedDateTime.parse(decoder.decodeString())
-    }
+  override fun deserialize(decoder: Decoder): ZonedDateTime {
+    return ZonedDateTime.parse(decoder.decodeString())
+  }
 }

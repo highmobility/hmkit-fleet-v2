@@ -33,12 +33,12 @@ sealed class ControlMeasure
 @SerialName("odometer")
 data class Odometer(val value: Long, val unit: Length) : ControlMeasure() {
 
-    @Serializable
-    enum class Length {
-        @SerialName("kilometers")
-        KILOMETERS,
+  @Serializable
+  enum class Length {
+    @SerialName("kilometers")
+    KILOMETERS,
 
-        @SerialName("miles")
-        MILES
-    }
+    @SerialName("miles")
+    MILES
+  }
 }

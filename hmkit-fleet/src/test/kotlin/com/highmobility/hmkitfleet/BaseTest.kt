@@ -44,102 +44,102 @@ import java.time.ZonedDateTime
 const val testVin = "C0NNECT0000000001"
 
 internal fun notExpiredAuthToken(): AuthToken {
-    return AuthToken(
-        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-        ZonedDateTime.now(),
-        ZonedDateTime.now().plusHours(1)
-    )
+  return AuthToken(
+    "e903cb43-27b1-4e47-8922-c04ecd5d2019",
+    ZonedDateTime.now(),
+    ZonedDateTime.now().plusHours(1)
+  )
 }
 
 internal fun expiredAuthToken(): AuthToken {
-    return AuthToken(
-        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-        ZonedDateTime.parse("2020-11-17T04:50:16"),
-        ZonedDateTime.parse("2020-11-17T05:50:16")
-    )
+  return AuthToken(
+    "e903cb43-27b1-4e47-8922-c04ecd5d2019",
+    ZonedDateTime.parse("2020-11-17T04:50:16"),
+    ZonedDateTime.parse("2020-11-17T05:50:16")
+  )
 }
 
 open class BaseTest : KoinTest {
-    val configuration = readConfigurationFromFile()
+  val configuration = readConfigurationFromFile()
 
-    private fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
-        val homeDir = System.getProperty("user.home")
+  private fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
+    val homeDir = System.getProperty("user.home")
 
-        val credentialsFilePath =
-            Paths.get("$homeDir/.config/high-mobility/fleet-sdk/credentials.json")
-        val credentialsDirectory = credentialsFilePath.parent
+    val credentialsFilePath =
+      Paths.get("$homeDir/.config/high-mobility/fleet-sdk/credentials.json")
+    val credentialsDirectory = credentialsFilePath.parent
 
-        if (Files.exists(credentialsDirectory) == false) {
-            Files.createDirectories(credentialsDirectory)
-            Files.createFile(credentialsFilePath)
-            throw InstantiationException("Please add Service account credentials to $credentialsFilePath")
-        }
-
-        val credentialsContent = String(Files.readAllBytes(credentialsFilePath))
-
-        val configuration = spyk(ServiceAccountApiConfiguration.fromJson(credentialsContent))
-        return configuration
+    if (Files.exists(credentialsDirectory) == false) {
+      Files.createDirectories(credentialsDirectory)
+      Files.createFile(credentialsFilePath)
+      throw InstantiationException("Please add Service account credentials to $credentialsFilePath")
     }
 
-    val mockLogger = mockk<Logger>()
+    val credentialsContent = String(Files.readAllBytes(credentialsFilePath))
 
-    // have to be in base so they are created again for each test class
-    internal val mockSignature = mockk<Signature> {
-        every {
-            base64UrlSafe
-        } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-        every { base64 } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-        every {
-            hex
-        } returns "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    val configuration = spyk(ServiceAccountApiConfiguration.fromJson(credentialsContent))
+    return configuration
+  }
+
+  val mockLogger = mockk<Logger>()
+
+  // have to be in base so they are created again for each test class
+  internal val mockSignature = mockk<Signature> {
+    every {
+      base64UrlSafe
+    } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
+    every { base64 } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
+    every {
+      hex
+    } returns "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  }
+
+  @BeforeEach
+  fun before() {
+    // mockk the logs
+    every { mockLogger.warn(allAny()) } just Runs
+
+    val capturedDebugLog = CapturingSlot<String>()
+    every { mockLogger.debug(capture(capturedDebugLog)) } answers {
+      println(capturedDebugLog.captured)
     }
 
-    @BeforeEach
-    fun before() {
-        // mockk the logs
-        every { mockLogger.warn(allAny()) } just Runs
-
-        val capturedDebugLog = CapturingSlot<String>()
-        every { mockLogger.debug(capture(capturedDebugLog)) } answers {
-            println(capturedDebugLog.captured)
-        }
-
-        every { mockLogger.info(capture(capturedDebugLog)) } answers {
-            println(capturedDebugLog.captured)
-        }
-
-        every { mockLogger.error(allAny()) } just Runs
-        every { mockLogger.error(any(), any<Throwable>()) } just Runs
+    every { mockLogger.info(capture(capturedDebugLog)) } answers {
+      println(capturedDebugLog.captured)
     }
 
-    @AfterEach
-    fun after() {
-    }
+    every { mockLogger.error(allAny()) } just Runs
+    every { mockLogger.error(any(), any<Throwable>()) } just Runs
+  }
 
-    fun errorLogExpected(runnable: Runnable) {
-        errorLogExpected(1, runnable)
-    }
+  @AfterEach
+  fun after() {
+  }
 
-    fun errorLogExpected(count: Int, runnable: Runnable) {
-        runnable.run()
-        verify(exactly = count) { mockLogger.error(allAny()) }
-    }
+  fun errorLogExpected(runnable: Runnable) {
+    errorLogExpected(1, runnable)
+  }
 
-    fun warningLogExpected(runnable: Runnable) {
-        warningLogExpected(1, runnable)
-    }
+  fun errorLogExpected(count: Int, runnable: Runnable) {
+    runnable.run()
+    verify(exactly = count) { mockLogger.error(allAny()) }
+  }
 
-    fun warningLogExpected(count: Int, runnable: Runnable) {
-        runnable.run()
-        verify(exactly = count) { mockLogger.warn(allAny()) }
-    }
+  fun warningLogExpected(runnable: Runnable) {
+    warningLogExpected(1, runnable)
+  }
 
-    fun debugLogExpected(runnable: Runnable) {
-        debugLogExpected(1, runnable)
-    }
+  fun warningLogExpected(count: Int, runnable: Runnable) {
+    runnable.run()
+    verify(exactly = count) { mockLogger.warn(allAny()) }
+  }
 
-    fun debugLogExpected(count: Int, runnable: Runnable) {
-        runnable.run()
-        verify(exactly = count) { mockLogger.debug(allAny()) }
-    }
+  fun debugLogExpected(runnable: Runnable) {
+    debugLogExpected(1, runnable)
+  }
+
+  fun debugLogExpected(count: Int, runnable: Runnable) {
+    runnable.run()
+    verify(exactly = count) { mockLogger.debug(allAny()) }
+  }
 }

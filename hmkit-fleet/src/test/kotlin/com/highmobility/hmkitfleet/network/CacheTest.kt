@@ -30,39 +30,39 @@ import java.time.Clock.systemUTC
 import java.time.ZonedDateTime
 
 internal class CacheTest {
-    private val notExpiredToken = AuthToken(
-        "",
-        ZonedDateTime.now(systemUTC()).minusMinutes(30),
-        ZonedDateTime.now(systemUTC()).plusMinutes(30)
-    )
+  private val notExpiredToken = AuthToken(
+    "",
+    ZonedDateTime.now(systemUTC()).minusMinutes(30),
+    ZonedDateTime.now(systemUTC()).plusMinutes(30)
+  )
 
-    private val expiredToken = AuthToken(
-        "",
-        ZonedDateTime.now(systemUTC()).minusMinutes(120),
-        ZonedDateTime.now(systemUTC()).minusMinutes(60)
-    )
+  private val expiredToken = AuthToken(
+    "",
+    ZonedDateTime.now(systemUTC()).minusMinutes(120),
+    ZonedDateTime.now(systemUTC()).minusMinutes(60)
+  )
 
-    private val expiredWithBuffer = AuthToken(
-        "",
-        ZonedDateTime.now(systemUTC()).minusMinutes(10),
-        ZonedDateTime.now(systemUTC()).plusSeconds(30)
-    )
+  private val expiredWithBuffer = AuthToken(
+    "",
+    ZonedDateTime.now(systemUTC()).minusMinutes(10),
+    ZonedDateTime.now(systemUTC()).plusSeconds(30)
+  )
 
-    @Test
-    fun testAuthTokenExpiration() {
-        assertTrue(notExpiredToken.isExpired() == false)
-        assertTrue(expiredToken.isExpired() == true)
-        assertTrue(expiredWithBuffer.isExpired() == true)
-    }
+  @Test
+  fun testAuthTokenExpiration() {
+    assertTrue(notExpiredToken.isExpired() == false)
+    assertTrue(expiredToken.isExpired() == true)
+    assertTrue(expiredWithBuffer.isExpired() == true)
+  }
 
-    @Test
-    fun returnsNullIfAuthTokenExpired() {
-        val cache = Cache()
-        cache.authToken = expiredToken
+  @Test
+  fun returnsNullIfAuthTokenExpired() {
+    val cache = Cache()
+    cache.authToken = expiredToken
 
-        assertTrue(cache.authToken == null)
+    assertTrue(cache.authToken == null)
 
-        cache.authToken = notExpiredToken
-        assertTrue(cache.authToken == notExpiredToken)
-    }
+    cache.authToken = notExpiredToken
+    assertTrue(cache.authToken == notExpiredToken)
+  }
 }

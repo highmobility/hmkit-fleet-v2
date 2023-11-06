@@ -28,48 +28,48 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RequestClearanceResponse(
-    val vin: String,
-    val status: ClearanceStatus.Status,
-    /**
-     * Filled when status is ERROR
-     */
-    val description: String? = null
+  val vin: String,
+  val status: ClearanceStatus.Status,
+  /**
+   * Filled when status is ERROR
+   */
+  val description: String? = null
 )
 
 @Serializable
 data class ClearanceStatus(
-    val vin: String,
-    val status: Status,
-    val brand: Brand? = null,
-    val changelog: List<ChangeLogItem> = emptyList()
+  val vin: String,
+  val status: Status,
+  val brand: Brand? = null,
+  val changelog: List<ChangeLogItem> = emptyList()
 ) {
-    @Serializable
-    enum class Status {
-        @SerialName("approved")
-        APPROVED,
+  @Serializable
+  enum class Status {
+    @SerialName("approved")
+    APPROVED,
 
-        @SerialName("pending")
-        PENDING,
+    @SerialName("pending")
+    PENDING,
 
-        // Error can only happen during requestClearance
-        @SerialName("error")
-        ERROR,
+    // Error can only happen during requestClearance
+    @SerialName("error")
+    ERROR,
 
-        @SerialName("revoking")
-        REVOKING,
+    @SerialName("revoking")
+    REVOKING,
 
-        @SerialName("revoked")
-        REVOKED,
+    @SerialName("revoked")
+    REVOKED,
 
-        @SerialName("rejected")
-        REJECTED,
+    @SerialName("rejected")
+    REJECTED,
 
-        @SerialName("canceling")
-        CANCELING,
+    @SerialName("canceling")
+    CANCELING,
 
-        @SerialName("canceled")
-        CANCELED
-    }
+    @SerialName("canceled")
+    CANCELED
+  }
 }
 
 @Serializable

@@ -53,181 +53,181 @@ import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 
 internal class AuthTokenRequestsTest : BaseTest() {
-    private val mockWebServer = MockWebServer()
-    private val client = OkHttpClient()
+  private val mockWebServer = MockWebServer()
+  private val client = OkHttpClient()
 
-    private lateinit var crypto: Crypto
-    private val cache = mockk<Cache>()
+  private lateinit var crypto: Crypto
+  private val cache = mockk<Cache>()
 
-    private val privateKey = configuration.getServiceAccountHmPrivateKey()
+  private val privateKey = configuration.getServiceAccountHmPrivateKey()
 
-    @BeforeEach
-    fun setUp() {
-        every { configuration.createJti() } returns "jti"
-        every { configuration.createIat() } returns 1001
-        every { cache setProperty "authToken" value any<AuthToken>() } just Runs
+  @BeforeEach
+  fun setUp() {
+    every { configuration.createJti() } returns "jti"
+    every { configuration.createIat() } returns 1001
+    every { cache setProperty "authToken" value any<AuthToken>() } just Runs
 
-        crypto = mockk()
-        every { crypto.signJWT(any<ByteArray>(), any()) } returns mockSignature
+    crypto = mockk()
+    every { crypto.signJWT(any<ByteArray>(), any()) } returns mockSignature
 
-        mockWebServer.start()
+    mockWebServer.start()
+  }
+
+  @AfterEach
+  fun tearDown() {
+    mockWebServer.shutdown()
+  }
+
+  @Test
+  fun downloadsAuthTokenAndWritesToCacheIfDoesNotExistOrExpired() {
+    val responseAuthToken = notExpiredAuthToken()
+    // return null from cache at first, then on next call a new one
+    // if auth token is expired, the cache does not return it also
+    every { cache getProperty "authToken" } returnsMany listOf(null, responseAuthToken)
+
+    val response = runBlocking {
+      mockSuccessfulRequest(responseAuthToken).getAuthToken()
     }
 
-    @AfterEach
-    fun tearDown() {
-        mockWebServer.shutdown()
+    verifyAuthTokenRequestedFromServer()
+
+    verifyNewAuthTokenReturned(responseAuthToken, response)
+    verify { cache setProperty "authToken" value responseAuthToken }
+  }
+
+  private fun verifyNewAuthTokenReturned(expected: AuthToken, response: Response<AuthToken>) {
+    assertTrue(response.response!!.authToken == expected.authToken)
+    assertTrue(response.response!!.validFrom.toString() == expected.validFrom.toString())
+    assertTrue(response.response!!.validUntil.toString() == expected.validUntil.toString())
+  }
+
+  private fun verifyAuthTokenRequestedFromServer() {
+    val jwtContent = getJwtContent().toByteArray()
+    coVerify { crypto.signJWT(jwtContent, privateKey) }
+
+    val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+    assertTrue(recordedRequest.path!!.endsWith("/auth_tokens"))
+  }
+
+  @Test
+  fun doesNotDownloadAuthTokenIfExistsAndNotExpired() {
+    val responseAuthToken = notExpiredAuthToken()
+    // return null from cache at first, then on next call a new one
+    every { cache getProperty "authToken" } returns responseAuthToken
+    val response = runBlocking { mockSuccessfulRequest(responseAuthToken).getAuthToken() }
+
+    // this means request is not made
+    verify(exactly = 0) { crypto.signJWT(any<ByteArray>(), any()) }
+    verify(exactly = 0) { cache setProperty "authToken" value any<AuthToken>() }
+
+    verifyNewAuthTokenReturned(responseAuthToken, response)
+  }
+
+  @Test
+  fun authTokenErrorResponse() {
+    every { cache getProperty "authToken" } returns null
+
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+      .setBody(
+        "{\"errors\":" +
+            "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
+            "\"source\":\"assertion\"," +
+            "\"title\":\"Not authorized\"}]}"
+      )
+    mockWebServer.enqueue(mockResponse)
+    val baseUrl: HttpUrl = mockWebServer.url("")
+    val webService =
+      AuthTokenRequests(
+        client,
+        crypto,
+        mockLogger,
+        baseUrl.toString(),
+        configuration,
+        cache
+      )
+
+    val status = runBlocking {
+      webService.getAuthToken()
     }
 
-    @Test
-    fun downloadsAuthTokenAndWritesToCacheIfDoesNotExistOrExpired() {
-        val responseAuthToken = notExpiredAuthToken()
-        // return null from cache at first, then on next call a new one
-        // if auth token is expired, the cache does not return it also
-        every { cache getProperty "authToken" } returnsMany listOf(null, responseAuthToken)
+    assertTrue(status.error!!.title == "Not authorized")
+    assertTrue(status.error!!.source == "assertion")
+    assertTrue(
+      status.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key."
+    )
+  }
 
-        val response = runBlocking {
-            mockSuccessfulRequest(responseAuthToken).getAuthToken()
-        }
+  @Test
+  fun authTokenInvalidResponse() {
+    every { cache getProperty "authToken" } returns null
 
-        verifyAuthTokenRequestedFromServer()
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+      .setBody(
+        "{\"invalidKey\":\"invalidValue\"}"
+      )
+    mockWebServer.enqueue(mockResponse)
+    val baseUrl: HttpUrl = mockWebServer.url("")
+    val webService =
+      AuthTokenRequests(
+        client,
+        crypto,
+        mockLogger,
+        baseUrl.toString(),
+        configuration,
+        cache
+      )
 
-        verifyNewAuthTokenReturned(responseAuthToken, response)
-        verify { cache setProperty "authToken" value responseAuthToken }
+    val status = runBlocking {
+      webService.getAuthToken()
     }
 
-    private fun verifyNewAuthTokenReturned(expected: AuthToken, response: Response<AuthToken>) {
-        assertTrue(response.response!!.authToken == expected.authToken)
-        assertTrue(response.response!!.validFrom.toString() == expected.validFrom.toString())
-        assertTrue(response.response!!.validUntil.toString() == expected.validUntil.toString())
-    }
+    val genericError = genericError("")
+    assertTrue(status.error!!.title == genericError.title)
+  }
 
-    private fun verifyAuthTokenRequestedFromServer() {
-        val jwtContent = getJwtContent().toByteArray()
-        coVerify { crypto.signJWT(jwtContent, privateKey) }
+  private fun mockSuccessfulRequest(responseAuthToken: AuthToken): AuthTokenRequests {
+    // return null from cache at first, then on next call a new one
+    val json = Json.encodeToString(responseAuthToken)
 
-        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-        assertTrue(recordedRequest.path!!.endsWith("/auth_tokens"))
-    }
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_CREATED)
+      .setBody(json)
 
-    @Test
-    fun doesNotDownloadAuthTokenIfExistsAndNotExpired() {
-        val responseAuthToken = notExpiredAuthToken()
-        // return null from cache at first, then on next call a new one
-        every { cache getProperty "authToken" } returns responseAuthToken
-        val response = runBlocking { mockSuccessfulRequest(responseAuthToken).getAuthToken() }
+    mockWebServer.enqueue(mockResponse)
+    val baseUrl: HttpUrl = mockWebServer.url("")
 
-        // this means request is not made
-        verify(exactly = 0) { crypto.signJWT(any<ByteArray>(), any()) }
-        verify(exactly = 0) { cache setProperty "authToken" value any<AuthToken>() }
+    return AuthTokenRequests(
+      client,
+      crypto,
+      mockLogger,
+      baseUrl.toString(),
+      configuration,
+      cache
+    )
+  }
 
-        verifyNewAuthTokenReturned(responseAuthToken, response)
-    }
+  private fun getJwtContent(): String {
+    every { configuration.createJti() } returns "jti"
+    every { configuration.createIat() } returns 1001
 
-    @Test
-    fun authTokenErrorResponse() {
-        every { cache getProperty "authToken" } returns null
+    val header = buildJsonObject {
+      put("alg", "ES256")
+      put("typ", "JWT")
+    }.toString()
 
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-            .setBody(
-                "{\"errors\":" +
-                    "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
-                    "\"source\":\"assertion\"," +
-                    "\"title\":\"Not authorized\"}]}"
-            )
-        mockWebServer.enqueue(mockResponse)
-        val baseUrl: HttpUrl = mockWebServer.url("")
-        val webService =
-            AuthTokenRequests(
-                client,
-                crypto,
-                mockLogger,
-                baseUrl.toString(),
-                configuration,
-                cache
-            )
+    val jwtBody = buildJsonObject {
+      put("ver", configuration.version)
+      put("iss", configuration.serviceAccountPrivateKeyId)
+      put("aud", mockWebServer.url("").toString())
+      put("jti", configuration.createJti())
+      put("iat", configuration.createIat())
+    }.toString()
 
-        val status = runBlocking {
-            webService.getAuthToken()
-        }
+    val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
+    val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
 
-        assertTrue(status.error!!.title == "Not authorized")
-        assertTrue(status.error!!.source == "assertion")
-        assertTrue(
-            status.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key."
-        )
-    }
-
-    @Test
-    fun authTokenInvalidResponse() {
-        every { cache getProperty "authToken" } returns null
-
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
-            .setBody(
-                "{\"invalidKey\":\"invalidValue\"}"
-            )
-        mockWebServer.enqueue(mockResponse)
-        val baseUrl: HttpUrl = mockWebServer.url("")
-        val webService =
-            AuthTokenRequests(
-                client,
-                crypto,
-                mockLogger,
-                baseUrl.toString(),
-                configuration,
-                cache
-            )
-
-        val status = runBlocking {
-            webService.getAuthToken()
-        }
-
-        val genericError = genericError("")
-        assertTrue(status.error!!.title == genericError.title)
-    }
-
-    private fun mockSuccessfulRequest(responseAuthToken: AuthToken): AuthTokenRequests {
-        // return null from cache at first, then on next call a new one
-        val json = Json.encodeToString(responseAuthToken)
-
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_CREATED)
-            .setBody(json)
-
-        mockWebServer.enqueue(mockResponse)
-        val baseUrl: HttpUrl = mockWebServer.url("")
-
-        return AuthTokenRequests(
-            client,
-            crypto,
-            mockLogger,
-            baseUrl.toString(),
-            configuration,
-            cache
-        )
-    }
-
-    private fun getJwtContent(): String {
-        every { configuration.createJti() } returns "jti"
-        every { configuration.createIat() } returns 1001
-
-        val header = buildJsonObject {
-            put("alg", "ES256")
-            put("typ", "JWT")
-        }.toString()
-
-        val jwtBody = buildJsonObject {
-            put("ver", configuration.version)
-            put("iss", configuration.serviceAccountPrivateKeyId)
-            put("aud", mockWebServer.url("").toString())
-            put("jti", configuration.createJti())
-            put("iat", configuration.createIat())
-        }.toString()
-
-        val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
-        val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
-
-        return String.format("%s.%s", headerBase64, bodyBase64)
-    }
+    return String.format("%s.%s", headerBase64, bodyBase64)
+  }
 }

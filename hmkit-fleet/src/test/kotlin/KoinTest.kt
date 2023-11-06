@@ -31,9 +31,9 @@ import org.koin.test.check.checkModules
 @Category(CheckModuleTest::class)
 class ModuleCheckTest : BaseTest() {
 
-    @Test
-    fun checkModuless() {
-        checkModules {
-        }
+  @Test
+  fun checkModuless() {
+    checkModules {
     }
+  }
 }

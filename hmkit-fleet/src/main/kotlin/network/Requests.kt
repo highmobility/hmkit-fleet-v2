@@ -26,7 +26,6 @@ package com.highmobility.hmkitfleet.network
 import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
 import com.highmobility.utils.Base64
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -47,126 +46,126 @@ import okio.Buffer
 import org.slf4j.Logger
 
 internal open class Requests(
-    val client: OkHttpClient,
-    val logger: Logger,
-    val baseUrl: String,
+  val client: OkHttpClient,
+  val logger: Logger,
+  val baseUrl: String,
 ) {
-    val mediaType = "application/json; charset=utf-8".toMediaType()
-    val baseHeaders = Headers.Builder().add("Content-Type", "application/json").build()
+  val mediaType = "application/json; charset=utf-8".toMediaType()
+  val baseHeaders = Headers.Builder().add("Content-Type", "application/json").build()
 
-    inline fun <T> tryParseResponse(
-        response: Response,
-        expectedResponseCode: Int,
-        block: (body: String) -> (com.highmobility.hmkitfleet.network.Response<T>)
-    ): com.highmobility.hmkitfleet.network.Response<T> {
-        val responseBody = printResponse(response)
+  inline fun <T> tryParseResponse(
+    response: Response,
+    expectedResponseCode: Int,
+    block: (body: String) -> (com.highmobility.hmkitfleet.network.Response<T>)
+  ): com.highmobility.hmkitfleet.network.Response<T> {
+    val responseBody = printResponse(response)
 
-        return try {
-            if (response.code == expectedResponseCode) {
-                block(responseBody)
-            } else {
-                parseError(responseBody)
-            }
-        } catch (e: Exception) {
-            val detail = e.message.toString()
-            Response(null, genericError(detail))
-        }
+    return try {
+      if (response.code == expectedResponseCode) {
+        block(responseBody)
+      } else {
+        parseError(responseBody)
+      }
+    } catch (e: Exception) {
+      val detail = e.message.toString()
+      Response(null, genericError(detail))
+    }
+  }
+
+  fun printRequest(request: Request) {
+    val format = Json { prettyPrint = true }
+
+    // parse into json, so can log it out with pretty print
+    val body = request.bodyAsString()
+    var bodyInPrettyPrint = ""
+    if (!body.isNullOrBlank()) {
+      val jsonElement = format.decodeFromString<JsonElement>(body)
+      bodyInPrettyPrint = format.encodeToString(jsonElement)
     }
 
-    fun printRequest(request: Request) {
-        val format = Json { prettyPrint = true }
+    logger.debug(
+      "sending ${request.method} ${request.url}:" +
+          "\nheaders: ${request.headers}" +
+          "body: $bodyInPrettyPrint"
+    )
+  }
 
-        // parse into json, so can log it out with pretty print
-        val body = request.bodyAsString()
-        var bodyInPrettyPrint = ""
-        if (!body.isNullOrBlank()) {
-            val jsonElement = format.decodeFromString<JsonElement>(body)
-            bodyInPrettyPrint = format.encodeToString(jsonElement)
-        }
+  fun printResponse(response: Response): String {
+    val body = response.body?.string()
+    logger.debug("${response.request.url} response:\n${response.code}: $body")
+    return body!!
+  }
 
-        logger.debug(
-            "sending ${request.method} ${request.url}:" +
-                "\nheaders: ${request.headers}" +
-                "body: $bodyInPrettyPrint"
+  fun <T> parseError(responseBody: String): com.highmobility.hmkitfleet.network.Response<T> {
+    val json = Json.parseToJsonElement(responseBody)
+    if (json is JsonObject) {
+      // there are 3 error formats
+      val errors = json["errors"] as? JsonArray
+
+      return if (errors != null && errors.size > 0) {
+        val error =
+          Json.decodeFromJsonElement<Error>(errors.first())
+        Response(null, error)
+      } else {
+        val error = Error(
+          json["error"]?.jsonPrimitive?.content ?: "Unknown server response",
+          json["error_description"]?.jsonPrimitive?.content
         )
+
+        Response(null, error)
+      }
+    } else if (json is JsonArray) {
+      if (json.size > 0) {
+        val error = Json.decodeFromJsonElement<Error>(json.first())
+        return Response(null, error)
+      }
     }
 
-    fun printResponse(response: Response): String {
-        val body = response.body?.string()
-        logger.debug("${response.request.url} response:\n${response.code}: $body")
-        return body!!
+    return Response(null, genericError("Unknown server response"))
+  }
+
+  internal fun requestBody(values: Map<String, String>): RequestBody {
+    val completeBody = buildJsonObject {
+      for (item in values) {
+        put(item.key, item.value)
+      }
     }
 
-    fun <T> parseError(responseBody: String): com.highmobility.hmkitfleet.network.Response<T> {
-        val json = Json.parseToJsonElement(responseBody)
-        if (json is JsonObject) {
-            // there are 3 error formats
-            val errors = json["errors"] as? JsonArray
+    return completeBody.toString().toRequestBody(mediaType)
+  }
 
-            return if (errors != null && errors.size > 0) {
-                val error =
-                    Json.decodeFromJsonElement<Error>(errors.first())
-                Response(null, error)
-            } else {
-                val error = Error(
-                    json["error"]?.jsonPrimitive?.content ?: "Unknown server response",
-                    json["error_description"]?.jsonPrimitive?.content
-                )
+  internal fun getJwt(configuration: ServiceAccountApiConfiguration, crypto: Crypto): String {
+    val header = buildJsonObject {
+      put("alg", "ES256")
+      put("typ", "JWT")
+    }.toString()
 
-                Response(null, error)
-            }
-        } else if (json is JsonArray) {
-            if (json.size > 0) {
-                val error = Json.decodeFromJsonElement<Error>(json.first())
-                return Response(null, error)
-            }
-        }
+    val jwtBody = buildJsonObject {
+      put("ver", 2) // configuration.version)
+      put("iss", configuration.serviceAccountPrivateKeyId)
+      put("aud", baseUrl)
+      put("jti", configuration.createJti())
+      put("iat", configuration.createIat())
+    }.toString()
 
-        return Response(null, genericError("Unknown server response"))
-    }
+    val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
+    val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
+    val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
+    val privateKey = configuration.getServiceAccountHmPrivateKey()
+    val jwtSignature = crypto.signJWT(jwtContent.toByteArray(), privateKey)
 
-    internal fun requestBody(values: Map<String, String>): RequestBody {
-        val completeBody = buildJsonObject {
-            for (item in values) {
-                put(item.key, item.value)
-            }
-        }
-
-        return completeBody.toString().toRequestBody(mediaType)
-    }
-
-    internal fun getJwt(configuration: ServiceAccountApiConfiguration, crypto: Crypto): String {
-        val header = buildJsonObject {
-            put("alg", "ES256")
-            put("typ", "JWT")
-        }.toString()
-
-        val jwtBody = buildJsonObject {
-            put("ver", 2) // configuration.version)
-            put("iss", configuration.serviceAccountPrivateKeyId)
-            put("aud", baseUrl)
-            put("jti", configuration.createJti())
-            put("iat", configuration.createIat())
-        }.toString()
-
-        val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
-        val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
-        val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
-        val privateKey = configuration.getServiceAccountHmPrivateKey()
-        val jwtSignature = crypto.signJWT(jwtContent.toByteArray(), privateKey)
-
-        return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)
-    }
+    return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)
+  }
 }
 
 internal fun Request.bodyAsString(): String? {
-    if (this.body == null) return null
-    val buffer = Buffer()
-    this.body?.writeTo(buffer)
-    return buffer.readUtf8()
+  if (this.body == null) return null
+  val buffer = Buffer()
+  this.body?.writeTo(buffer)
+  return buffer.readUtf8()
 }
 
 internal fun genericError(detail: String? = null): Error {
-    val genericError = Error("Unknown server response", detail)
-    return genericError
+  val genericError = Error("Unknown server response", detail)
+  return genericError
 }

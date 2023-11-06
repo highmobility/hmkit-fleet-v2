@@ -39,55 +39,55 @@ import utils.await
 import java.net.HttpURLConnection
 
 internal class AuthTokenRequests(
-    client: OkHttpClient,
-    private val crypto: Crypto,
-    logger: Logger,
-    baseUrl: String,
-    private val configuration: ServiceAccountApiConfiguration,
-    private val cache: Cache,
+  client: OkHttpClient,
+  private val crypto: Crypto,
+  logger: Logger,
+  baseUrl: String,
+  private val configuration: ServiceAccountApiConfiguration,
+  private val cache: Cache,
 ) : Requests(
-    client,
-    logger,
-    baseUrl,
+  client,
+  logger,
+  baseUrl,
 ) {
-    private fun getUrlEncodedJsonRequest(): Request {
-        val body = buildJsonObject {
-            put("assertion", getJwt(configuration, crypto))
-        }
-
-        val newBody = Json.encodeToString(body).toRequestBody("application/json".toMediaType())
-
-        val request = Request.Builder()
-            .url("$baseUrl/auth_tokens")
-            .header("Content-Type", "application/json")
-            .post(newBody)
-            .build()
-
-        return request
+  private fun getUrlEncodedJsonRequest(): Request {
+    val body = buildJsonObject {
+      put("assertion", getJwt(configuration, crypto))
     }
 
-    suspend fun getAuthToken(): Response<AuthToken> {
-        val cachedToken = cache.authToken
-        if (cachedToken != null) return Response(cachedToken)
+    val newBody = Json.encodeToString(body).toRequestBody("application/json".toMediaType())
 
-        val request = getUrlEncodedJsonRequest()
+    val request = Request.Builder()
+      .url("$baseUrl/auth_tokens")
+      .header("Content-Type", "application/json")
+      .post(newBody)
+      .build()
 
-        printRequest(request)
-        val call = client.newCall(request)
+    return request
+  }
 
-        val response = call.await()
-        val responseBody = printResponse(response)
+  suspend fun getAuthToken(): Response<AuthToken> {
+    val cachedToken = cache.authToken
+    if (cachedToken != null) return Response(cachedToken)
 
-        return try {
-            if (response.code == HttpURLConnection.HTTP_CREATED) {
-                cache.authToken = Json.decodeFromString(responseBody)
-                Response(cache.authToken)
-            } else {
-                parseError(responseBody)
-            }
-        } catch (e: java.lang.Exception) {
-            val detail = e.message.toString()
-            Response(null, genericError(detail))
-        }
+    val request = getUrlEncodedJsonRequest()
+
+    printRequest(request)
+    val call = client.newCall(request)
+
+    val response = call.await()
+    val responseBody = printResponse(response)
+
+    return try {
+      if (response.code == HttpURLConnection.HTTP_CREATED) {
+        cache.authToken = Json.decodeFromString(responseBody)
+        Response(cache.authToken)
+      } else {
+        parseError(responseBody)
+      }
+    } catch (e: java.lang.Exception) {
+      val detail = e.message.toString()
+      Response(null, genericError(detail))
     }
+  }
 }

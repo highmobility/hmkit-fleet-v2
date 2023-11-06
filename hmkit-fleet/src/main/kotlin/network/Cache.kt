@@ -26,9 +26,9 @@ package com.highmobility.hmkitfleet.network
 import com.highmobility.hmkitfleet.model.AuthToken
 
 internal class Cache {
-    var authToken: AuthToken? = null
-        get() {
-            if (field?.isExpired() == true) return null
-            return field
-        }
+  var authToken: AuthToken? = null
+    get() {
+      if (field?.isExpired() == true) return null
+      return field
+    }
 }
