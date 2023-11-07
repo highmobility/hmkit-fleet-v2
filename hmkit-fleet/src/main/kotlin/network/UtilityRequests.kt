@@ -42,7 +42,7 @@ internal class UtilityRequests(
   client: OkHttpClient,
   logger: Logger,
   baseUrl: String,
-  private val authTokenRequests: AuthTokenRequests
+  private val accessTokenRequests: AccessTokenRequests
 ) : Requests(
   client,
   logger,
@@ -53,14 +53,14 @@ internal class UtilityRequests(
     brand: Brand
   ): Response<EligibilityStatus> {
     val body = requestBody(vin, brand)
-    val authToken = authTokenRequests.getAuthToken()
+    val authToken = accessTokenRequests.getAccessToken()
 
     if (authToken.error != null) return Response(null, authToken.error)
 
     val request = Request.Builder()
       .url("$baseUrl/eligibility")
       .header("Content-Type", "application/json")
-      .header("Authorization", "Bearer ${authToken.response?.authToken}")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
       .post(body)
       .build()
 

@@ -49,12 +49,12 @@ internal class UtilityRequestsTest : BaseTest() {
   val mockWebServer = MockWebServer()
   val client = OkHttpClient()
   val authToken = notExpiredAuthToken()
-  val authTokenRequests = mockk<AuthTokenRequests>()
+  val accessTokenRequests = mockk<AccessTokenRequests>()
 
   @BeforeEach
   fun setUp() {
     mockWebServer.start()
-    coEvery { authTokenRequests.getAuthToken() } returns Response(authToken)
+    coEvery { accessTokenRequests.getAccessToken() } returns Response(authToken)
   }
 
   @AfterEach
@@ -82,13 +82,13 @@ internal class UtilityRequestsTest : BaseTest() {
       )
     mockWebServer.enqueue(mockResponse)
     val mockUrl = mockWebServer.url("").toString()
-    val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+    val webService = UtilityRequests(client, mockLogger, mockUrl, accessTokenRequests)
 
     val response = runBlocking {
       webService.getEligibility("WBADT43452G296403", Brand.BMW)
     }
 
-    coVerify { authTokenRequests.getAuthToken() }
+    coVerify { accessTokenRequests.getAccessToken() }
 
     val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
     assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
@@ -131,13 +131,13 @@ internal class UtilityRequestsTest : BaseTest() {
 
     mockWebServer.enqueue(mockResponse)
     val mockUrl = mockWebServer.url("").toString()
-    val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+    val webService = UtilityRequests(client, mockLogger, mockUrl, accessTokenRequests)
 
     val status = runBlocking {
       webService.getEligibility("WBADT43452G296403", Brand.BMW)
     }.response!!
 
-    coVerify { authTokenRequests.getAuthToken() }
+    coVerify { accessTokenRequests.getAccessToken() }
 
     val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
     assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
@@ -161,8 +161,8 @@ internal class UtilityRequestsTest : BaseTest() {
 
   @Test
   fun requestClearanceAuthTokenError() = runBlocking {
-    testAuthTokenErrorReturned(mockWebServer, authTokenRequests) { mockUrl ->
-      val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+    testAuthTokenErrorReturned(mockWebServer, accessTokenRequests) { mockUrl ->
+      val webService = UtilityRequests(client, mockLogger, mockUrl, accessTokenRequests)
       webService.getEligibility(
         "WBADT43452G296403",
         Brand.BMW,
@@ -173,7 +173,7 @@ internal class UtilityRequestsTest : BaseTest() {
   @Test
   fun requestClearanceErrorResponse() = runBlocking {
     testErrorResponseReturned(mockWebServer) { mockUrl ->
-      val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+      val webService = UtilityRequests(client, mockLogger, mockUrl, accessTokenRequests)
       webService.getEligibility(
         "WBADT43452G296403",
         Brand.BMW,
@@ -184,7 +184,7 @@ internal class UtilityRequestsTest : BaseTest() {
   @Test
   fun requestClearanceUnknownResponse() = runBlocking {
     testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-      val webService = UtilityRequests(client, mockLogger, mockUrl, authTokenRequests)
+      val webService = UtilityRequests(client, mockLogger, mockUrl, accessTokenRequests)
       webService.getEligibility(
         "WBADT43452G296403",
         Brand.BMW,

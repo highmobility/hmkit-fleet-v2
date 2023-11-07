@@ -3,23 +3,33 @@ package com.highmobility.hmkitfleet
 import okhttp3.OkHttpClient
 
 class HMKitConfiguration private constructor(builder: Builder) {
-  val client: OkHttpClient
-
-  init {
-    client = builder.client ?: OkHttpClient()
-  }
+  val credentials = builder.credentials ?: throw IllegalArgumentException("credentials must be set")
+  val client = builder.client ?: OkHttpClient()
+  val environment = builder.environment
 
   class Builder {
+    var credentials: HMKitCredentials? = null
+      private set
+    var environment: HMKitFleet.Environment = HMKitFleet.Environment.PRODUCTION
+      private set
     var client: OkHttpClient? = null
       private set
 
-    fun client(client: OkHttpClient) = apply { this.client = client }
-    fun build() = HMKitConfiguration(this)
-  }
+    /**
+     * Set the credentials to be used for the SDK. Choose from either [HMKitOAuthCredentials] or [HMKitPrivateKeyCredentials].
+     */
+    fun credentials(credentials: HMKitCredentials) = apply { this.credentials = credentials }
 
-  companion object {
-    fun defaultConfiguration(): HMKitConfiguration {
-      return Builder().build()
-    }
+    /**
+     * Set the SDK environment. Default is Production.
+     */
+    fun environment(environment: HMKitFleet.Environment) = apply { this.environment = environment }
+
+    /**
+     * Set the OkHttpClient to be used for network requests.
+     */
+    fun client(client: OkHttpClient) = apply { this.client = client }
+
+    fun build() = HMKitConfiguration(this)
   }
 }

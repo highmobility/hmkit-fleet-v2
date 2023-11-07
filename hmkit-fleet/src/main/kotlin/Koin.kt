@@ -24,7 +24,7 @@
 package com.highmobility.hmkitfleet
 
 import com.highmobility.crypto.Crypto
-import com.highmobility.hmkitfleet.network.AuthTokenRequests
+import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.Cache
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Requests
@@ -39,12 +39,11 @@ import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
 internal class Koin(
-  configuration: String,
-  environment: HMKitFleet.Environment,
   hmKitConfiguration: HMKitConfiguration
 ) {
   private val koinModules = module {
-    val configuration = ServiceAccountApiConfiguration(configuration)
+    val environment = hmKitConfiguration.environment
+
     single { LoggerFactory.getLogger(HMKitFleet::class.java) }
     single { hmKitConfiguration.client }
     single { environment }
@@ -52,12 +51,12 @@ internal class Koin(
     single { Requests(get(), get(), environment.url) }
     single { Cache() }
     single {
-      AuthTokenRequests(
+      AccessTokenRequests(
         get(),
         get(),
         get(),
         environment.url,
-        configuration,
+        hmKitConfiguration.credentials,
         get()
       )
     }

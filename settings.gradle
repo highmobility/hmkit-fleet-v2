@@ -3,10 +3,12 @@ rootProject.name = 'hmkit-fleet'
 include ':hmkit-fleet',
         ':hmkit-crypto-telematics',
         ':hmkit-fleet-consumer',
-        ':hmkit-utils'
+        ':hmkit-utils',
+        ':credentials-store'
 
 project(':hmkit-fleet').projectDir = new File('hmkit-fleet')
 project(':hmkit-fleet-consumer').projectDir = new File('hmkit-fleet-consumer/hmkit-fleet-consumer')
 project(':hmkit-utils').projectDir = new File('hmkit-crypto-java/hmkit-utils-java')
 project(':hmkit-crypto-telematics').projectDir = new File('hmkit-crypto-java')
+project(':credentials-store').projectDir = new File('hmkit-fleet-consumer/credentials-store')
 

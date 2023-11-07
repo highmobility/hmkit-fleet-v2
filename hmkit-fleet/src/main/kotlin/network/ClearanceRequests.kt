@@ -48,7 +48,7 @@ internal class ClearanceRequests(
   client: OkHttpClient,
   logger: Logger,
   baseUrl: String,
-  private val authTokenRequests: AuthTokenRequests
+  private val accessTokenRequests: AccessTokenRequests
 ) : Requests(
   client,
   logger,
@@ -60,14 +60,14 @@ internal class ClearanceRequests(
     controlMeasures: List<ControlMeasure>?
   ): Response<RequestClearanceResponse> {
     val body = requestBody(vin, brand, controlMeasures)
-    val authToken = authTokenRequests.getAuthToken()
+    val authToken = accessTokenRequests.getAccessToken()
 
     if (authToken.error != null) return Response(null, authToken.error)
 
     val request = Request.Builder()
       .url("$baseUrl/fleets/vehicles")
       .header("Content-Type", "application/json")
-      .header("Authorization", "Bearer ${authToken.response?.authToken}")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
       .post(body)
       .build()
 
@@ -92,14 +92,14 @@ internal class ClearanceRequests(
 
   suspend fun getClearanceStatuses(): Response<List<ClearanceStatus>> {
     // GET /v1/fleets/vehicles
-    val authToken = authTokenRequests.getAuthToken()
+    val authToken = accessTokenRequests.getAccessToken()
 
     if (authToken.error != null) return Response(null, authToken.error)
 
     val request = Request.Builder()
       .url("$baseUrl/fleets/vehicles")
       .header("Content-Type", "application/json")
-      .header("Authorization", "Bearer ${authToken.response?.authToken}")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
       .build()
 
     printRequest(request)
@@ -122,14 +122,14 @@ internal class ClearanceRequests(
 
   suspend fun getClearanceStatus(vin: String): Response<ClearanceStatus> {
     // GET /v1/fleets/vehicles/{vin}
-    val authToken = authTokenRequests.getAuthToken()
+    val authToken = accessTokenRequests.getAccessToken()
 
     if (authToken.error != null) return Response(null, authToken.error)
 
     val request = Request.Builder()
       .url("$baseUrl/fleets/vehicles/$vin")
       .header("Content-Type", "application/json")
-      .header("Authorization", "Bearer ${authToken.response?.authToken}")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
       .build()
 
     printRequest(request)
@@ -145,14 +145,14 @@ internal class ClearanceRequests(
 
   suspend fun deleteClearance(vin: String): Response<RequestClearanceResponse> {
     // DELETE /v1/fleets/vehicles/{vin}
-    val authToken = authTokenRequests.getAuthToken()
+    val authToken = accessTokenRequests.getAccessToken()
 
     if (authToken.error != null) return Response(null, authToken.error)
 
     val request = Request.Builder()
       .url("$baseUrl/fleets/vehicles/$vin")
       .header("Content-Type", "application/json")
-      .header("Authorization", "Bearer ${authToken.response?.authToken}")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
       .delete()
       .build()
 

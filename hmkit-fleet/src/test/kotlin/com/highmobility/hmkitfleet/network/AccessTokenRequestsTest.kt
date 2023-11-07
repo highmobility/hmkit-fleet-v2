@@ -52,7 +52,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 
-internal class AuthTokenRequestsTest : BaseTest() {
+internal class AccessTokenRequestsTest : BaseTest() {
   private val mockWebServer = MockWebServer()
   private val client = OkHttpClient()
 
@@ -86,7 +86,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
     every { cache getProperty "authToken" } returnsMany listOf(null, responseAuthToken)
 
     val response = runBlocking {
-      mockSuccessfulRequest(responseAuthToken).getAuthToken()
+      mockSuccessfulRequest(responseAuthToken).getAccessToken()
     }
 
     verifyAuthTokenRequestedFromServer()
@@ -114,7 +114,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
     val responseAuthToken = notExpiredAuthToken()
     // return null from cache at first, then on next call a new one
     every { cache getProperty "authToken" } returns responseAuthToken
-    val response = runBlocking { mockSuccessfulRequest(responseAuthToken).getAuthToken() }
+    val response = runBlocking { mockSuccessfulRequest(responseAuthToken).getAccessToken() }
 
     // this means request is not made
     verify(exactly = 0) { crypto.signJWT(any<ByteArray>(), any()) }
@@ -138,7 +138,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
     mockWebServer.enqueue(mockResponse)
     val baseUrl: HttpUrl = mockWebServer.url("")
     val webService =
-      AuthTokenRequests(
+      AccessTokenRequests(
         client,
         crypto,
         mockLogger,
@@ -148,7 +148,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
       )
 
     val status = runBlocking {
-      webService.getAuthToken()
+      webService.getAccessToken()
     }
 
     assertTrue(status.error!!.title == "Not authorized")
@@ -170,7 +170,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
     mockWebServer.enqueue(mockResponse)
     val baseUrl: HttpUrl = mockWebServer.url("")
     val webService =
-      AuthTokenRequests(
+      AccessTokenRequests(
         client,
         crypto,
         mockLogger,
@@ -180,14 +180,14 @@ internal class AuthTokenRequestsTest : BaseTest() {
       )
 
     val status = runBlocking {
-      webService.getAuthToken()
+      webService.getAccessToken()
     }
 
     val genericError = genericError("")
     assertTrue(status.error!!.title == genericError.title)
   }
 
-  private fun mockSuccessfulRequest(responseAuthToken: AuthToken): AuthTokenRequests {
+  private fun mockSuccessfulRequest(responseAuthToken: AuthToken): AccessTokenRequests {
     // return null from cache at first, then on next call a new one
     val json = Json.encodeToString(responseAuthToken)
 
@@ -198,7 +198,7 @@ internal class AuthTokenRequestsTest : BaseTest() {
     mockWebServer.enqueue(mockResponse)
     val baseUrl: HttpUrl = mockWebServer.url("")
 
-    return AuthTokenRequests(
+    return AccessTokenRequests(
       client,
       crypto,
       mockLogger,

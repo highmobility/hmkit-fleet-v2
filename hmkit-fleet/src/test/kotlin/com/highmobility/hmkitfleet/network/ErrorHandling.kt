@@ -82,10 +82,10 @@ internal inline fun <T> testForUnknownResponseGenericErrorReturned(
  */
 internal inline fun <T> testAuthTokenErrorReturned(
   mockWebServer: MockWebServer,
-  authTokenRequests: AuthTokenRequests,
+  accessTokenRequests: AccessTokenRequests,
   request: (mockUrl: String) -> Response<T>
 ) {
-  coEvery { authTokenRequests.getAuthToken() } returns Response(
+  coEvery { accessTokenRequests.getAccessToken() } returns Response(
     null,
     genericError("auth token error")
   )

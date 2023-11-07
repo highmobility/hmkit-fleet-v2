@@ -33,7 +33,7 @@ internal class VehicleDataRequests(
   client: OkHttpClient,
   logger: Logger,
   baseUrl: String,
-  private val authTokenRequests: AuthTokenRequests,
+  private val accessTokenRequests: AccessTokenRequests,
 ) : Requests(
   client,
   logger,
@@ -42,14 +42,14 @@ internal class VehicleDataRequests(
   suspend fun getVehicleStatus(
     vin: String,
   ): Response<String> {
-    val authToken = authTokenRequests.getAuthToken()
+    val authToken = accessTokenRequests.getAccessToken()
 
     if (authToken.error != null) return Response(null, authToken.error)
-    println("auth: Bearer ${authToken.response?.authToken}")
+    println("auth: Bearer ${authToken.response?.accessToken}")
     val request = Request.Builder()
       .url("$baseUrl/vehicle-data/autoapi-13/$vin")
       .header("Content-Type", "application/json")
-      .header("Authorization", "Bearer ${authToken.response?.authToken}")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
       .get()
       .build()
 

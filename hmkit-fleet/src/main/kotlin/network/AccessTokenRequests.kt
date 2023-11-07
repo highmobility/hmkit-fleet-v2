@@ -24,13 +24,11 @@
 package com.highmobility.hmkitfleet.network
 
 import com.highmobility.crypto.Crypto
-import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
-import com.highmobility.hmkitfleet.model.AuthToken
-import kotlinx.serialization.encodeToString
+import com.highmobility.hmkitfleet.HMKitCredentials
+import com.highmobility.hmkitfleet.model.AccessToken
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -38,12 +36,14 @@ import org.slf4j.Logger
 import utils.await
 import java.net.HttpURLConnection
 
-internal class AuthTokenRequests(
+private val JSON: MediaType = "application/json; charset=utf-8".toMediaTypeOrNull()!!
+
+internal class AccessTokenRequests(
   client: OkHttpClient,
   private val crypto: Crypto,
   logger: Logger,
   baseUrl: String,
-  private val configuration: ServiceAccountApiConfiguration,
+  private val credentials: HMKitCredentials,
   private val cache: Cache,
 ) : Requests(
   client,
@@ -51,23 +51,22 @@ internal class AuthTokenRequests(
   baseUrl,
 ) {
   private fun getUrlEncodedJsonRequest(): Request {
-    val body = buildJsonObject {
-      put("assertion", getJwt(configuration, crypto))
-    }
-
-    val newBody = Json.encodeToString(body).toRequestBody("application/json".toMediaType())
+    val json = credentials.getTokenRequestBody(crypto, baseUrl)
+    val requestBody = json.toRequestBody(JSON)
 
     val request = Request.Builder()
-      .url("$baseUrl/auth_tokens")
+      .url("$baseUrl/access_tokens")
       .header("Content-Type", "application/json")
-      .post(newBody)
+      .post(requestBody)
       .build()
 
     return request
   }
 
-  suspend fun getAuthToken(): Response<AuthToken> {
-    val cachedToken = cache.authToken
+  private val json = Json { ignoreUnknownKeys = true }
+
+  suspend fun getAccessToken(): Response<AccessToken> {
+    val cachedToken = cache.accessToken
     if (cachedToken != null) return Response(cachedToken)
 
     val request = getUrlEncodedJsonRequest()
@@ -79,9 +78,9 @@ internal class AuthTokenRequests(
     val responseBody = printResponse(response)
 
     return try {
-      if (response.code == HttpURLConnection.HTTP_CREATED) {
-        cache.authToken = Json.decodeFromString(responseBody)
-        Response(cache.authToken)
+      if (response.code == HttpURLConnection.HTTP_CREATED || response.code == HttpURLConnection.HTTP_OK) {
+        cache.accessToken = json.decodeFromString(responseBody)
+        Response(cache.accessToken)
       } else {
         parseError(responseBody)
       }

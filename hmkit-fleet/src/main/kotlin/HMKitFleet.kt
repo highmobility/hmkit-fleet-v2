@@ -50,23 +50,11 @@ import java.util.concurrent.CompletableFuture
  */
 class HMKitFleet @JvmOverloads constructor(
   /**
-   * The service-account-private-key-{id}.json string downloaded from High-Mobility console.
-   *
-   * The required fields are `private_key` and `id`
+   * Configure the HMKit. Use the [HMKitConfiguration.Builder] to create the object.
    */
-  configuration: String,
-
-  /**
-   * The SDK environment. Default is Production.
-   */
-  val environment: Environment = Environment.PRODUCTION,
-
-  /**
-   * More options for configuring the HMKit. Use the [HMKitConfiguration.Builder] to create the object.
-   */
-  hmKitConfiguration: HMKitConfiguration = HMKitConfiguration.defaultConfiguration()
+  hmKitConfiguration: HMKitConfiguration
 ) {
-  private val koin = Koin(configuration, environment, hmKitConfiguration).start()
+  private val koin = Koin(hmKitConfiguration).start()
   private val scope = koin.get<CoroutineScope>()
   private val logger by koin.inject<Logger>()
 
