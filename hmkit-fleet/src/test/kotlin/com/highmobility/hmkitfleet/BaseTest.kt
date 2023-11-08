@@ -25,7 +25,7 @@
 package com.highmobility.hmkitfleet
 
 import com.highmobility.crypto.value.Signature
-import com.highmobility.hmkitfleet.model.AuthToken
+import com.highmobility.hmkitfleet.model.AccessToken
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.every
@@ -39,30 +39,27 @@ import org.koin.test.KoinTest
 import org.slf4j.Logger
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.ZonedDateTime
 
 const val testVin = "C0NNECT0000000001"
 
-internal fun notExpiredAuthToken(): AuthToken {
-  return AuthToken(
+internal fun notExpiredAccessToken(): AccessToken {
+  return AccessToken(
     "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-    ZonedDateTime.now(),
-    ZonedDateTime.now().plusHours(1)
+    360
   )
 }
 
-internal fun expiredAuthToken(): AuthToken {
-  return AuthToken(
+internal fun expiredAccessToken(): AccessToken {
+  return AccessToken(
     "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-    ZonedDateTime.parse("2020-11-17T04:50:16"),
-    ZonedDateTime.parse("2020-11-17T05:50:16")
+    -1
   )
 }
 
 open class BaseTest : KoinTest {
-  val configuration = readConfigurationFromFile()
+  val privateKeyConfiguration = readPrivateKeyConfiguration()
 
-  private fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
+  internal fun readPrivateKeyJsonString(): String {
     val homeDir = System.getProperty("user.home")
 
     val credentialsFilePath =
@@ -72,12 +69,24 @@ open class BaseTest : KoinTest {
     if (Files.exists(credentialsDirectory) == false) {
       Files.createDirectories(credentialsDirectory)
       Files.createFile(credentialsFilePath)
-      throw InstantiationException("Please add Service account credentials to $credentialsFilePath")
+      throw InstantiationException("Please oauth credentials to $credentialsFilePath")
     }
 
     val credentialsContent = String(Files.readAllBytes(credentialsFilePath))
+    return credentialsContent
+  }
 
-    val configuration = spyk(ServiceAccountApiConfiguration.fromJson(credentialsContent))
+  private fun readPrivateKeyConfiguration(): HMKitConfiguration {
+
+    val credentialsContent = readPrivateKeyJsonString()
+
+    val configuration = spyk(
+      HMKitConfiguration.Builder()
+        .credentials(
+          HMKitPrivateKeyCredentials("client_id", credentialsContent)
+        )
+        .build()
+    )
     return configuration
   }
 

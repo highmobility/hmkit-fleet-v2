@@ -10,10 +10,16 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import java.util.UUID
 
 abstract class HMKitCredentials {
-  internal abstract fun getTokenRequestBody(crypto: Crypto, baseUrl: String): String
+  internal abstract fun getTokenRequestBody(jwtProvider: JwtProvider?): String
+
+  interface JwtProvider {
+    fun getBaseUrl(): String
+    fun getCrypto(): Crypto
+    fun generateUuid(): String
+    fun getTimestamp(): Long
+  }
 }
 
 @Serializable
@@ -21,14 +27,16 @@ data class HMKitOAuthCredentials(
   /**
    * The OAuth client ID.
    */
-  private val clientId: String,
+  val clientId: String,
 
   /**
    * The OAuth client secret.
    */
-  private val clientSecret: String,
+  val clientSecret: String,
 ) : HMKitCredentials() {
-  override fun getTokenRequestBody(crypto: Crypto, baseUrl: String): String {
+  override fun getTokenRequestBody(
+    jwtProvider: JwtProvider?
+  ): String {
     return buildJsonObject {
       put("client_id", clientId)
       put("client_secret", clientSecret)
@@ -42,15 +50,21 @@ data class HMKitPrivateKeyCredentials(
   /**
    * The OAuth client ID.
    */
-  private val clientId: String,
+  val clientId: String,
   /**
    * The full contents of the private key JSON file
    */
-  private val privateKey: String,
+  val privateKey: String,
 ) : HMKitCredentials() {
-  override fun getTokenRequestBody(crypto: Crypto, baseUrl: String): String {
+  override fun getTokenRequestBody(
+    jwtProvider: JwtProvider?
+  ): String {
     val credentials = OAuthPrivateKey(privateKey)
-    val jwt = getJwt(credentials, crypto, baseUrl)
+
+    val jwt = getJwt(
+      credentials,
+      jwtProvider!!
+    )
 
     return buildJsonObject {
       put("client_id", clientId)
@@ -61,9 +75,14 @@ data class HMKitPrivateKeyCredentials(
   }
 }
 
-private fun getJwt(privateKey: OAuthPrivateKey, crypto: Crypto, baseUrl: String): String {
-  fun createJti() = UUID.randomUUID().toString()
-  fun createIat() = (System.currentTimeMillis() / 1000)
+internal fun getJwt(
+  privateKey: OAuthPrivateKey,
+  jwtProvider: HMKitCredentials.JwtProvider
+): String {
+  val crypto: Crypto = jwtProvider.getCrypto()
+  val baseUrl = jwtProvider.getBaseUrl()
+  val uuid = jwtProvider.generateUuid()
+  val timestamp = jwtProvider.getTimestamp()
 
   val header = buildJsonObject {
     put("alg", "ES256")
@@ -74,8 +93,8 @@ private fun getJwt(privateKey: OAuthPrivateKey, crypto: Crypto, baseUrl: String)
     put("ver", 2)
     put("iss", privateKey.serviceAccountPrivateKeyId)
     put("aud", baseUrl)
-    put("jti", createJti())
-    put("iat", createIat())
+    put("jti", uuid)
+    put("iat", timestamp / 1000)
   }.toString()
 
   val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())

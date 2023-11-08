@@ -35,6 +35,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
 import utils.await
 import java.net.HttpURLConnection
+import java.util.UUID
 
 private val JSON: MediaType = "application/json; charset=utf-8".toMediaTypeOrNull()!!
 
@@ -50,8 +51,16 @@ internal class AccessTokenRequests(
   logger,
   baseUrl,
 ) {
+  private val jwtProvider: HMKitCredentials.JwtProvider =
+    object : HMKitCredentials.JwtProvider {
+      override fun getBaseUrl() = baseUrl
+      override fun getCrypto() = crypto
+      override fun generateUuid() = UUID.randomUUID().toString()
+      override fun getTimestamp() = System.currentTimeMillis() / 1000
+    }
+
   private fun getUrlEncodedJsonRequest(): Request {
-    val json = credentials.getTokenRequestBody(crypto, baseUrl)
+    val json = credentials.getTokenRequestBody(jwtProvider)
     val requestBody = json.toRequestBody(JSON)
 
     val request = Request.Builder()

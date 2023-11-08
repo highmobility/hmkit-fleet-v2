@@ -88,7 +88,7 @@ class HMKitFleetTest : BaseTest() {
       clearanceRequests.deleteClearance(any())
     } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
 
-    val hmkit = HMKitFleet(configuration.toJsonString())
+    val hmkit = HMKitFleet(privateKeyConfiguration)
     val delete = hmkit.deleteClearance("vin1").get()
     assertTrue(delete.response?.vin == "vin1")
     assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
@@ -100,7 +100,7 @@ class HMKitFleetTest : BaseTest() {
       clearanceRequests.getClearanceStatus("vin1")
     } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
 
-    val hmkit = HMKitFleet(configuration.toJsonString())
+    val hmkit = HMKitFleet(privateKeyConfiguration)
     val clearance = hmkit.getClearanceStatus("vin1").get()
     assertTrue(clearance.response?.vin == "vin1")
     assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
@@ -115,7 +115,7 @@ class HMKitFleetTest : BaseTest() {
       null
     )
 
-    val hmkit = HMKitFleet(configuration.toJsonString())
+    val hmkit = HMKitFleet(privateKeyConfiguration)
     val vehicleStatus = hmkit.getVehicleState("vin1").get()
     val json = Json.decodeFromString<JsonObject>(vehicleStatus.response ?: "")
     assertTrue(json["vin"]?.jsonPrimitive?.content == "vin1")
@@ -139,7 +139,7 @@ class HMKitFleetTest : BaseTest() {
     HMKitFleet.Environment.webUrl = fakeUrl
     assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
 
-    val hmkit = HMKitFleet(configuration.toJsonString())
+    val hmkit = HMKitFleet(privateKeyConfiguration)
     hmkit.getEligibility("vin1", Brand.SANDBOX).get()
 
     val recordedRequest = mockWebServer.takeRequest()

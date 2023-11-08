@@ -28,7 +28,7 @@ import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.ControlMeasure
 import com.highmobility.hmkitfleet.model.Odometer
-import com.highmobility.hmkitfleet.notExpiredAuthToken
+import com.highmobility.hmkitfleet.notExpiredAccessToken
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -101,7 +101,7 @@ private const val CHANGE_LOG = """[
 internal class ClearanceRequestsTest : BaseTest() {
   val mockWebServer = MockWebServer()
   val client = OkHttpClient()
-  val authToken = notExpiredAuthToken()
+  val accessToken = notExpiredAccessToken()
   val accessTokenRequests = mockk<AccessTokenRequests>()
 
   val controlMeasures = listOf<ControlMeasure>(
@@ -114,7 +114,7 @@ internal class ClearanceRequestsTest : BaseTest() {
   @BeforeEach
   fun setUp() {
     mockWebServer.start()
-    coEvery { accessTokenRequests.getAccessToken() } returns Response(authToken)
+    coEvery { accessTokenRequests.getAccessToken() } returns Response(accessToken)
   }
 
   @AfterEach
@@ -154,7 +154,7 @@ internal class ClearanceRequestsTest : BaseTest() {
     assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles"))
 
     // verify request
-    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${accessToken.accessToken}")
 
     val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
     val array = jsonBody.jsonObject["vehicles"] as JsonArray
@@ -239,7 +239,7 @@ internal class ClearanceRequestsTest : BaseTest() {
     coVerify { accessTokenRequests.getAccessToken() }
 
     val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${accessToken.accessToken}")
 
     assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles"))
     assertTrue(recordedRequest.method == "GET")
@@ -337,7 +337,7 @@ internal class ClearanceRequestsTest : BaseTest() {
     coVerify { accessTokenRequests.getAccessToken() }
 
     val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${accessToken.accessToken}")
 
     assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles/$vin"))
     assertTrue(recordedRequest.method == "GET")
@@ -402,7 +402,7 @@ internal class ClearanceRequestsTest : BaseTest() {
     assertTrue(recordedRequest.path!!.endsWith("/fleets/vehicles/$vin"))
 
     // verify request
-    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${accessToken.accessToken}")
 
     // verify response
     assertTrue(status.response!!.status == ClearanceStatus.Status.REVOKING)

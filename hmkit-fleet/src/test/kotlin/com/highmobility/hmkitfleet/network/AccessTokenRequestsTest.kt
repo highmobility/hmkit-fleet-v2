@@ -27,11 +27,9 @@ package com.highmobility.hmkitfleet.network
 
 import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.BaseTest
-import com.highmobility.hmkitfleet.model.AuthToken
-import com.highmobility.hmkitfleet.notExpiredAuthToken
-import com.highmobility.utils.Base64
+import com.highmobility.hmkitfleet.model.AccessToken
+import com.highmobility.hmkitfleet.notExpiredAccessToken
 import io.mockk.Runs
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -39,8 +37,6 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -59,13 +55,9 @@ internal class AccessTokenRequestsTest : BaseTest() {
   private lateinit var crypto: Crypto
   private val cache = mockk<Cache>()
 
-  private val privateKey = configuration.getServiceAccountHmPrivateKey()
-
   @BeforeEach
   fun setUp() {
-    every { configuration.createJti() } returns "jti"
-    every { configuration.createIat() } returns 1001
-    every { cache setProperty "authToken" value any<AuthToken>() } just Runs
+    every { cache setProperty "accessToken" value any<AccessToken>() } just Runs
 
     crypto = mockk()
     every { crypto.signJWT(any<ByteArray>(), any()) } returns mockSignature
@@ -79,53 +71,45 @@ internal class AccessTokenRequestsTest : BaseTest() {
   }
 
   @Test
-  fun downloadsAuthTokenAndWritesToCacheIfDoesNotExistOrExpired() {
-    val responseAuthToken = notExpiredAuthToken()
+  fun downloadsAccessTokenAndWritesToCacheIfDoesNotExistOrExpired() {
+    val responseAccessToken = notExpiredAccessToken()
     // return null from cache at first, then on next call a new one
     // if auth token is expired, the cache does not return it also
-    every { cache getProperty "authToken" } returnsMany listOf(null, responseAuthToken)
+    every { cache getProperty "accessToken" } returnsMany listOf(null, responseAccessToken)
 
     val response = runBlocking {
-      mockSuccessfulRequest(responseAuthToken).getAccessToken()
+      mockSuccessfulRequest(responseAccessToken).getAccessToken()
     }
 
-    verifyAuthTokenRequestedFromServer()
-
-    verifyNewAuthTokenReturned(responseAuthToken, response)
-    verify { cache setProperty "authToken" value responseAuthToken }
-  }
-
-  private fun verifyNewAuthTokenReturned(expected: AuthToken, response: Response<AuthToken>) {
-    assertTrue(response.response!!.authToken == expected.authToken)
-    assertTrue(response.response!!.validFrom.toString() == expected.validFrom.toString())
-    assertTrue(response.response!!.validUntil.toString() == expected.validUntil.toString())
-  }
-
-  private fun verifyAuthTokenRequestedFromServer() {
-    val jwtContent = getJwtContent().toByteArray()
-    coVerify { crypto.signJWT(jwtContent, privateKey) }
-
     val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-    assertTrue(recordedRequest.path!!.endsWith("/auth_tokens"))
+    assertTrue(recordedRequest.path!!.endsWith("/access_tokens"))
+
+    verifyNewAccessTokenReturned(responseAccessToken, response)
+    verify { cache setProperty "accessToken" value responseAccessToken }
+  }
+
+  private fun verifyNewAccessTokenReturned(expected: AccessToken, response: Response<AccessToken>) {
+    assertTrue(response.response!!.accessToken == expected.accessToken)
+    assertTrue(response.response!!.expiresIn == expected.expiresIn)
   }
 
   @Test
-  fun doesNotDownloadAuthTokenIfExistsAndNotExpired() {
-    val responseAuthToken = notExpiredAuthToken()
+  fun doesNotDownloadAccessTokenIfExistsAndNotExpired() {
+    val responseAccessToken = notExpiredAccessToken()
     // return null from cache at first, then on next call a new one
-    every { cache getProperty "authToken" } returns responseAuthToken
-    val response = runBlocking { mockSuccessfulRequest(responseAuthToken).getAccessToken() }
+    every { cache getProperty "accessToken" } returns responseAccessToken
+    val response = runBlocking { mockSuccessfulRequest(responseAccessToken).getAccessToken() }
 
     // this means request is not made
     verify(exactly = 0) { crypto.signJWT(any<ByteArray>(), any()) }
-    verify(exactly = 0) { cache setProperty "authToken" value any<AuthToken>() }
+    verify(exactly = 0) { cache setProperty "accessToken" value any<AccessToken>() }
 
-    verifyNewAuthTokenReturned(responseAuthToken, response)
+    verifyNewAccessTokenReturned(responseAccessToken, response)
   }
 
   @Test
   fun authTokenErrorResponse() {
-    every { cache getProperty "authToken" } returns null
+    every { cache getProperty "accessToken" } returns null
 
     val mockResponse = MockResponse()
       .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -143,7 +127,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         crypto,
         mockLogger,
         baseUrl.toString(),
-        configuration,
+        privateKeyConfiguration.credentials,
         cache
       )
 
@@ -160,7 +144,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
 
   @Test
   fun authTokenInvalidResponse() {
-    every { cache getProperty "authToken" } returns null
+    every { cache getProperty "accessToken" } returns null
 
     val mockResponse = MockResponse()
       .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
@@ -175,7 +159,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         crypto,
         mockLogger,
         baseUrl.toString(),
-        configuration,
+        privateKeyConfiguration.credentials,
         cache
       )
 
@@ -187,9 +171,9 @@ internal class AccessTokenRequestsTest : BaseTest() {
     assertTrue(status.error!!.title == genericError.title)
   }
 
-  private fun mockSuccessfulRequest(responseAuthToken: AuthToken): AccessTokenRequests {
+  private fun mockSuccessfulRequest(responseAccessToken: AccessToken): AccessTokenRequests {
     // return null from cache at first, then on next call a new one
-    val json = Json.encodeToString(responseAuthToken)
+    val json = Json.encodeToString(responseAccessToken)
 
     val mockResponse = MockResponse()
       .setResponseCode(HttpURLConnection.HTTP_CREATED)
@@ -203,31 +187,8 @@ internal class AccessTokenRequestsTest : BaseTest() {
       crypto,
       mockLogger,
       baseUrl.toString(),
-      configuration,
+      privateKeyConfiguration.credentials,
       cache
     )
-  }
-
-  private fun getJwtContent(): String {
-    every { configuration.createJti() } returns "jti"
-    every { configuration.createIat() } returns 1001
-
-    val header = buildJsonObject {
-      put("alg", "ES256")
-      put("typ", "JWT")
-    }.toString()
-
-    val jwtBody = buildJsonObject {
-      put("ver", configuration.version)
-      put("iss", configuration.serviceAccountPrivateKeyId)
-      put("aud", mockWebServer.url("").toString())
-      put("jti", configuration.createJti())
-      put("iat", configuration.createIat())
-    }.toString()
-
-    val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
-    val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
-
-    return String.format("%s.%s", headerBase64, bodyBase64)
   }
 }

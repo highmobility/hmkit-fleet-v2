@@ -26,7 +26,7 @@ package com.highmobility.hmkitfleet.network
 import com.highmobility.hmkitfleet.BaseTest
 import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.EligibilityStatus
-import com.highmobility.hmkitfleet.notExpiredAuthToken
+import com.highmobility.hmkitfleet.notExpiredAccessToken
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -48,7 +48,7 @@ import java.net.HttpURLConnection
 internal class UtilityRequestsTest : BaseTest() {
   val mockWebServer = MockWebServer()
   val client = OkHttpClient()
-  val authToken = notExpiredAuthToken()
+  val authToken = notExpiredAccessToken()
   val accessTokenRequests = mockk<AccessTokenRequests>()
 
   @BeforeEach
@@ -94,7 +94,7 @@ internal class UtilityRequestsTest : BaseTest() {
     assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
 
     // verify request
-    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.accessToken}")
     val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
     assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
     assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")
@@ -143,7 +143,7 @@ internal class UtilityRequestsTest : BaseTest() {
     assertTrue(recordedRequest.path!!.endsWith("/eligibility"))
 
     // verify request
-    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.authToken}")
+    assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${authToken.accessToken}")
     val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8())
     assertTrue(jsonBody.jsonObject["vin"]?.jsonPrimitive?.contentOrNull == "WBADT43452G296403")
     assertTrue(jsonBody.jsonObject["brand"]?.jsonPrimitive?.contentOrNull == "bmw")

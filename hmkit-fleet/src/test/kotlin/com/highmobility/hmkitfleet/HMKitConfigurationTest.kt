@@ -28,13 +28,12 @@ class HMKitConfigurationTest : BaseTest() {
     val client = mockk<OkHttpClient> {
       every { newCall(any()) } returns call
     }
-    val hmkitConf = HMKitConfiguration.Builder().client(client).build()
+    val hmkitConf = HMKitConfiguration.Builder()
+      .client(client)
+      .credentials(privateKeyConfiguration.credentials)
+      .build()
 
-    val hmkit = HMKitFleet(
-      configuration.toJsonString(),
-      HMKitFleet.Environment.SANDBOX,
-      hmkitConf
-    )
+    val hmkit = HMKitFleet(hmkitConf)
 
     // verify mock without throwing succeeds
     hmkit.getClearanceStatus("vin1").get()
