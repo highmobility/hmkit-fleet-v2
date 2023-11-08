@@ -63,7 +63,7 @@ open class BaseTest : KoinTest {
     val homeDir = System.getProperty("user.home")
 
     val credentialsFilePath =
-      Paths.get("$homeDir/.config/high-mobility/fleet-sdk/credentials.json")
+      Paths.get("$homeDir/.config/high-mobility/fleet-sdk/credentialsPrivateKey.json")
     val credentialsDirectory = credentialsFilePath.parent
 
     if (Files.exists(credentialsDirectory) == false) {
