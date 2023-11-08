@@ -69,7 +69,7 @@ open class BaseTest : KoinTest {
     if (Files.exists(credentialsDirectory) == false) {
       Files.createDirectories(credentialsDirectory)
       Files.createFile(credentialsFilePath)
-      throw InstantiationException("Please oauth credentials to $credentialsFilePath")
+      throw InstantiationException("Please add oauth credentials to $credentialsFilePath")
     }
 
     val credentialsContent = String(Files.readAllBytes(credentialsFilePath))
@@ -83,7 +83,7 @@ open class BaseTest : KoinTest {
     val configuration = spyk(
       HMKitConfiguration.Builder()
         .credentials(
-          HMKitPrivateKeyCredentials("client_id", credentialsContent)
+          HMKitOAuthCredentials("client_id", credentialsContent)
         )
         .build()
     )

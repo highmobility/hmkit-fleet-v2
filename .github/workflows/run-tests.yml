@@ -35,7 +35,7 @@ jobs:
         run: |
           mkdir -p ~/.config/high-mobility/fleet-sdk/
           # ' will not escape "" inside the yaml file
-          echo '${{ secrets.CREDENTIALS_YAML }}' > ~/.config/high-mobility/fleet-sdk/credentials.yaml
+          echo '${{ secrets.CREDENTIALS_JSON }}' > ~/.config/high-mobility/fleet-sdk/credentials.json
 
       - name: Update submodules
         env:
