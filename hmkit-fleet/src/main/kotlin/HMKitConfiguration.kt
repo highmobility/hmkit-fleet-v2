@@ -16,7 +16,7 @@ class HMKitConfiguration private constructor(builder: Builder) {
       private set
 
     /**
-     * Set the credentials to be used for the SDK. Choose from either [HMKitOAuthCredentials] or [HMKitPrivateKeyCredentials].
+     * Set the credentials to be used for the SDK. Choose from either [HMKitOAuthCredentials] or [HMKitPrivateKeyCredentials]. This is a mandatory field.
      */
     fun credentials(credentials: HMKitCredentials) = apply { this.credentials = credentials }
 
@@ -26,7 +26,7 @@ class HMKitConfiguration private constructor(builder: Builder) {
     fun environment(environment: HMKitFleet.Environment) = apply { this.environment = environment }
 
     /**
-     * Set the OkHttpClient to be used for network requests.
+     * Optionally, set the OkHttpClient to be used for network requests.
      */
     fun client(client: OkHttpClient) = apply { this.client = client }
 

@@ -39,16 +39,17 @@ import java.util.concurrent.CompletableFuture
 
 /**
  * HMKitFleet is the access point for the Fleet SDK functionality. It is accessed by
- * creating a new HMKitFleet object with a service account private key JSON string.
+ * creating a new HMKitFleet object with a HMKitConfiguration object.
  *
  * ```
  * HMKitFleet fleet = new HMKitFleet(
- *     readStringContents(service-account-private-key-{id}.json),
- *     HMKitFleet.Environment.SANDBOX
+ *     new HMKitConfiguration.Builder()
+ *      .credentials(new HMKitOAuthCredentials("client_id", "client_secret"))
+ *      .build()
  * );
  * ```
  */
-class HMKitFleet @JvmOverloads constructor(
+class HMKitFleet constructor(
   /**
    * Configure the HMKit. Use the [HMKitConfiguration.Builder] to create the object.
    */
