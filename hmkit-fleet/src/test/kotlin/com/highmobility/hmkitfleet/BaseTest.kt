@@ -40,19 +40,10 @@ import org.slf4j.Logger
 import java.nio.file.Files
 import java.nio.file.Paths
 
-const val testVin = "C0NNECT0000000001"
-
 internal fun notExpiredAccessToken(): AccessToken {
   return AccessToken(
     "e903cb43-27b1-4e47-8922-c04ecd5d2019",
     360
-  )
-}
-
-internal fun expiredAccessToken(): AccessToken {
-  return AccessToken(
-    "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-    -1
   )
 }
 
@@ -91,17 +82,6 @@ open class BaseTest : KoinTest {
   }
 
   val mockLogger = mockk<Logger>()
-
-  // have to be in base so they are created again for each test class
-  internal val mockSignature = mockk<Signature> {
-    every {
-      base64UrlSafe
-    } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-    every { base64 } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-    every {
-      hex
-    } returns "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-  }
 
   @BeforeEach
   fun before() {

@@ -1,12 +1,10 @@
 package com.highmobility.hmkitfleet.com.highmobility.hmkitfleet
 
 import com.highmobility.crypto.Crypto
-import com.highmobility.crypto.value.Signature
 import com.highmobility.hmkitfleet.BaseTest
 import com.highmobility.hmkitfleet.HMKitCredentials
 import com.highmobility.hmkitfleet.HMKitOAuthCredentials
 import com.highmobility.hmkitfleet.HMKitPrivateKeyCredentials
-import com.highmobility.hmkitfleet.OAuthPrivateKey
 import com.highmobility.utils.Base64
 import io.mockk.every
 import io.mockk.mockk
@@ -38,11 +36,14 @@ class HMKitCredentialsTest : BaseTest() {
     val timestamp = 1000L
     val uuid = "00000000-0000-0000-0000-000000000000"
 
-    val privateKey = readPrivateKeyJsonString()
+    val privateKeyJson = Json.decodeFromString<JsonObject>(readPrivateKeyJsonString())
+    val privateKey = privateKeyJson["private_key"]?.jsonPrimitive?.content ?: ""
+    val privateKeyId = privateKeyJson["id"]?.jsonPrimitive?.content ?: ""
 
     val credentials: HMKitCredentials = HMKitPrivateKeyCredentials(
       "client_id",
-      privateKey
+      privateKey,
+      privateKeyId
     )
 
     val crypto = mockk<Crypto> {
@@ -51,7 +52,7 @@ class HMKitCredentialsTest : BaseTest() {
           any<ByteArray>(),
           any()
         )
-      } returns mockk<Signature> {
+      } returns mockk {
         every { base64UrlSafe } returns "base64Signature"
       }
     }
@@ -64,7 +65,7 @@ class HMKitCredentialsTest : BaseTest() {
     }
 
     val requestBody = credentials.getTokenRequestBody(jwtProvider)
-    val expected = expectedHeaderAndBody(privateKey, jwtProvider)
+    val expected = expectedHeaderAndBody(privateKeyId, jwtProvider)
 
     verify { crypto.signJWT(any<ByteArray>(), any()) }
 
@@ -79,11 +80,9 @@ class HMKitCredentialsTest : BaseTest() {
   }
 
   private fun expectedHeaderAndBody(
-    privateKey: String,
+    privateKeyId: String,
     jwtProvider: HMKitCredentials.JwtProvider,
   ): Pair<String, String> {
-    val credentials = OAuthPrivateKey(privateKey)
-
     val header = buildJsonObject {
       put("alg", "ES256")
       put("typ", "JWT")
@@ -91,7 +90,7 @@ class HMKitCredentialsTest : BaseTest() {
 
     val body = buildJsonObject {
       put("ver", 2)
-      put("iss", credentials.serviceAccountPrivateKeyId)
+      put("iss", privateKeyId)
       put("aud", jwtProvider.getBaseUrl())
       put("jti", jwtProvider.generateUuid())
       put("iat", jwtProvider.getTimestamp() / 1000)

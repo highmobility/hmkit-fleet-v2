@@ -60,7 +60,6 @@ internal class AccessTokenRequestsTest : BaseTest() {
     every { cache setProperty "accessToken" value any<AccessToken>() } just Runs
 
     crypto = mockk()
-    every { crypto.signJWT(any<ByteArray>(), any()) } returns mockSignature
 
     mockWebServer.start()
   }
