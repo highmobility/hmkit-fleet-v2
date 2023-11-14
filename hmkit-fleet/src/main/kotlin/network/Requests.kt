@@ -28,15 +28,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.Buffer
 import org.slf4j.Logger
@@ -48,6 +44,7 @@ internal open class Requests(
 ) {
   val mediaType = "application/json; charset=utf-8".toMediaType()
 
+  @Suppress("TooGenericExceptionCaught")
   inline fun <T> tryParseResponse(
     response: Response,
     expectedResponseCode: Int,
@@ -80,8 +77,8 @@ internal open class Requests(
 
     logger.debug(
       "sending ${request.method} ${request.url}:" +
-          "\nheaders: ${request.headers}" +
-          "body: $bodyInPrettyPrint"
+        "\nheaders: ${request.headers}" +
+        "body: $bodyInPrettyPrint"
     )
   }
 
@@ -93,30 +90,33 @@ internal open class Requests(
 
   fun <T> parseError(responseBody: String): com.highmobility.hmkitfleet.network.Response<T> {
     val json = Json.parseToJsonElement(responseBody)
-    if (json is JsonObject) {
+
+    return if (json is JsonObject) {
       // there are 3 error formats
       val errors = json["errors"] as? JsonArray
-
-      return if (errors != null && errors.size > 0) {
-        val error =
-          Json.decodeFromJsonElement<Error>(errors.first())
-        Response(null, error)
-      } else {
-        val error = Error(
-          json["error"]?.jsonPrimitive?.content ?: "Unknown server response",
-          json["error_description"]?.jsonPrimitive?.content
-        )
-
-        Response(null, error)
-      }
-    } else if (json is JsonArray) {
-      if (json.size > 0) {
-        val error = Json.decodeFromJsonElement<Error>(json.first())
-        return Response(null, error)
-      }
+      parseErrorsArray(errors, json)
+    } else if (json is JsonArray && json.size > 0) {
+      val error = Json.decodeFromJsonElement<Error>(json.first())
+      Response(null, error)
+    } else {
+      Response(null, genericError("Unknown server response"))
     }
+  }
 
-    return Response(null, genericError("Unknown server response"))
+  private fun <T> parseErrorsArray(
+    errors: JsonArray?,
+    json: JsonObject
+  ): com.highmobility.hmkitfleet.network.Response<T> = if (errors != null && errors.size > 0) {
+    val error =
+      Json.decodeFromJsonElement<Error>(errors.first())
+    Response(null, error)
+  } else {
+    val error = Error(
+      json["error"]?.jsonPrimitive?.content ?: "Unknown server response",
+      json["error_description"]?.jsonPrimitive?.content
+    )
+
+    Response(null, error)
   }
 }
 

@@ -37,6 +37,7 @@ import java.net.HttpURLConnection
 import java.util.UUID
 
 private val JSON: MediaType = "application/json; charset=utf-8".toMediaTypeOrNull()!!
+private const val MILLIS_IN_SECOND = 1000
 
 internal class AccessTokenRequests(
   client: OkHttpClient,
@@ -53,7 +54,7 @@ internal class AccessTokenRequests(
     object : HMKitCredentials.JwtProvider {
       override fun getBaseUrl() = baseUrl
       override fun generateUuid() = UUID.randomUUID().toString()
-      override fun getTimestamp() = System.currentTimeMillis() / 1000
+      override fun getTimestamp() = System.currentTimeMillis() / MILLIS_IN_SECOND
     }
 
   private fun getUrlEncodedJsonRequest(): Request {

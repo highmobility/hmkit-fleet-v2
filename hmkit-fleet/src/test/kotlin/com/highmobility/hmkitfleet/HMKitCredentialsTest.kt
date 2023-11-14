@@ -59,7 +59,9 @@ class HMKitCredentialsTest : BaseTest() {
     // assert(jwt?.get(2) == expected.third) // signature can be different
     assert(json["client_id"]?.jsonPrimitive?.content == "client_id")
     assert(json["grant_type"]?.jsonPrimitive?.content == "client_credentials")
-    assert(json["client_assertion_type"]?.jsonPrimitive?.content == "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+    assert(
+      json["client_assertion_type"]?.jsonPrimitive?.content == "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+    )
   }
 
   private fun expectedHeaderAndBody(
@@ -67,7 +69,6 @@ class HMKitCredentialsTest : BaseTest() {
     privateKey: String,
     jwtProvider: HMKitCredentials.JwtProvider,
   ): Triple<String, String, String> {
-
     val jwt = Jwts.builder()
       .header() // alg is set automatically
       .type("JWT")

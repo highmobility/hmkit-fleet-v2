@@ -32,7 +32,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.koin.test.KoinTest
 import org.slf4j.Logger
@@ -67,7 +66,6 @@ open class BaseTest : KoinTest {
   }
 
   private fun readPrivateKeyConfiguration(): HMKitConfiguration {
-
     val credentialsContent = readPrivateKeyJsonString()
 
     val configuration = spyk(
@@ -98,10 +96,6 @@ open class BaseTest : KoinTest {
 
     every { mockLogger.error(allAny()) } just Runs
     every { mockLogger.error(any(), any<Throwable>()) } just Runs
-  }
-
-  @AfterEach
-  fun after() {
   }
 
   fun errorLogExpected(runnable: Runnable) {

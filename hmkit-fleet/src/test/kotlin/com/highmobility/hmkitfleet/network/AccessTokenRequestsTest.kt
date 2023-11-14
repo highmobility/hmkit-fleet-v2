@@ -109,9 +109,9 @@ internal class AccessTokenRequestsTest : BaseTest() {
       .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
       .setBody(
         "{\"errors\":" +
-            "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
-            "\"source\":\"assertion\"," +
-            "\"title\":\"Not authorized\"}]}"
+          "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
+          "\"source\":\"assertion\"," +
+          "\"title\":\"Not authorized\"}]}"
       )
     mockWebServer.enqueue(mockResponse)
     val baseUrl: HttpUrl = mockWebServer.url("")

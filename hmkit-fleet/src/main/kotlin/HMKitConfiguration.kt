@@ -16,7 +16,8 @@ class HMKitConfiguration private constructor(builder: Builder) {
       private set
 
     /**
-     * Set the credentials to be used for the SDK. Choose from either [HMKitOAuthCredentials] or [HMKitPrivateKeyCredentials]. This is a mandatory field.
+     * Set the credentials to be used for the SDK. Choose from either [HMKitOAuthCredentials] or
+     * [HMKitPrivateKeyCredentials]. This is a mandatory field.
      */
     fun credentials(credentials: HMKitCredentials) = apply { this.credentials = credentials }
 

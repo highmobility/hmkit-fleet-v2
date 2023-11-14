@@ -107,6 +107,7 @@ class HMKitFleetTest : BaseTest() {
   }
 
   @Test
+  @Suppress("MaximumLineLength", "MaxLineLength")
   fun getVehicleStatus() = runTest {
     coEvery {
       vehicleDataRequests.getVehicleStatus("vin1")

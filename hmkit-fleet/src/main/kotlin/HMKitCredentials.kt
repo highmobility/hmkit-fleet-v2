@@ -49,11 +49,13 @@ data class HMKitPrivateKeyCredentials(
    */
   val clientId: String,
   /**
-   * The PKCS8 formatted private key. It is included in the .json file downloaded from the developer console after creating a new private key in the App>OAuth section.
+   * The PKCS8 formatted private key. It is included in the .json file downloaded from the developer console after
+   * creating a new private key in the App>OAuth section.
    */
   val privateKey: String,
   /**
-   * The private key ID. It is included in the .json file downloaded from the developer console after creating a new private key in the App>OAuth section.
+   * The private key ID. It is included in the .json file downloaded from the developer console after creating a new
+   * private key in the App>OAuth section.
    */
   val privateKeyId: String
 ) : HMKitCredentials() {

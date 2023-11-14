@@ -138,7 +138,7 @@ internal class ClearanceRequestsTest : BaseTest() {
                     }
                   ]
                 }
-                """.trimIndent()
+        """.trimIndent()
       )
     mockWebServer.enqueue(mockResponse)
     val mockUrl = mockWebServer.url("").toString()
@@ -226,7 +226,7 @@ internal class ClearanceRequestsTest : BaseTest() {
                     "status": "pending"
                   }
                 ]
-                """.trimIndent()
+        """.trimIndent()
       )
     mockWebServer.enqueue(mockResponse)
     val mockUrl = mockWebServer.url("").toString()
@@ -324,7 +324,7 @@ internal class ClearanceRequestsTest : BaseTest() {
                         }
                     ]
                   }
-                """.trimIndent()
+        """.trimIndent()
       )
     mockWebServer.enqueue(mockResponse)
     val mockUrl = mockWebServer.url("").toString()
@@ -386,7 +386,7 @@ internal class ClearanceRequestsTest : BaseTest() {
                       "vin": "$vin",
                       "status": "revoking"
                     }
-                """.trimIndent()
+        """.trimIndent()
       )
     mockWebServer.enqueue(mockResponse)
     val mockUrl = mockWebServer.url("").toString()

@@ -78,7 +78,7 @@ internal class UtilityRequestsTest : BaseTest() {
                     "push"
                   ]
                 }
-                """.trimIndent()
+        """.trimIndent()
       )
     mockWebServer.enqueue(mockResponse)
     val mockUrl = mockWebServer.url("").toString()
@@ -126,7 +126,7 @@ internal class UtilityRequestsTest : BaseTest() {
                   "connectivity_status": "deactivated",
                   "primary_user_assigned": true
                 }
-                """.trimIndent()
+        """.trimIndent()
       )
 
     mockWebServer.enqueue(mockResponse)
