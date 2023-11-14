@@ -1,18 +1,19 @@
 package com.highmobility.hmkitfleet
 
-import com.highmobility.crypto.Crypto
-import com.highmobility.crypto.value.PrivateKey
-import com.highmobility.utils.Base64
+import io.jsonwebtoken.Jwts
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.security.KeyFactory
+import java.security.interfaces.ECPrivateKey
+import java.security.spec.PKCS8EncodedKeySpec
+import java.util.Base64
 
 abstract class HMKitCredentials {
   internal abstract fun getTokenRequestBody(jwtProvider: JwtProvider?): String
 
   interface JwtProvider {
     fun getBaseUrl(): String
-    fun getCrypto(): Crypto
     fun generateUuid(): String
     fun getTimestamp(): Long
   }
@@ -74,34 +75,37 @@ data class HMKitPrivateKeyCredentials(
   }
 }
 
+internal fun getPrivateKey(pkcs8: String): ECPrivateKey {
+  val encodedKeyString = pkcs8
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace("\n", "")
+
+  val decodedPrivateKey = Base64.getDecoder().decode(encodedKeyString)
+  val keySpec = PKCS8EncodedKeySpec(decodedPrivateKey)
+  val kf = KeyFactory.getInstance("EC")
+  return kf.generatePrivate(keySpec) as ECPrivateKey
+}
+
 internal fun getJwt(
   privateKey: String,
   privateKeyId: String,
   jwtProvider: HMKitCredentials.JwtProvider
 ): String {
-  val crypto: Crypto = jwtProvider.getCrypto()
-  val baseUrl = jwtProvider.getBaseUrl()
-  val uuid = jwtProvider.generateUuid()
-  val timestamp = jwtProvider.getTimestamp()
+  val key = getPrivateKey(privateKey)
 
-  val header = buildJsonObject {
-    put("alg", "ES256")
-    put("typ", "JWT")
-  }.toString()
+  val jwt = Jwts.builder()
+    .header() // alg is set automatically
+    .type("JWT")
+    .and()
+    .claim("ver", 2)
+    .claim("iss", privateKeyId)
+    .claim("jti", jwtProvider.generateUuid())
+    .claim("iat", jwtProvider.getTimestamp())
+    .audience()
+    .single(jwtProvider.getBaseUrl())
+    .signWith(key)
+    .compact()
 
-  val jwtBody = buildJsonObject {
-    put("ver", 2)
-    put("iss", privateKeyId)
-    put("aud", baseUrl)
-    put("jti", uuid)
-    put("iat", timestamp / 1000)
-  }.toString()
-
-  val hmPrivateKey = PrivateKey(privateKey, PrivateKey.Format.PKCS8)
-  val headerBase64 = Base64.encodeUrlSafe(header.toByteArray())
-  val bodyBase64 = Base64.encodeUrlSafe(jwtBody.toByteArray())
-  val jwtContent = String.format("%s.%s", headerBase64, bodyBase64)
-  val jwtSignature = crypto.signJWT(jwtContent.toByteArray(), hmPrivateKey)
-
-  return String.format("%s.%s", jwtContent, jwtSignature.base64UrlSafe)
+  return jwt
 }

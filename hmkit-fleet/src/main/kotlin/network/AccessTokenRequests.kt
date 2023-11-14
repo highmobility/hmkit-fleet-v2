@@ -23,7 +23,6 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.HMKitCredentials
 import com.highmobility.hmkitfleet.model.AccessToken
 import kotlinx.serialization.json.Json
@@ -41,7 +40,6 @@ private val JSON: MediaType = "application/json; charset=utf-8".toMediaTypeOrNul
 
 internal class AccessTokenRequests(
   client: OkHttpClient,
-  private val crypto: Crypto,
   logger: Logger,
   baseUrl: String,
   private val credentials: HMKitCredentials,
@@ -54,7 +52,6 @@ internal class AccessTokenRequests(
   private val jwtProvider: HMKitCredentials.JwtProvider =
     object : HMKitCredentials.JwtProvider {
       override fun getBaseUrl() = baseUrl
-      override fun getCrypto() = crypto
       override fun generateUuid() = UUID.randomUUID().toString()
       override fun getTimestamp() = System.currentTimeMillis() / 1000
     }

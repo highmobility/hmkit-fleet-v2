@@ -25,7 +25,6 @@
 
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.BaseTest
 import com.highmobility.hmkitfleet.model.AccessToken
 import com.highmobility.hmkitfleet.notExpiredAccessToken
@@ -52,14 +51,11 @@ internal class AccessTokenRequestsTest : BaseTest() {
   private val mockWebServer = MockWebServer()
   private val client = OkHttpClient()
 
-  private lateinit var crypto: Crypto
   private val cache = mockk<Cache>()
 
   @BeforeEach
   fun setUp() {
     every { cache setProperty "accessToken" value any<AccessToken>() } just Runs
-
-    crypto = mockk()
 
     mockWebServer.start()
   }
@@ -100,7 +96,6 @@ internal class AccessTokenRequestsTest : BaseTest() {
     val response = runBlocking { mockSuccessfulRequest(responseAccessToken).getAccessToken() }
 
     // this means request is not made
-    verify(exactly = 0) { crypto.signJWT(any<ByteArray>(), any()) }
     verify(exactly = 0) { cache setProperty "accessToken" value any<AccessToken>() }
 
     verifyNewAccessTokenReturned(responseAccessToken, response)
@@ -123,7 +118,6 @@ internal class AccessTokenRequestsTest : BaseTest() {
     val webService =
       AccessTokenRequests(
         client,
-        crypto,
         mockLogger,
         baseUrl.toString(),
         privateKeyConfiguration.credentials,
@@ -155,7 +149,6 @@ internal class AccessTokenRequestsTest : BaseTest() {
     val webService =
       AccessTokenRequests(
         client,
-        crypto,
         mockLogger,
         baseUrl.toString(),
         privateKeyConfiguration.credentials,
@@ -183,7 +176,6 @@ internal class AccessTokenRequestsTest : BaseTest() {
 
     return AccessTokenRequests(
       client,
-      crypto,
       mockLogger,
       baseUrl.toString(),
       privateKeyConfiguration.credentials,

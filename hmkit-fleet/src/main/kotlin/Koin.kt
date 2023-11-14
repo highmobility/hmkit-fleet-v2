@@ -23,7 +23,6 @@
  */
 package com.highmobility.hmkitfleet
 
-import com.highmobility.crypto.Crypto
 import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.Cache
 import com.highmobility.hmkitfleet.network.ClearanceRequests
@@ -47,12 +46,10 @@ internal class Koin(
     single { LoggerFactory.getLogger(HMKitFleet::class.java) }
     single { hmKitConfiguration.client }
     single { environment }
-    single { Crypto() }
     single { Requests(get(), get(), environment.url) }
     single { Cache() }
     single {
       AccessTokenRequests(
-        get(),
         get(),
         get(),
         environment.url,

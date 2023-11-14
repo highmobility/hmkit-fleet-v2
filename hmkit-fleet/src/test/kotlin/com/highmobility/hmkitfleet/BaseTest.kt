@@ -24,7 +24,6 @@
 
 package com.highmobility.hmkitfleet
 
-import com.highmobility.crypto.value.Signature
 import com.highmobility.hmkitfleet.model.AccessToken
 import io.mockk.CapturingSlot
 import io.mockk.Runs
