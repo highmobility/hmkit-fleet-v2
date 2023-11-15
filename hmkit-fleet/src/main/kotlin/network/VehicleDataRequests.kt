@@ -30,36 +30,36 @@ import utils.await
 import java.net.HttpURLConnection
 
 internal class VehicleDataRequests(
-    client: OkHttpClient,
-    logger: Logger,
-    baseUrl: String,
-    private val authTokenRequests: AuthTokenRequests,
+  client: OkHttpClient,
+  logger: Logger,
+  baseUrl: String,
+  private val accessTokenRequests: AccessTokenRequests,
 ) : Requests(
-    client,
-    logger,
-    baseUrl,
+  client,
+  logger,
+  baseUrl,
 ) {
-    suspend fun getVehicleStatus(
-        vin: String,
-    ): Response<String> {
-        val authToken = authTokenRequests.getAuthToken()
+  suspend fun getVehicleStatus(
+    vin: String,
+  ): Response<String> {
+    val authToken = accessTokenRequests.getAccessToken()
 
-        if (authToken.error != null) return Response(null, authToken.error)
-        println("auth: Bearer ${authToken.response?.authToken}")
-        val request = Request.Builder()
-            .url("$baseUrl/vehicle-data/autoapi-13/$vin")
-            .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${authToken.response?.authToken}")
-            .get()
-            .build()
+    if (authToken.error != null) return Response(null, authToken.error)
+    println("auth: Bearer ${authToken.response?.accessToken}")
+    val request = Request.Builder()
+      .url("$baseUrl/vehicle-data/autoapi-13/$vin")
+      .header("Content-Type", "application/json")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
+      .get()
+      .build()
 
-        printRequest(request)
+    printRequest(request)
 
-        val call = client.newCall(request)
-        val response = call.await()
+    val call = client.newCall(request)
+    val response = call.await()
 
-        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
-            Response(responseBody, null)
-        }
+    return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
+      Response(responseBody, null)
     }
+  }
 }

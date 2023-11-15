@@ -5,48 +5,48 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Brand {
-    @SerialName("bmw")
-    BMW,
+  @SerialName("bmw")
+  BMW,
 
-    @SerialName("citroen")
-    CITROEN,
+  @SerialName("citroen")
+  CITROEN,
 
-    @SerialName("ds")
-    DS,
+  @SerialName("ds")
+  DS,
 
-    @SerialName("mercedes-benz")
-    MERCEDES_BENZ,
+  @SerialName("mercedes-benz")
+  MERCEDES_BENZ,
 
-    @SerialName("mini")
-    MINI,
+  @SerialName("mini")
+  MINI,
 
-    @SerialName("opel")
-    OPEL,
+  @SerialName("opel")
+  OPEL,
 
-    @SerialName("peugeot")
-    PEUGEOT,
+  @SerialName("peugeot")
+  PEUGEOT,
 
-    @SerialName("vauxhall")
-    VAUXHALL,
+  @SerialName("vauxhall")
+  VAUXHALL,
 
-    @SerialName("jeep")
-    JEEP,
+  @SerialName("jeep")
+  JEEP,
 
-    @SerialName("fiat")
-    FIAT,
+  @SerialName("fiat")
+  FIAT,
 
-    @SerialName("alfaromeo")
-    ALFAROMEO,
+  @SerialName("alfaromeo")
+  ALFAROMEO,
 
-    @SerialName("ford")
-    FORD,
+  @SerialName("ford")
+  FORD,
 
-    @SerialName("renault")
-    RENAULT,
+  @SerialName("renault")
+  RENAULT,
 
-    @SerialName("toyota")
-    TOYOTA,
+  @SerialName("toyota")
+  TOYOTA,
 
-    @SerialName("sandbox")
-    SANDBOX
+  @SerialName("sandbox")
+  SANDBOX
 }

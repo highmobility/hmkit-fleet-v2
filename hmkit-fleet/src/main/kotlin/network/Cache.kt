@@ -23,12 +23,12 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.hmkitfleet.model.AuthToken
+import com.highmobility.hmkitfleet.model.AccessToken
 
 internal class Cache {
-    var authToken: AuthToken? = null
-        get() {
-            if (field?.isExpired() == true) return null
-            return field
-        }
+  var accessToken: AccessToken? = null
+    get() {
+      if (field?.isExpired() == true) return null
+      return field
+    }
 }

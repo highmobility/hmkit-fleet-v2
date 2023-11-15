@@ -23,46 +23,41 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.hmkitfleet.model.AuthToken
+import com.highmobility.hmkitfleet.model.AccessToken
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.Clock.systemUTC
-import java.time.ZonedDateTime
 
 internal class CacheTest {
-    private val notExpiredToken = AuthToken(
-        "",
-        ZonedDateTime.now(systemUTC()).minusMinutes(30),
-        ZonedDateTime.now(systemUTC()).plusMinutes(30)
-    )
+  private val notExpiredToken = AccessToken(
+    "",
+    360,
+  )
 
-    private val expiredToken = AuthToken(
-        "",
-        ZonedDateTime.now(systemUTC()).minusMinutes(120),
-        ZonedDateTime.now(systemUTC()).minusMinutes(60)
-    )
+  private val expiredToken = AccessToken(
+    "",
+    -10,
+  )
 
-    private val expiredWithBuffer = AuthToken(
-        "",
-        ZonedDateTime.now(systemUTC()).minusMinutes(10),
-        ZonedDateTime.now(systemUTC()).plusSeconds(30)
-    )
+  private val expiredWithBuffer = AccessToken(
+    "",
+    50
+  )
 
-    @Test
-    fun testAuthTokenExpiration() {
-        assertTrue(notExpiredToken.isExpired() == false)
-        assertTrue(expiredToken.isExpired() == true)
-        assertTrue(expiredWithBuffer.isExpired() == true)
-    }
+  @Test
+  fun testAccessTokenExpiration() {
+    assertTrue(notExpiredToken.isExpired() == false)
+    assertTrue(expiredToken.isExpired() == true)
+    assertTrue(expiredWithBuffer.isExpired() == true)
+  }
 
-    @Test
-    fun returnsNullIfAuthTokenExpired() {
-        val cache = Cache()
-        cache.authToken = expiredToken
+  @Test
+  fun returnsNullIfAccessTokenExpired() {
+    val cache = Cache()
+    cache.accessToken = expiredToken
 
-        assertTrue(cache.authToken == null)
+    assertTrue(cache.accessToken == null)
 
-        cache.authToken = notExpiredToken
-        assertTrue(cache.authToken == notExpiredToken)
-    }
+    cache.accessToken = notExpiredToken
+    assertTrue(cache.accessToken == notExpiredToken)
+  }
 }

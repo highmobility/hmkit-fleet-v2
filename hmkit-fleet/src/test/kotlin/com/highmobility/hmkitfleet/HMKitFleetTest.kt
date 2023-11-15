@@ -55,96 +55,97 @@ import org.slf4j.Logger
 import java.net.HttpURLConnection
 
 class HMKitFleetTest : BaseTest() {
-    private val clearanceRequests = mockk<ClearanceRequests>()
-    private val vehicleDataRequests = mockk<VehicleDataRequests>()
+  private val clearanceRequests = mockk<ClearanceRequests>()
+  private val vehicleDataRequests = mockk<VehicleDataRequests>()
 
-    @BeforeEach
-    fun setUp() {
-        val koin = koinApplication {
-            modules(
-                module {
-                    single { clearanceRequests }
-                    single { vehicleDataRequests }
-                    single { mockk<Logger>(relaxed = true) }
-                    single { CoroutineScope(Dispatchers.IO) }
-                }
-            )
+  @BeforeEach
+  fun setUp() {
+    val koin = koinApplication {
+      modules(
+        module {
+          single { clearanceRequests }
+          single { vehicleDataRequests }
+          single { mockk<Logger>(relaxed = true) }
+          single { CoroutineScope(Dispatchers.IO) }
         }
-
-        mockkConstructor(Koin::class)
-        every { anyConstructed<Koin>().start() } returns koin.koin
+      )
     }
 
-    @AfterEach
-    fun tearDown() {
-        stopKoin()
-        unmockkConstructor(Koin::class)
-        clearAllMocks()
-    }
+    mockkConstructor(Koin::class)
+    every { anyConstructed<Koin>().start() } returns koin.koin
+  }
 
-    @Test
-    fun deleteClearance() = runBlocking {
-        coEvery {
-            clearanceRequests.deleteClearance(any())
-        } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
+  @AfterEach
+  fun tearDown() {
+    stopKoin()
+    unmockkConstructor(Koin::class)
+    clearAllMocks()
+  }
 
-        val hmkit = HMKitFleet(configuration.toJsonString())
-        val delete = hmkit.deleteClearance("vin1").get()
-        assertTrue(delete.response?.vin == "vin1")
-        assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
-    }
+  @Test
+  fun deleteClearance() = runBlocking {
+    coEvery {
+      clearanceRequests.deleteClearance(any())
+    } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
 
-    @Test
-    fun getClearance() = runBlocking {
-        coEvery {
-            clearanceRequests.getClearanceStatus("vin1")
-        } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val delete = hmkit.deleteClearance("vin1").get()
+    assertTrue(delete.response?.vin == "vin1")
+    assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
+  }
 
-        val hmkit = HMKitFleet(configuration.toJsonString())
-        val clearance = hmkit.getClearanceStatus("vin1").get()
-        assertTrue(clearance.response?.vin == "vin1")
-        assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
-    }
+  @Test
+  fun getClearance() = runBlocking {
+    coEvery {
+      clearanceRequests.getClearanceStatus("vin1")
+    } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
 
-    @Test
-    fun getVehicleStatus() = runTest {
-        coEvery {
-            vehicleDataRequests.getVehicleStatus("vin1")
-        } returns Response(
-            "{\"brand\":\"emulator\",\"diagnostics\":{\"odometer\":{\"data\":{\"unit\":\"kilometers\",\"value\":2050.0},\"failure\":null,\"timestamp\":\"2023-08-11T05:31:09.385Z\"}},\"vin\":\"vin1\"}",
-            null
-        )
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val clearance = hmkit.getClearanceStatus("vin1").get()
+    assertTrue(clearance.response?.vin == "vin1")
+    assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
+  }
 
-        val hmkit = HMKitFleet(configuration.toJsonString())
-        val vehicleStatus = hmkit.getVehicleState("vin1").get()
-        val json = Json.decodeFromString<JsonObject>(vehicleStatus.response ?: "")
-        assertTrue(json["vin"]?.jsonPrimitive?.content == "vin1")
-    }
+  @Test
+  @Suppress("MaximumLineLength", "MaxLineLength")
+  fun getVehicleStatus() = runTest {
+    coEvery {
+      vehicleDataRequests.getVehicleStatus("vin1")
+    } returns Response(
+      "{\"brand\":\"emulator\",\"diagnostics\":{\"odometer\":{\"data\":{\"unit\":\"kilometers\",\"value\":2050.0},\"failure\":null,\"timestamp\":\"2023-08-11T05:31:09.385Z\"}},\"vin\":\"vin1\"}",
+      null
+    )
 
-    @Test
-    fun canSetCustomWebUrl() {
-        stopKoin()
-        clearAllMocks()
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val vehicleStatus = hmkit.getVehicleState("vin1").get()
+    val json = Json.decodeFromString<JsonObject>(vehicleStatus.response ?: "")
+    assertTrue(json["vin"]?.jsonPrimitive?.content == "vin1")
+  }
 
-        val mockWebServer = MockWebServer()
-        mockWebServer.start()
-        mockWebServer.enqueue(
-            MockResponse()
-                .setBody("")
-                .setResponseCode(HttpURLConnection.HTTP_CREATED)
-        )
+  @Test
+  fun canSetCustomWebUrl() {
+    stopKoin()
+    clearAllMocks()
 
-        val fakeUrl = mockWebServer.url("canSetCustomWebUrl").toString()
+    val mockWebServer = MockWebServer()
+    mockWebServer.start()
+    mockWebServer.enqueue(
+      MockResponse()
+        .setBody("")
+        .setResponseCode(HttpURLConnection.HTTP_CREATED)
+    )
 
-        HMKitFleet.Environment.webUrl = fakeUrl
-        assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
+    val fakeUrl = mockWebServer.url("canSetCustomWebUrl").toString()
 
-        val hmkit = HMKitFleet(configuration.toJsonString())
-        hmkit.getEligibility("vin1", Brand.SANDBOX).get()
+    HMKitFleet.Environment.webUrl = fakeUrl
+    assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
 
-        val recordedRequest = mockWebServer.takeRequest()
-        assertTrue(recordedRequest.requestUrl.toString().contains(fakeUrl))
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    hmkit.getEligibility("vin1", Brand.SANDBOX).get()
 
-        mockWebServer.shutdown()
-    }
+    val recordedRequest = mockWebServer.takeRequest()
+    assertTrue(recordedRequest.requestUrl.toString().contains(fakeUrl))
+
+    mockWebServer.shutdown()
+  }
 }

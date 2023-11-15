@@ -23,11 +23,11 @@ subprojects {
 }
 
 ext {
-    kotlin_version = "1.8.20"
+    kotlin_version = "1.9.20"
 
     depLocation = 0
     coroutinesVersion = '1.7.3'
-    koinVersion = '3.4.3'
+    koinVersion = '3.5.0'
     ver = [
             "hmkit-crypto-telematics": "0.1",
             "hmkit-auto-api"         : "13.1.1",
