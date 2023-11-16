@@ -26,7 +26,7 @@ package com.highmobility.hmkitfleet.network
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.Logger
-import utils.await
+import com.highmobility.hmkitfleet.utils.await
 import java.net.HttpURLConnection
 
 internal class VehicleDataRequests(

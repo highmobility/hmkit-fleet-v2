@@ -24,10 +24,6 @@
 package com.highmobility.hmkitfleet.com.highmobility.hmkitfleet
 
 import com.highmobility.hmkitfleet.BaseTest
-import com.highmobility.hmkitfleet.HMKitCredentials
-import com.highmobility.hmkitfleet.HMKitOAuthCredentials
-import com.highmobility.hmkitfleet.HMKitPrivateKeyCredentials
-import com.highmobility.hmkitfleet.getPrivateKey
 import io.jsonwebtoken.Jwts
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject

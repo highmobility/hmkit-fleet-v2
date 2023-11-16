@@ -1,4 +1,4 @@
-package utils
+package com.highmobility.hmkitfleet.utils
 
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call

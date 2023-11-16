@@ -44,6 +44,7 @@ internal open class Requests(
 ) {
   val mediaType = "application/json; charset=utf-8".toMediaType()
 
+  // note: inline functions are not shown in coverage
   @Suppress("TooGenericExceptionCaught")
   inline fun <T> tryParseResponse(
     response: Response,

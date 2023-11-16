@@ -41,7 +41,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
-import utils.await
+import com.highmobility.hmkitfleet.utils.await
 import java.net.HttpURLConnection
 
 internal class ClearanceRequests(

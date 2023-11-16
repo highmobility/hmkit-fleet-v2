@@ -1,4 +1,4 @@
-package com.highmobility.hmkitfleet
+package com.highmobility.hmkitfleet.com.highmobility.hmkitfleet
 
 import io.jsonwebtoken.Jwts
 import kotlinx.serialization.Serializable

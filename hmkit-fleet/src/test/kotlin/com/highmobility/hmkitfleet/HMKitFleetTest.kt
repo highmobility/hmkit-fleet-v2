@@ -23,6 +23,8 @@
  */
 package com.highmobility.hmkitfleet
 
+import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.HMKitFleet
+import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.Koin
 import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse

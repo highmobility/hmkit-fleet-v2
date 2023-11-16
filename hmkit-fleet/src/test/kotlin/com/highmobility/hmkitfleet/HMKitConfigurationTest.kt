@@ -24,8 +24,6 @@
 package com.highmobility.hmkitfleet.com.highmobility.hmkitfleet
 
 import com.highmobility.hmkitfleet.BaseTest
-import com.highmobility.hmkitfleet.HMKitConfiguration
-import com.highmobility.hmkitfleet.HMKitFleet
 import io.mockk.every
 import io.mockk.mockk
 import okhttp3.Call

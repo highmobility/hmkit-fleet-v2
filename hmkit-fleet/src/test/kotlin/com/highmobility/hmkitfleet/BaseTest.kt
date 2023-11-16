@@ -24,6 +24,8 @@
 
 package com.highmobility.hmkitfleet
 
+import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.HMKitConfiguration
+import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.HMKitOAuthCredentials
 import com.highmobility.hmkitfleet.model.AccessToken
 import io.mockk.CapturingSlot
 import io.mockk.Runs
