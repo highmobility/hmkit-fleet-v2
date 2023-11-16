@@ -48,5 +48,8 @@ enum class Brand {
   TOYOTA,
 
   @SerialName("sandbox")
-  SANDBOX
+  SANDBOX,
+
+  @SerialName("tesla")
+  TESLA,
 }
