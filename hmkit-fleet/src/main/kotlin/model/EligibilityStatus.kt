@@ -28,33 +28,33 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class EligibilityStatus(
-    val vin: String,
-    val eligible: Boolean,
-    @SerialName("data_delivery")
-    val dataDelivery: List<DataDelivery> = emptyList(),
-    @SerialName("connectivity_status")
-    val connectivityStatus: ConnectivityStatus? = null,
-    @SerialName("primary_user_assigned")
-    val primaryUserAssigned: Boolean? = null
+  val vin: String,
+  val eligible: Boolean,
+  @SerialName("data_delivery")
+  val dataDelivery: List<DataDelivery> = emptyList(),
+  @SerialName("connectivity_status")
+  val connectivityStatus: ConnectivityStatus? = null,
+  @SerialName("primary_user_assigned")
+  val primaryUserAssigned: Boolean? = null
 ) {
-    @Serializable
-    enum class DataDelivery {
-        @SerialName("pull")
-        PULL,
+  @Serializable
+  enum class DataDelivery {
+    @SerialName("pull")
+    PULL,
 
-        @SerialName("push")
-        PUSH
-    }
+    @SerialName("push")
+    PUSH
+  }
 
-    @Serializable
-    enum class ConnectivityStatus {
-        @SerialName("activated")
-        ACTIVATED,
+  @Serializable
+  enum class ConnectivityStatus {
+    @SerialName("activated")
+    ACTIVATED,
 
-        @SerialName("deactivated")
-        DEACTIVATED,
+    @SerialName("deactivated")
+    DEACTIVATED,
 
-        @SerialName("unknown")
-        UNKNOWN
-    }
+    @SerialName("unknown")
+    UNKNOWN
+  }
 }

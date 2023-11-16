@@ -6,10 +6,10 @@ name: Run tests
 on:
   push:
     branches:
-      - v1
+      - main
   pull_request:
     branches:
-      - v1
+      - main
 
 jobs:
   test:
@@ -30,11 +30,12 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.GH_SSH_PRIVATE }}"
 
-      - name: create credentials.yaml file for the tests to read the keys
+      - name: create credentials.json files for the tests to read the keys
         run: |
           mkdir -p ~/.config/high-mobility/fleet-sdk/
           # ' will not escape "" inside the yaml file
-          echo '${{ secrets.CREDENTIALS_YAML }}' > ~/.config/high-mobility/fleet-sdk/credentials.yaml
+          echo '${{ secrets.CREDENTIALS_JSON }}' > ~/.config/high-mobility/fleet-sdk/credentials.json
+          echo '${{ secrets.CREDENTIALS_JSON_PRIVATE_KEY }}' > ~/.config/high-mobility/fleet-sdk/credentialsPrivateKey.json
 
       - name: Update submodules
         env:

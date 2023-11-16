@@ -23,89 +23,69 @@
  */
 package com.highmobility.hmkitfleet
 
-import com.highmobility.crypto.Crypto
-import com.highmobility.hmkitfleet.network.*
-import com.highmobility.hmkitfleet.network.AccessCertificateRequests
-import com.highmobility.hmkitfleet.network.AuthTokenRequests
+import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.Cache
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Requests
-import okhttp3.OkHttpClient
+import com.highmobility.hmkitfleet.network.UtilityRequests
+import com.highmobility.hmkitfleet.network.VehicleDataRequests
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.koin.core.Koin
 import org.koin.core.KoinApplication
-import org.koin.core.component.KoinComponent
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.LoggerFactory
 
-internal class Modules(
-    configuration: ServiceAccountApiConfiguration,
-    environment: HMKitFleet.Environment
+internal class Koin(
+  hmKitConfiguration: HMKitConfiguration
 ) {
-    private val koinModules = module {
-        single { LoggerFactory.getLogger(HMKitFleet::class.java) }
-        single { OkHttpClient() }
-        single { environment }
-        single { Crypto() }
-        single { Requests(get(), get(), environment.url) }
-        single { Cache() }
-        single {
-            AuthTokenRequests(
-                get(),
-                get(),
-                get(),
-                environment.url,
-                configuration,
-                get()
-            )
-        }
-        single {
-            AccessTokenRequests(
-                get(),
-                get(),
-                environment.url,
-                get(),
-                configuration
-            )
-        }
-        single { ClearanceRequests(get(), get(), environment.url, get()) }
-        single {
-            AccessCertificateRequests(
-                get(),
-                get(),
-                environment.url,
-                configuration.getClientPrivateKey(),
-                configuration.clientCertificate,
-                get()
-            )
-        }
-        single {
-            TelematicsRequests(
-                get(),
-                get(),
-                environment.url,
-                configuration.getClientPrivateKey(),
-                configuration.clientCertificate,
-                get()
-            )
-        }
-        single {
-            UtilityRequests(
-                get(),
-                get(),
-                environment.url,
-                get()
-            )
-        }
+  private val koinModules = module {
+    val environment = hmKitConfiguration.environment
+
+    single { LoggerFactory.getLogger(HMKitFleet::class.java) }
+    single { hmKitConfiguration.client }
+    single { environment }
+    single { Requests(get(), get(), environment.url) }
+    single { Cache() }
+    single {
+      AccessTokenRequests(
+        get(),
+        get(),
+        environment.url,
+        hmKitConfiguration.credentials,
+        get()
+      )
+    }
+    single { ClearanceRequests(get(), get(), environment.url, get()) }
+
+    single {
+      UtilityRequests(
+        get(),
+        get(),
+        environment.url,
+        get()
+      )
+    }
+    single {
+      VehicleDataRequests(
+        get(),
+        get(),
+        environment.url,
+        get()
+      )
     }
 
-    private lateinit var koinApplication: KoinApplication
+    single { CoroutineScope(Dispatchers.IO) }
+  }
 
-    fun start(): Koin {
-        koinApplication = koinApplication {
-            modules(koinModules)
-        }
+  private lateinit var koinApplication: KoinApplication
 
-        return koinApplication.koin
+  fun start(): Koin {
+    koinApplication = koinApplication {
+      modules(koinModules)
     }
+
+    return koinApplication.koin
+  }
 }

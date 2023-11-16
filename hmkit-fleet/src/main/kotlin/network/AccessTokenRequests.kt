@@ -23,89 +23,77 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.hmkitfleet.ServiceAccountApiConfiguration
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.*
+import com.highmobility.hmkitfleet.HMKitCredentials
 import com.highmobility.hmkitfleet.model.AccessToken
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
 import utils.await
 import java.net.HttpURLConnection
+import java.util.UUID
+
+private val JSON: MediaType = "application/json; charset=utf-8".toMediaTypeOrNull()!!
+private const val MILLIS_IN_SECOND = 1000
 
 internal class AccessTokenRequests(
-    client: OkHttpClient,
-    logger: Logger,
-    baseUrl: String,
-    private val authTokenRequests: AuthTokenRequests,
-    private val configuration: ServiceAccountApiConfiguration,
+  client: OkHttpClient,
+  logger: Logger,
+  baseUrl: String,
+  private val credentials: HMKitCredentials,
+  private val cache: Cache,
 ) : Requests(
-    client,
-    logger, baseUrl
+  client,
+  logger,
+  baseUrl,
 ) {
-    suspend fun getAccessToken(
-        vin: String
-    ): Response<AccessToken> {
-        val authToken = authTokenRequests.getAuthToken()
-
-        if (authToken.response == null) return Response(null, authToken.error)
-
-        val request = Request.Builder()
-            .url("${baseUrl}/fleets/access_tokens")
-            .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${authToken.response.authToken}")
-            .post(getTokenBody(vin))
-            .build()
-
-        printRequest(request)
-
-        val call = client.newCall(request)
-        val response = call.await()
-
-        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { body ->
-            val format = Json { ignoreUnknownKeys = true }
-            val accessToken = format.decodeFromString<AccessToken>(body)
-            Response(accessToken, null)
-        }
+  private val jwtProvider: HMKitCredentials.JwtProvider =
+    object : HMKitCredentials.JwtProvider {
+      override fun getBaseUrl() = baseUrl
+      override fun generateUuid() = UUID.randomUUID().toString()
+      override fun getTimestamp() = System.currentTimeMillis() / MILLIS_IN_SECOND
     }
 
-    suspend fun deleteAccessToken(accessToken: AccessToken): Response<Boolean> {
-        val request = Request.Builder()
-            .url("${baseUrl}/access_tokens")
-            .header("Content-Type", "application/json")
-            .method("DELETE", deleteTokenBody(accessToken))
-            .build()
+  private fun getUrlEncodedJsonRequest(): Request {
+    val json = credentials.getTokenRequestBody(jwtProvider)
+    val requestBody = json.toRequestBody(JSON)
 
-        printRequest(request)
+    val request = Request.Builder()
+      .url("$baseUrl/access_tokens")
+      .header("Content-Type", "application/json")
+      .post(requestBody)
+      .build()
 
-        val call = client.newCall(request)
-        val response = call.await()
+    return request
+  }
 
-        return tryParseResponse(response, HttpURLConnection.HTTP_OK) {
-            Response(true, null)
-        }
+  private val json = Json { ignoreUnknownKeys = true }
+
+  suspend fun getAccessToken(): Response<AccessToken> {
+    val cachedToken = cache.accessToken
+    if (cachedToken != null) return Response(cachedToken)
+
+    val request = getUrlEncodedJsonRequest()
+
+    printRequest(request)
+    val call = client.newCall(request)
+
+    val response = call.await()
+    val responseBody = printResponse(response)
+
+    return try {
+      if (response.code == HttpURLConnection.HTTP_CREATED || response.code == HttpURLConnection.HTTP_OK) {
+        cache.accessToken = json.decodeFromString(responseBody)
+        Response(cache.accessToken)
+      } else {
+        parseError(responseBody)
+      }
+    } catch (e: java.lang.Exception) {
+      val detail = e.message.toString()
+      Response(null, genericError(detail))
     }
-
-    private fun deleteTokenBody(accessToken: AccessToken): RequestBody {
-        val completeBody = buildJsonObject {
-            put("token", accessToken.refreshToken)
-            put("client_id", configuration.oauthClientId)
-            put("client_secret", configuration.oauthClientSecret)
-            put("token_type_hint", "refresh_token")
-        }
-
-        val body = completeBody.toString().toRequestBody(mediaType)
-        return body
-    }
-
-    private fun getTokenBody(vin: String): RequestBody {
-        val completeBody = buildJsonObject {
-            put("vin", vin)
-        }
-
-        val body = completeBody.toString().toRequestBody(mediaType)
-        return body
-    }
+  }
 }

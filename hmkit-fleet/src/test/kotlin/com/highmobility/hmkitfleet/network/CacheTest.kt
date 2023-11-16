@@ -23,39 +23,41 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.hmkitfleet.model.AuthToken
+import com.highmobility.hmkitfleet.model.AccessToken
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.Clock.systemUTC
-import java.time.LocalDateTime
 
 internal class CacheTest {
-    private val notExpiredToken = AuthToken(
-        "",
-        LocalDateTime.now(systemUTC()).minusMinutes(30),
-        LocalDateTime.now(systemUTC()).plusMinutes(30)
-    )
+  private val notExpiredToken = AccessToken(
+    "",
+    360,
+  )
 
-    private val expiredToken = AuthToken(
-        "",
-        LocalDateTime.now(systemUTC()).minusMinutes(120),
-        LocalDateTime.now(systemUTC()).minusMinutes(60)
-    )
+  private val expiredToken = AccessToken(
+    "",
+    -10,
+  )
 
-    @Test
-    fun testAuthTokenExpiration() {
-        assertTrue(notExpiredToken.isExpired() == false)
-        assertTrue(expiredToken.isExpired() == true)
-    }
+  private val expiredWithBuffer = AccessToken(
+    "",
+    50
+  )
 
-    @Test
-    fun returnsNullIfAuthTokenExpired() {
-        val cache = Cache()
-        cache.authToken = expiredToken
+  @Test
+  fun testAccessTokenExpiration() {
+    assertTrue(notExpiredToken.isExpired() == false)
+    assertTrue(expiredToken.isExpired() == true)
+    assertTrue(expiredWithBuffer.isExpired() == true)
+  }
 
-        assertTrue(cache.authToken == null)
+  @Test
+  fun returnsNullIfAccessTokenExpired() {
+    val cache = Cache()
+    cache.accessToken = expiredToken
 
-        cache.authToken = notExpiredToken
-        assertTrue(cache.authToken == notExpiredToken)
-    }
+    assertTrue(cache.accessToken == null)
+
+    cache.accessToken = notExpiredToken
+    assertTrue(cache.accessToken == notExpiredToken)
+  }
 }

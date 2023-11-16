@@ -21,19 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+@file:Suppress("MaxLineLength")
+
 package com.highmobility.hmkitfleet.network
 
 import com.highmobility.hmkitfleet.BaseTest
-import com.highmobility.hmkitfleet.newAccessToken
-import com.highmobility.hmkitfleet.notExpiredAuthToken
-import io.mockk.coEvery
-import io.mockk.coVerify
+import com.highmobility.hmkitfleet.model.AccessToken
+import com.highmobility.hmkitfleet.notExpiredAccessToken
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -46,135 +48,138 @@ import org.junit.jupiter.api.Test
 import java.net.HttpURLConnection
 
 internal class AccessTokenRequestsTest : BaseTest() {
-    val mockWebServer = MockWebServer()
-    val client = OkHttpClient()
-    val authTokenRequests = mockk<AuthTokenRequests>()
+  private val mockWebServer = MockWebServer()
+  private val client = OkHttpClient()
 
-    @BeforeEach
-    fun setUp() {
-        coEvery { authTokenRequests.getAuthToken() } returns Response(notExpiredAuthToken())
-        mockWebServer.start()
+  private val cache = mockk<Cache>()
+
+  @BeforeEach
+  fun setUp() {
+    every { cache setProperty "accessToken" value any<AccessToken>() } just Runs
+
+    mockWebServer.start()
+  }
+
+  @AfterEach
+  fun tearDown() {
+    mockWebServer.shutdown()
+  }
+
+  @Test
+  fun downloadsAccessTokenAndWritesToCacheIfDoesNotExistOrExpired() {
+    val responseAccessToken = notExpiredAccessToken()
+    // return null from cache at first, then on next call a new one
+    // if auth token is expired, the cache does not return it also
+    every { cache getProperty "accessToken" } returnsMany listOf(null, responseAccessToken)
+
+    val response = runBlocking {
+      mockSuccessfulRequest(responseAccessToken).getAccessToken()
     }
 
-    @AfterEach
-    fun tearDown() {
-        mockWebServer.shutdown()
+    val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
+    assertTrue(recordedRequest.path!!.endsWith("/access_tokens"))
+
+    verifyNewAccessTokenReturned(responseAccessToken, response)
+    verify { cache setProperty "accessToken" value responseAccessToken }
+  }
+
+  private fun verifyNewAccessTokenReturned(expected: AccessToken, response: Response<AccessToken>) {
+    assertTrue(response.response!!.accessToken == expected.accessToken)
+    assertTrue(response.response!!.expiresIn == expected.expiresIn)
+  }
+
+  @Test
+  fun doesNotDownloadAccessTokenIfExistsAndNotExpired() {
+    val responseAccessToken = notExpiredAccessToken()
+    // return null from cache at first, then on next call a new one
+    every { cache getProperty "accessToken" } returns responseAccessToken
+    val response = runBlocking { mockSuccessfulRequest(responseAccessToken).getAccessToken() }
+
+    // this means request is not made
+    verify(exactly = 0) { cache setProperty "accessToken" value any<AccessToken>() }
+
+    verifyNewAccessTokenReturned(responseAccessToken, response)
+  }
+
+  @Test
+  fun authTokenErrorResponse() {
+    every { cache getProperty "accessToken" } returns null
+
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+      .setBody(
+        "{\"errors\":" +
+          "[{\"detail\":\"Missing or invalid assertion. It must be a JWT signed with the service account key.\"," +
+          "\"source\":\"assertion\"," +
+          "\"title\":\"Not authorized\"}]}"
+      )
+    mockWebServer.enqueue(mockResponse)
+    val baseUrl: HttpUrl = mockWebServer.url("")
+    val webService =
+      AccessTokenRequests(
+        client,
+        mockLogger,
+        baseUrl.toString(),
+        privateKeyConfiguration.credentials,
+        cache
+      )
+
+    val status = runBlocking {
+      webService.getAccessToken()
     }
 
-    @Test
-    fun createAccessToken() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-            .setBody(
-                "{\n" +
-                        "  \"token_type\": \"bearer\",\n" +
-                        "  \"scope\": \"diagnostics.mileage door_locks.locks windows.windows_positions\",\n" +
-                        "  \"refresh_token\": \"7f7a9be0-04c9-4202-a59f-35d55079b6ba\",\n" +
-                        "  \"expires_in\": 600,\n" +
-                        "  \"access_token\": \"a50e89e5-093c-4727-8101-4c6e81addabe\"\n" +
-                        "}"
-            )
-        mockWebServer.enqueue(mockResponse)
-        val baseUrl: HttpUrl = mockWebServer.url("")
-        val accessTokenRequests =
-            AccessTokenRequests(client, mockLogger, baseUrl.toString(), authTokenRequests, configuration)
+    assertTrue(status.error!!.title == "Not authorized")
+    assertTrue(status.error!!.source == "assertion")
+    assertTrue(
+      status.error!!.detail == "Missing or invalid assertion. It must be a JWT signed with the service account key."
+    )
+  }
 
-        val response = runBlocking {
-            accessTokenRequests.getAccessToken(
-                "WBADT43452G296403"
-            )
-        }
+  @Test
+  fun authTokenInvalidResponse() {
+    every { cache getProperty "accessToken" } returns null
 
-        coVerify { authTokenRequests.getAuthToken() }
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_UNAUTHORIZED)
+      .setBody(
+        "{\"invalidKey\":\"invalidValue\"}"
+      )
+    mockWebServer.enqueue(mockResponse)
+    val baseUrl: HttpUrl = mockWebServer.url("")
+    val webService =
+      AccessTokenRequests(
+        client,
+        mockLogger,
+        baseUrl.toString(),
+        privateKeyConfiguration.credentials,
+        cache
+      )
 
-        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-        assertTrue(recordedRequest.path!!.endsWith("/access_tokens"))
-
-        // verify request
-        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
-        val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
-        assertTrue(jsonBody["vin"]!!.jsonPrimitive.contentOrNull == "WBADT43452G296403")
-        assertTrue(recordedRequest.headers["Authorization"] == "Bearer ${notExpiredAuthToken().authToken}")
-
-        // verify response
-        assertTrue(response.response?.expiresIn == 600)
-        assertTrue(response.response?.refreshToken == "7f7a9be0-04c9-4202-a59f-35d55079b6ba")
-        assertTrue(response.response?.accessToken == "a50e89e5-093c-4727-8101-4c6e81addabe")
-        assertTrue(response.response?.scope == "diagnostics.mileage door_locks.locks windows.windows_positions")
+    val status = runBlocking {
+      webService.getAccessToken()
     }
 
-    // error responses
+    val genericError = genericError("")
+    assertTrue(status.error!!.title == genericError.title)
+  }
 
-    @Test
-    fun getAuthTokenErrorReturned() = runBlocking {
-        testAuthTokenErrorReturned(mockWebServer, authTokenRequests) {
-            val accessTokenRequests = AccessTokenRequests(client, mockLogger, it, authTokenRequests, configuration)
-            accessTokenRequests.getAccessToken("WBADT43452G296403")
-        }
-    }
+  private fun mockSuccessfulRequest(responseAccessToken: AccessToken): AccessTokenRequests {
+    // return null from cache at first, then on next call a new one
+    val json = Json.encodeToString(responseAccessToken)
 
-    @Test
-    fun getAccessTokenErrorResponse() = runBlocking {
-        testErrorResponseReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
-            webService.getAccessToken(
-                "WBADT43452G296403"
-            )
-        }
-    }
+    val mockResponse = MockResponse()
+      .setResponseCode(HttpURLConnection.HTTP_CREATED)
+      .setBody(json)
 
-    @Test
-    fun getAccessTokenUnknownResponse() = runBlocking {
-        testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
-            webService.getAccessToken(
-                "WBADT43452G296403"
-            )
-        }
-    }
+    mockWebServer.enqueue(mockResponse)
+    val baseUrl: HttpUrl = mockWebServer.url("")
 
-    @Test
-    fun deleteAccessToken() {
-        val mockResponse = MockResponse()
-            .setResponseCode(HttpURLConnection.HTTP_OK)
-
-        mockWebServer.enqueue(mockResponse)
-        val mockUrl = mockWebServer.url("").toString()
-        val accessTokenRequests = AccessTokenRequests(client, mockLogger, mockUrl, mockk(), configuration)
-
-        runBlocking {
-            accessTokenRequests.deleteAccessToken(newAccessToken)
-        }
-
-        // verify request
-        val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
-        assertTrue(recordedRequest.path!!.endsWith("/access_tokens"))
-        assertTrue(recordedRequest.method == "DELETE")
-
-        val jsonBody = Json.parseToJsonElement(recordedRequest.body.readUtf8()) as JsonObject
-        assertTrue(jsonBody["token"]?.jsonPrimitive?.contentOrNull == newAccessToken.refreshToken)
-        assertTrue(jsonBody["client_id"]?.jsonPrimitive?.contentOrNull == configuration.oauthClientId)
-        assertTrue(jsonBody["client_secret"]?.jsonPrimitive?.contentOrNull == configuration.oauthClientSecret)
-        assertTrue(jsonBody["token_type_hint"]?.jsonPrimitive?.contentOrNull == "refresh_token")
-
-        // the response is empty 200, nothing to verify
-    }
-
-    // error responses
-
-    @Test
-    fun deleteAccessTokenErrorResponse() = runBlocking {
-        testErrorResponseReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
-            webService.deleteAccessToken(newAccessToken)
-        }
-    }
-
-    @Test
-    fun deleteAccessTokenUnknownResponse() = runBlocking {
-        testForUnknownResponseGenericErrorReturned(mockWebServer) { mockUrl ->
-            val webService = AccessTokenRequests(client, mockLogger, mockUrl, authTokenRequests, configuration)
-            webService.deleteAccessToken(newAccessToken)
-        }
-    }
+    return AccessTokenRequests(
+      client,
+      mockLogger,
+      baseUrl.toString(),
+      privateKeyConfiguration.credentials,
+      cache
+    )
+  }
 }

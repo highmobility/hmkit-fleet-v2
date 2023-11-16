@@ -21,23 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package com.highmobility.hmkitfleet
 
+import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse
-import com.highmobility.hmkitfleet.network.AccessCertificateRequests
-import com.highmobility.hmkitfleet.network.AccessTokenRequests
 import com.highmobility.hmkitfleet.network.ClearanceRequests
 import com.highmobility.hmkitfleet.network.Response
-import com.highmobility.hmkitfleet.network.genericError
+import com.highmobility.hmkitfleet.network.VehicleDataRequests
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
+import io.mockk.unmockkConstructor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -46,150 +52,100 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.slf4j.Logger
+import java.net.HttpURLConnection
 
 class HMKitFleetTest : BaseTest() {
-    private val accessCertificateRequests = mockk<AccessCertificateRequests>()
-    private val accessTokenRequests = mockk<AccessTokenRequests>()
-    private val clearanceRequests = mockk<ClearanceRequests>()
+  private val clearanceRequests = mockk<ClearanceRequests>()
+  private val vehicleDataRequests = mockk<VehicleDataRequests>()
 
-    @BeforeEach
-    fun setUp() {
-        val koin = koinApplication {
-            modules(module {
-                single { accessCertificateRequests }
-                single { accessTokenRequests }
-                single { clearanceRequests }
-                single { mockk<Logger>(relaxed = true) }
-            })
+  @BeforeEach
+  fun setUp() {
+    val koin = koinApplication {
+      modules(
+        module {
+          single { clearanceRequests }
+          single { vehicleDataRequests }
+          single { mockk<Logger>(relaxed = true) }
+          single { CoroutineScope(Dispatchers.IO) }
         }
-
-        mockkConstructor(Modules::class)
-        every { anyConstructed<Modules>().start() } returns koin.koin
+      )
     }
 
-    @AfterEach
-    fun tearDown() {
-        stopKoin()
-    }
+    mockkConstructor(Koin::class)
+    every { anyConstructed<Koin>().start() } returns koin.koin
+  }
 
-    @Test
-    fun testGetVehicleAccessRequests() = runBlocking {
-        coEvery { accessCertificateRequests.getAccessCertificate(any()) } returns Response(
-            mockAccessCert,
-            null
-        )
-        coEvery {
-            accessTokenRequests.getAccessToken(
-                any()
-            )
-        } returns Response(newAccessToken, null)
+  @AfterEach
+  fun tearDown() {
+    stopKoin()
+    unmockkConstructor(Koin::class)
+    clearAllMocks()
+  }
 
-        val hmkit = HMKitFleet(mockk())
-        val access = hmkit.getVehicleAccess("vin1").get()
+  @Test
+  fun deleteClearance() = runBlocking {
+    coEvery {
+      clearanceRequests.deleteClearance(any())
+    } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
 
-        coVerify { accessCertificateRequests.getAccessCertificate(any()) }
-        coVerify { accessTokenRequests.getAccessToken(any()) }
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val delete = hmkit.deleteClearance("vin1").get()
+    assertTrue(delete.response?.vin == "vin1")
+    assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
+  }
 
-        assertTrue(access.response!!.vin == "vin1")
-        assertTrue(access.response!!.accessCertificate.hex == mockAccessCert.hex)
-        assertTrue(access.response!!.accessToken == newAccessToken)
-    }
+  @Test
+  fun getClearance() = runBlocking {
+    coEvery {
+      clearanceRequests.getClearanceStatus("vin1")
+    } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
 
-    @Test
-    fun accessTokenErrorReturned() = runBlocking {
-        coEvery {
-            accessTokenRequests.getAccessToken(
-                any()
-            )
-        } returns Response(null, genericError("accessTokenError"))
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val clearance = hmkit.getClearanceStatus("vin1").get()
+    assertTrue(clearance.response?.vin == "vin1")
+    assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
+  }
 
-        val hmkit = HMKitFleet(mockk())
-        val access = hmkit.getVehicleAccess("vin1").get()
+  @Test
+  @Suppress("MaximumLineLength", "MaxLineLength")
+  fun getVehicleStatus() = runTest {
+    coEvery {
+      vehicleDataRequests.getVehicleStatus("vin1")
+    } returns Response(
+      "{\"brand\":\"emulator\",\"diagnostics\":{\"odometer\":{\"data\":{\"unit\":\"kilometers\",\"value\":2050.0},\"failure\":null,\"timestamp\":\"2023-08-11T05:31:09.385Z\"}},\"vin\":\"vin1\"}",
+      null
+    )
 
-        assertTrue(access.response == null)
-        assertTrue(access.error!!.detail == "accessTokenError")
-    }
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val vehicleStatus = hmkit.getVehicleState("vin1").get()
+    val json = Json.decodeFromString<JsonObject>(vehicleStatus.response ?: "")
+    assertTrue(json["vin"]?.jsonPrimitive?.content == "vin1")
+  }
 
-    @Test
-    fun accessCertErrorReturned() = runBlocking {
-        coEvery {
-            accessTokenRequests.getAccessToken(
-                any()
-            )
-        } returns Response(newAccessToken, null)
+  @Test
+  fun canSetCustomWebUrl() {
+    stopKoin()
+    clearAllMocks()
 
-        coEvery { accessCertificateRequests.getAccessCertificate(any()) } returns Response(
-            null,
-            genericError("accessCertError")
-        )
+    val mockWebServer = MockWebServer()
+    mockWebServer.start()
+    mockWebServer.enqueue(
+      MockResponse()
+        .setBody("")
+        .setResponseCode(HttpURLConnection.HTTP_CREATED)
+    )
 
-        val hmkit = HMKitFleet(mockk())
-        val access = hmkit.getVehicleAccess("vin1").get()
-        assertTrue(access.response == null)
-        assertTrue(access.error!!.detail == "accessCertError")
-    }
+    val fakeUrl = mockWebServer.url("canSetCustomWebUrl").toString()
 
-    @Test
-    fun revokeClearance() = runBlocking {
-        coEvery {
-            accessTokenRequests.deleteAccessToken(
-                any()
-            )
-        } returns Response(true, null)
+    HMKitFleet.Environment.webUrl = fakeUrl
+    assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
 
-        val hmkit = HMKitFleet(mockk())
-        val access = hmkit.revokeClearance(newVehicleAccess).get()
-        assertTrue(access.response == true)
-    }
+    val hmkit = HMKitFleet(privateKeyConfiguration)
+    hmkit.getEligibility("vin1", Brand.SANDBOX).get()
 
-    @Test
-    fun deleteClearance() = runBlocking {
-        coEvery {
-            clearanceRequests.deleteClearance(any())
-        } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
+    val recordedRequest = mockWebServer.takeRequest()
+    assertTrue(recordedRequest.requestUrl.toString().contains(fakeUrl))
 
-        val hmkit = HMKitFleet(mockk())
-        val delete = hmkit.deleteClearance("vin1").get()
-        assertTrue(delete.response?.vin == "vin1")
-        assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
-    }
-
-    @Test
-    fun getClearance() = runBlocking {
-        coEvery {
-            clearanceRequests.getClearanceStatus("vin1")
-        } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
-
-        val hmkit = HMKitFleet(mockk())
-        val clearance = hmkit.getClearanceStatus("vin1").get()
-        assertTrue(clearance.response?.vin == "vin1")
-        assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
-    }
-
-/*    @Test
-    fun canSetCustomWebUrl() {
-        stopKoin()
-        clearAllMocks()
-
-        val mockWebServer = MockWebServer()
-        mockWebServer.start()
-        mockWebServer.enqueue(
-            MockResponse()
-                .setBody("")
-                .setResponseCode(HttpURLConnection.HTTP_CREATED)
-        )
-
-        val fakeUrl = mockWebServer.url("").toString()
-
-        HMKitFleet.Environment.webUrl = fakeUrl
-        assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
-
-        val hmkit = HMKitFleet(configuration)
-        hmkit.getEligibility("vin1", Brand.SANDBOX).get()
-
-        val recordedRequest = mockWebServer.takeRequest()
-        assertTrue(recordedRequest.requestUrl.toString().contains(fakeUrl))
-
-        mockWebServer.shutdown()
-    }*/
+    mockWebServer.shutdown()
+  }
 }

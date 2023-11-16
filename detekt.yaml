@@ -1,0 +1,6 @@
+naming:
+  InvalidPackageDeclaration:
+    active: false
+formatting:
+  Indentation:
+    indentSize: 2

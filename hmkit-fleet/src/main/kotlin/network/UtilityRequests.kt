@@ -23,14 +23,13 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import kotlinx.serialization.json.*
 import com.highmobility.hmkitfleet.model.Brand
-import com.highmobility.hmkitfleet.model.ControlMeasure
-import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.EligibilityStatus
-import com.highmobility.hmkitfleet.model.RequestClearanceResponse
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.put
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -40,52 +39,53 @@ import utils.await
 import java.net.HttpURLConnection
 
 internal class UtilityRequests(
-    client: OkHttpClient,
-    logger: Logger,
-    baseUrl: String,
-    private val authTokenRequests: AuthTokenRequests
+  client: OkHttpClient,
+  logger: Logger,
+  baseUrl: String,
+  private val accessTokenRequests: AccessTokenRequests
 ) : Requests(
-    client,
-    logger, baseUrl
+  client,
+  logger,
+  baseUrl
 ) {
-    suspend fun getEligibility(
-        vin: String,
-        brand: Brand
-    ): Response<EligibilityStatus> {
-        val body = requestBody(vin, brand)
-        val authToken = authTokenRequests.getAuthToken()
+  suspend fun getEligibility(
+    vin: String,
+    brand: Brand
+  ): Response<EligibilityStatus> {
+    val body = requestBody(vin, brand)
+    val authToken = accessTokenRequests.getAccessToken()
 
-        if (authToken.error != null) return Response(null, authToken.error)
+    if (authToken.error != null) return Response(null, authToken.error)
 
-        val request = Request.Builder()
-            .url("${baseUrl}/eligibility")
-            .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${authToken.response?.authToken}")
-            .post(body)
-            .build()
+    val request = Request.Builder()
+      .url("$baseUrl/eligibility")
+      .header("Content-Type", "application/json")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
+      .post(body)
+      .build()
 
-        printRequest(request)
+    printRequest(request)
 
-        val call = client.newCall(request)
-        val response = call.await()
+    val call = client.newCall(request)
+    val response = call.await()
 
-        return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
-            val eligibilityStatus = Json.decodeFromString<EligibilityStatus>(responseBody)
-            if (eligibilityStatus.vin != vin) logger.warn("VIN in response does not match VIN in request")
-            Response(eligibilityStatus, null)
-        }
+    return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
+      val eligibilityStatus = Json.decodeFromString<EligibilityStatus>(responseBody)
+      if (eligibilityStatus.vin != vin) logger.warn("VIN in response does not match VIN in request")
+      Response(eligibilityStatus, null)
+    }
+  }
+
+  private fun requestBody(
+    vin: String,
+    brand: Brand,
+  ): RequestBody {
+    val vehicle = buildJsonObject {
+      put("vin", vin)
+      put("brand", Json.encodeToJsonElement(brand))
     }
 
-    private fun requestBody(
-        vin: String,
-        brand: Brand,
-    ): RequestBody {
-        val vehicle = buildJsonObject {
-            put("vin", vin)
-            put("brand", Json.encodeToJsonElement(brand))
-        }
-
-        val body = Json.encodeToString(vehicle).toRequestBody(mediaType)
-        return body
-    }
+    val body = Json.encodeToString(vehicle).toRequestBody(mediaType)
+    return body
+  }
 }

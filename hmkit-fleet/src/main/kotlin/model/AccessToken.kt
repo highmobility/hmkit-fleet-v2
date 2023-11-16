@@ -21,20 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+@file:UseSerializers(ZonedDateTimeSerializer::class)
+
 package com.highmobility.hmkitfleet.model
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import java.time.Clock.systemUTC
+import java.time.ZonedDateTime
 
 @Serializable
-data class AccessToken(
-    @SerialName("token_type")
-    val tokenType: String,
-    @SerialName("scope")
-    val scope: String,
-    @SerialName("refresh_token")
-    val refreshToken: String,
-    @SerialName("expires_in")
-    val expiresIn: Int,
-    @SerialName("access_token")
-    val accessToken: String,
-)
+internal data class AccessToken(
+  @SerialName("access_token")
+  val accessToken: String,
+  @SerialName("expires_in")
+  val expiresIn: Int
+) {
+  private val validUntil: ZonedDateTime = ZonedDateTime.now(systemUTC()).plusSeconds(expiresIn.toLong())
+
+  fun isExpired(): Boolean {
+    val now = ZonedDateTime.now(systemUTC())
+    return now.isAfter(validUntil.minusMinutes(1))
+  }
+}
+
+internal object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
+  override val descriptor: SerialDescriptor =
+    PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+
+  override fun serialize(encoder: Encoder, value: ZonedDateTime) {
+    encoder.encodeString(value.toString())
+  }
+
+  override fun deserialize(decoder: Decoder): ZonedDateTime {
+    return ZonedDateTime.parse(decoder.decodeString())
+  }
+}

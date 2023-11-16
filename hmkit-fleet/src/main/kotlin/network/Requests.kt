@@ -23,114 +23,111 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.*
-import okhttp3.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 import okio.Buffer
 import org.slf4j.Logger
 
 internal open class Requests(
-    val client: OkHttpClient,
-    val logger: Logger,
-    val baseUrl: String
+  val client: OkHttpClient,
+  val logger: Logger,
+  val baseUrl: String,
 ) {
-    val mediaType = "application/json; charset=utf-8".toMediaType()
-    val baseHeaders = Headers.Builder().add("Content-Type", "application/json").build()
+  val mediaType = "application/json; charset=utf-8".toMediaType()
 
-    inline fun <T> tryParseResponse(
-        response: Response,
-        expectedResponseCode: Int,
-        block: (body: String) -> (com.highmobility.hmkitfleet.network.Response<T>)
-    ): com.highmobility.hmkitfleet.network.Response<T> {
-        val responseBody = printResponse(response)
+  @Suppress("TooGenericExceptionCaught")
+  inline fun <T> tryParseResponse(
+    response: Response,
+    expectedResponseCode: Int,
+    block: (body: String) -> (com.highmobility.hmkitfleet.network.Response<T>)
+  ): com.highmobility.hmkitfleet.network.Response<T> {
+    val responseBody = printResponse(response)
 
-        return try {
-            if (response.code == expectedResponseCode) {
-                block(responseBody)
-            } else {
-                parseError(responseBody)
-            }
-        } catch (e: Exception) {
-            val detail = e.message.toString()
-            Response(null, genericError(detail))
-        }
+    return try {
+      if (response.code == expectedResponseCode) {
+        block(responseBody)
+      } else {
+        parseError(responseBody)
+      }
+    } catch (e: Exception) {
+      val detail = e.message.toString()
+      Response(null, genericError(detail))
+    }
+  }
+
+  fun printRequest(request: Request) {
+    val format = Json { prettyPrint = true }
+
+    // parse into json, so can log it out with pretty print
+    val body = request.bodyAsString()
+    var bodyInPrettyPrint = ""
+    if (!body.isNullOrBlank()) {
+      val jsonElement = format.decodeFromString<JsonElement>(body)
+      bodyInPrettyPrint = format.encodeToString(jsonElement)
     }
 
-    fun printRequest(request: Request) {
-        val format = Json { prettyPrint = true }
+    logger.debug(
+      "sending ${request.method} ${request.url}:" +
+        "\nheaders: ${request.headers}" +
+        "body: $bodyInPrettyPrint"
+    )
+  }
 
-        // parse into json, so can log it out with pretty print
-        val body = request.bodyAsString()
-        var bodyInPrettyPrint = ""
-        if (!body.isNullOrBlank()) {
-            val jsonElement = format.decodeFromString<JsonElement>(body)
-            bodyInPrettyPrint = format.encodeToString(jsonElement)
-        }
+  fun printResponse(response: Response): String {
+    val body = response.body?.string()
+    logger.debug("${response.request.url} response:\n${response.code}: $body")
+    return body!!
+  }
 
-        logger.debug(
-            "sending ${request.method} ${request.url}:" +
-                    "\nheaders: ${request.headers}" +
-                    "body: $bodyInPrettyPrint"
-        )
+  fun <T> parseError(responseBody: String): com.highmobility.hmkitfleet.network.Response<T> {
+    val json = Json.parseToJsonElement(responseBody)
+
+    return if (json is JsonObject) {
+      // there are 3 error formats
+      val errors = json["errors"] as? JsonArray
+      parseErrorsArray(errors, json)
+    } else if (json is JsonArray && json.size > 0) {
+      val error = Json.decodeFromJsonElement<Error>(json.first())
+      Response(null, error)
+    } else {
+      Response(null, genericError("Unknown server response"))
     }
+  }
 
-    fun printResponse(response: Response): String {
-        val body = response.body?.string()
-        logger.debug("${response.request.url} response:\n${response.code}: ${body}")
-        return body!!
-    }
+  private fun <T> parseErrorsArray(
+    errors: JsonArray?,
+    json: JsonObject
+  ): com.highmobility.hmkitfleet.network.Response<T> = if (errors != null && errors.size > 0) {
+    val error =
+      Json.decodeFromJsonElement<Error>(errors.first())
+    Response(null, error)
+  } else {
+    val error = Error(
+      json["error"]?.jsonPrimitive?.content ?: "Unknown server response",
+      json["error_description"]?.jsonPrimitive?.content
+    )
 
-    fun <T> parseError(responseBody: String): com.highmobility.hmkitfleet.network.Response<T> {
-        val json = Json.parseToJsonElement(responseBody)
-        if (json is JsonObject) {
-            // there are 3 error formats
-            val errors = json["errors"] as? JsonArray
-
-            return if (errors != null && errors.size > 0) {
-                val error =
-                    Json.decodeFromJsonElement<Error>(errors.first())
-                Response(null, error)
-            } else {
-                val error = Error(
-                    json["error"]?.jsonPrimitive?.content ?: "Unknown server response",
-                    json["error_description"]?.jsonPrimitive?.content
-                )
-
-                Response(null, error)
-            }
-        } else if (json is JsonArray) {
-            if (json.size > 0) {
-                val error = Json.decodeFromJsonElement<Error>(json.first())
-                return Response(null, error)
-            }
-        }
-
-        return Response(null, genericError("Unknown server response"))
-    }
-
-    internal fun requestBody(values: Map<String, String>): RequestBody {
-        val completeBody = buildJsonObject {
-            for (item in values) {
-                put(item.key, item.value)
-            }
-        }
-
-        return completeBody.toString().toRequestBody(mediaType)
-    }
+    Response(null, error)
+  }
 }
 
 internal fun Request.bodyAsString(): String? {
-    if (this.body == null) return null
-    val buffer = Buffer()
-    this.body?.writeTo(buffer)
-    return buffer.readUtf8()
+  if (this.body == null) return null
+  val buffer = Buffer()
+  this.body?.writeTo(buffer)
+  return buffer.readUtf8()
 }
 
 internal fun genericError(detail: String? = null): Error {
-    val genericError = Error("Unknown server response", detail)
-    return genericError
+  val genericError = Error("Unknown server response", detail)
+  return genericError
 }

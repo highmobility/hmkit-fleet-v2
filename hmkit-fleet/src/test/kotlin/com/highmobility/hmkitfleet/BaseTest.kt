@@ -24,153 +24,104 @@
 
 package com.highmobility.hmkitfleet
 
-import com.charleskorn.kaml.Yaml
-import com.highmobility.crypto.AccessCertificate
-import com.highmobility.crypto.value.DeviceSerial
-import com.highmobility.crypto.value.Signature
-import io.mockk.*
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import com.highmobility.hmkitfleet.model.AccessToken
-import com.highmobility.hmkitfleet.model.AuthToken
-import com.highmobility.hmkitfleet.model.VehicleAccess
-import org.junit.jupiter.api.AfterEach
+import io.mockk.CapturingSlot
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.koin.test.KoinTest
 import org.slf4j.Logger
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.LocalDateTime
 
-const val testApiKey = "apiKey"
-const val testVin = "C0NNECT0000000001"
-
-internal fun notExpiredAuthToken(): AuthToken {
-    return AuthToken(
-        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-        LocalDateTime.now(),
-        LocalDateTime.now().plusHours(1)
-    )
+internal fun notExpiredAccessToken(): AccessToken {
+  return AccessToken(
+    "e903cb43-27b1-4e47-8922-c04ecd5d2019",
+    360
+  )
 }
-
-internal fun expiredAuthToken(): AuthToken {
-    return AuthToken(
-        "e903cb43-27b1-4e47-8922-c04ecd5d2019",
-        LocalDateTime.parse("2020-11-17T04:50:16"),
-        LocalDateTime.parse("2020-11-17T05:50:16")
-    )
-}
-
-internal val mockSignature = mockk<Signature> {
-    every { base64UrlSafe } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-    every { base64 } returns "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg=="
-    every { hex } returns "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-}
-
-internal val mockSerial = mockk<DeviceSerial> {
-    every { hex } returns "AAAAAAAAAAAAAAAAAA"
-    every { base64 } returns "qqqqqqqqqqqq"
-}
-
-internal val newAccessToken: AccessToken = Json.decodeFromString(
-    "{\n" +
-        "  \"token_type\": \"bearer\",\n" +
-        "  \"scope\": \"diagnostics.mileage door_locks.locks windows.windows_positions\",\n" +
-        "  \"refresh_token\": \"7f7a9be0-04c9-4202-a59f-35d55079b6ba\",\n" +
-        "  \"expires_in\": 600,\n" +
-        "  \"access_token\": \"a50e89e5-093c-4727-8101-4c6e81addabe\"\n" +
-        "}"
-)
-
-internal val mockAccessCert = mockk<AccessCertificate> {
-    every { hex } returns "01030000030400000000000000040500000000000000050600000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000607010203070804050609090A0A0A0A0A0A0A0A0A0B00000000000000000600000000000006000000000000000006000000000000060000000000000000060000000000000600000000000000000600000000000B"
-    every { base64 } returns "AQMAAAMEAAAAAAAAAAQFAAAAAAAAAAUGAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAGBwECAwcIBAUGCQkKCgoKCgoKCgoLAAAAAAAAAAAGAAAAAAAABgAAAAAAAAAABgAAAAAAAAYAAAAAAAAAAAYAAAAAAAAGAAAAAAAAAAAGAAAAAAAL"
-    every { gainerSerial } returns mockSerial
-}
-
-internal val newVehicleAccess = VehicleAccess(
-    testVin,
-    newAccessToken,
-    mockAccessCert
-)
 
 open class BaseTest : KoinTest {
-    val configuration = readConfigurationFromFile()
+  val privateKeyConfiguration = readPrivateKeyConfiguration()
 
-    private fun readConfigurationFromFile(): ServiceAccountApiConfiguration {
-        val homeDir = System.getProperty("user.home")
+  internal fun readPrivateKeyJsonString(): String {
+    val homeDir = System.getProperty("user.home")
 
-        val credentialsFilePath =
-            Paths.get("$homeDir/.config/high-mobility/fleet-sdk/credentials.yaml")
-        val credentialsDirectory = credentialsFilePath.parent
+    val credentialsFilePath =
+      Paths.get("$homeDir/.config/high-mobility/fleet-sdk/credentialsPrivateKey.json")
+    val credentialsDirectory = credentialsFilePath.parent
 
-        if (Files.exists(credentialsDirectory) == false) {
-            Files.createDirectories(credentialsDirectory)
-            Files.createFile(credentialsFilePath)
-            throw InstantiationException("Please add Service account credentials to $credentialsFilePath")
-        }
-
-        val credentialsContent = String(Files.readAllBytes(credentialsFilePath))
-
-        val configuration =
-            spyk(
-                Yaml.default.decodeFromString(
-                    ServiceAccountApiConfiguration.serializer(),
-                    credentialsContent
-                )
-            )
-        return configuration
+    if (Files.exists(credentialsDirectory) == false) {
+      Files.createDirectories(credentialsDirectory)
+      Files.createFile(credentialsFilePath)
+      throw InstantiationException("Please add oauth credentials to $credentialsFilePath")
     }
 
-    val mockLogger = mockk<Logger>()
+    val credentialsContent = String(Files.readAllBytes(credentialsFilePath))
+    return credentialsContent
+  }
 
-    @BeforeEach
-    fun before() {
-        // mockk the logs
-        every { mockLogger.warn(allAny()) } just Runs
+  private fun readPrivateKeyConfiguration(): HMKitConfiguration {
+    val credentialsContent = readPrivateKeyJsonString()
 
-        val capturedDebugLog = CapturingSlot<String>()
-        every { mockLogger.debug(capture(capturedDebugLog)) } answers {
-            println(capturedDebugLog.captured)
-        }
+    val configuration = spyk(
+      HMKitConfiguration.Builder()
+        .credentials(
+          HMKitOAuthCredentials("client_id", credentialsContent)
+        )
+        .build()
+    )
+    return configuration
+  }
 
-        every { mockLogger.info(capture(capturedDebugLog)) } answers {
-            println(capturedDebugLog.captured)
-        }
+  val mockLogger = mockk<Logger>()
 
-        every { mockLogger.error(allAny()) } just Runs
-        every { mockLogger.error(any(), any<Throwable>()) } just Runs
+  @BeforeEach
+  fun before() {
+    // mockk the logs
+    every { mockLogger.warn(allAny()) } just Runs
+
+    val capturedDebugLog = CapturingSlot<String>()
+    every { mockLogger.debug(capture(capturedDebugLog)) } answers {
+      println(capturedDebugLog.captured)
     }
 
-    @AfterEach
-    fun after() {
-
+    every { mockLogger.info(capture(capturedDebugLog)) } answers {
+      println(capturedDebugLog.captured)
     }
 
-    fun errorLogExpected(runnable: Runnable) {
-        errorLogExpected(1, runnable)
-    }
+    every { mockLogger.error(allAny()) } just Runs
+    every { mockLogger.error(any(), any<Throwable>()) } just Runs
+  }
 
-    fun errorLogExpected(count: Int, runnable: Runnable) {
-        runnable.run()
-        verify(exactly = count) { mockLogger.error(allAny()) }
-    }
+  fun errorLogExpected(runnable: Runnable) {
+    errorLogExpected(1, runnable)
+  }
 
-    fun warningLogExpected(runnable: Runnable) {
-        warningLogExpected(1, runnable)
-    }
+  fun errorLogExpected(count: Int, runnable: Runnable) {
+    runnable.run()
+    verify(exactly = count) { mockLogger.error(allAny()) }
+  }
 
-    fun warningLogExpected(count: Int, runnable: Runnable) {
-        runnable.run()
-        verify(exactly = count) { mockLogger.warn(allAny()) }
-    }
+  fun warningLogExpected(runnable: Runnable) {
+    warningLogExpected(1, runnable)
+  }
 
-    fun debugLogExpected(runnable: Runnable) {
-        debugLogExpected(1, runnable)
-    }
+  fun warningLogExpected(count: Int, runnable: Runnable) {
+    runnable.run()
+    verify(exactly = count) { mockLogger.warn(allAny()) }
+  }
 
-    fun debugLogExpected(count: Int, runnable: Runnable) {
-        runnable.run()
-        verify(exactly = count) { mockLogger.debug(allAny()) }
-    }
+  fun debugLogExpected(runnable: Runnable) {
+    debugLogExpected(1, runnable)
+  }
+
+  fun debugLogExpected(count: Int, runnable: Runnable) {
+    runnable.run()
+    verify(exactly = count) { mockLogger.debug(allAny()) }
+  }
 }
