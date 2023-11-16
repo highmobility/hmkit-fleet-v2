@@ -21,20 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.highmobility.hmkitfleet.model
+package com.highmobility.hmkitfleet.network
 
-import kotlinx.serialization.*
+import com.highmobility.hmkitfleet.utils.await
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.slf4j.Logger
+import java.net.HttpURLConnection
 
-@Serializable
-data class AccessToken(
-    @SerialName("token_type")
-    val tokenType: String,
-    @SerialName("scope")
-    val scope: String,
-    @SerialName("refresh_token")
-    val refreshToken: String,
-    @SerialName("expires_in")
-    val expiresIn: Int,
-    @SerialName("access_token")
-    val accessToken: String,
-)
+internal class VehicleDataRequests(
+  client: OkHttpClient,
+  logger: Logger,
+  baseUrl: String,
+  private val accessTokenRequests: AccessTokenRequests,
+) : Requests(
+  client,
+  logger,
+  baseUrl,
+) {
+  suspend fun getVehicleStatus(
+    vin: String,
+  ): Response<String> {
+    val authToken = accessTokenRequests.getAccessToken()
+
+    if (authToken.error != null) return Response(null, authToken.error)
+
+    val request = Request.Builder()
+      .url("$baseUrl/vehicle-data/autoapi-13/$vin")
+      .header("Content-Type", "application/json")
+      .header("Authorization", "Bearer ${authToken.response?.accessToken}")
+      .get()
+      .build()
+
+    printRequest(request)
+
+    val call = client.newCall(request)
+    val response = call.await()
+
+    return tryParseResponse(response, HttpURLConnection.HTTP_OK) { responseBody ->
+      Response(responseBody, null)
+    }
+  }
+}

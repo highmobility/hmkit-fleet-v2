@@ -21,14 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.highmobility.hmkitfleet.network
+package com.highmobility.hmkitfleet
 
-import com.highmobility.hmkitfleet.model.AuthToken
+import io.mockk.every
+import io.mockk.mockk
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
-internal class Cache {
-    var authToken: AuthToken? = null
-        get() {
-            if (field?.isExpired() == true) return null
-            return field
-        }
+class HMKitConfigurationTest : BaseTest() {
+  @Test
+  fun customHttpClientTest() {
+    val call = mockk<Call> {
+      every {
+        enqueue(any())
+      } answers {
+        firstArg<Callback>().onResponse(
+          this@mockk,
+          mockk(relaxed = true)
+        )
+      }
+    }
+
+    val client = mockk<OkHttpClient> {
+      every { newCall(any()) } returns call
+    }
+    val hmkitConf = HMKitConfiguration.Builder()
+      .client(client)
+      .credentials(oauthCredentials.credentials)
+      .environment(HMKitFleet.Environment.SANDBOX)
+      .build()
+
+    val hmkit = HMKitFleet(hmkitConf)
+
+    // verify mock without throwing succeeds
+    hmkit.getClearanceStatus("vin1").get()
+
+    // now throw exception on new call and verify it is thrown
+    every { client.newCall(any()) } throws Exception("test")
+    assertThrows<Exception> {
+      hmkit.getClearanceStatus("vin1").get()
+    }
+  }
 }

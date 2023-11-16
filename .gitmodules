@@ -1,6 +1,3 @@
 [submodule "hmkit-fleet-consumer"]
 	path = hmkit-fleet-consumer
 	url = git@github.com:highmobility/hmkit-fleet-consumer.git
-[submodule "hmkit-crypto-java"]
-	path = hmkit-crypto-java
-	url = git@github.com:highmobility/hmkit-crypto-java.git

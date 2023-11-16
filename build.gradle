@@ -1,6 +1,6 @@
 plugins {
     id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
-    id 'net.researchgate.release' version '3.0.2'
+    id "net.researchgate.release" version "3.0.2"
 }
 
 nexusPublishing {
@@ -23,11 +23,12 @@ subprojects {
 }
 
 ext {
+    kotlin_version = "1.9.20"
+
     depLocation = 0
-    coroutinesVersion = '1.6.4'
-    koinVersion = '3.2.0'
+    coroutinesVersion = '1.7.3'
+    koinVersion = '3.5.0'
     ver = [
-            "hmkit-fleet"            : "0.7.0",
             "hmkit-crypto-telematics": "0.1",
             "hmkit-auto-api"         : "13.1.1",
     ]

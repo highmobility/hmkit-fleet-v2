@@ -21,19 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.highmobility.hmkitfleet
+package com.highmobility.hmkitfleet.model
 
-import org.junit.experimental.categories.Category
-import org.junit.jupiter.api.Test
-import org.koin.test.category.CheckModuleTest
-import org.koin.test.check.checkModules
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@Category(CheckModuleTest::class)
-class KoinTest : BaseTest() {
+@Serializable
+sealed class ControlMeasure
 
-  @Test
-  fun checkModuless() {
-    checkModules {
-    }
+@Serializable
+@SerialName("odometer")
+data class Odometer(val value: Long, val unit: Length) : ControlMeasure() {
+
+  @Serializable
+  enum class Length {
+    @SerialName("kilometers")
+    KILOMETERS,
+
+    @SerialName("miles")
+    MILES
   }
 }

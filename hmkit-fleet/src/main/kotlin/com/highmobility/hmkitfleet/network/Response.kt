@@ -23,11 +23,7 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class Error(
-    val title: String,
-    val detail: String? = null,
-    val source: String? = null
+data class Response<T>(
+  val response: T? = null,
+  val error: Error? = null
 )

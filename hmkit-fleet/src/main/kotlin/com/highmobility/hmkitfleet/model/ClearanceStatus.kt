@@ -21,43 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@file:UseSerializers(DateTimeSerializer::class)
-
 package com.highmobility.hmkitfleet.model
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import java.time.Clock.systemUTC
-import java.time.LocalDateTime
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class AuthToken(
-    @SerialName("auth_token")
-    val authToken: String,
-    @SerialName("valid_from")
-    val validFrom: LocalDateTime,
-    @SerialName("valid_until")
-    val validUntil: LocalDateTime
+data class RequestClearanceResponse(
+  val vin: String,
+  val status: ClearanceStatus.Status,
+  /**
+   * Filled when status is ERROR
+   */
+  val description: String? = null
+)
+
+@Serializable
+data class ClearanceStatus(
+  val vin: String,
+  val status: Status,
+  val brand: Brand? = null,
+  val changelog: List<ChangeLogItem> = emptyList()
 ) {
-    fun isExpired(): Boolean {
-        if (LocalDateTime.now(systemUTC()).isAfter(validUntil)) return true
-        return false
-    }
+  @Serializable
+  enum class Status {
+    @SerialName("approved")
+    APPROVED,
+
+    @SerialName("pending")
+    PENDING,
+
+    // Error can only happen during requestClearance
+    @SerialName("error")
+    ERROR,
+
+    @SerialName("revoking")
+    REVOKING,
+
+    @SerialName("revoked")
+    REVOKED,
+
+    @SerialName("rejected")
+    REJECTED,
+
+    @SerialName("canceling")
+    CANCELING,
+
+    @SerialName("canceled")
+    CANCELED
+  }
 }
 
-internal object DateTimeSerializer : KSerializer<LocalDateTime> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: LocalDateTime) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: Decoder): LocalDateTime {
-        return LocalDateTime.parse(decoder.decodeString())
-    }
-}
+@Serializable
+data class ChangeLogItem(val status: ClearanceStatus.Status, val timestamp: String)

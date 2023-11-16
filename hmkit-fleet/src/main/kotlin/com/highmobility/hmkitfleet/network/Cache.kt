@@ -21,19 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.highmobility.hmkitfleet
+package com.highmobility.hmkitfleet.network
 
-import org.junit.experimental.categories.Category
-import org.junit.jupiter.api.Test
-import org.koin.test.category.CheckModuleTest
-import org.koin.test.check.checkModules
+import com.highmobility.hmkitfleet.model.AccessToken
 
-@Category(CheckModuleTest::class)
-class KoinTest : BaseTest() {
-
-  @Test
-  fun checkModuless() {
-    checkModules {
+internal class Cache {
+  var accessToken: AccessToken? = null
+    get() {
+      if (field?.isExpired() == true) return null
+      return field
     }
-  }
 }

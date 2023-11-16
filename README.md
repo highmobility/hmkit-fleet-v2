@@ -1,4 +1,4 @@
-This is the HMKitFleet v1 branch. See the [v0 branch](https://github.com/highmobility/hmkit-fleet/tree/v0) for the previous version.
+This is the HMKitFleet v2 branch. See the [v1 branch](https://github.com/highmobility/hmkit-fleet/tree/v1) for the previous version.
 
 # HMKit Fleet
 
@@ -33,15 +33,18 @@ dependencies {
 **General**: HMKit Fleet is a Kotlin library that combines 3 different API-s into a single fleet
 owner package.
 
-* hmkit-fleet: Uses [OkHttp](https://github.com/square/okhttp) to communicate with High-Mobility
-  and [HMKit crypto](https://github.com/highmobility/hmkit-crypto-java/tree/telematics)
-  to encrypt messages.
+* hmkit-fleet: Uses [OkHttp](https://github.com/square/okhttp)
 
 ### Setup
 
 * `git submodule update --init --recursive`
 * import the Gradle project
 * run the tests `./gradlew test`
+
+
+### Run the sample app 
+* Check out the hmkit-fleet-consumer/README.md about how to setup the sample app
+* Run the sample app with `./gradlew :hmkit-fleet-consumer:run`
 
 ### Release/Deployment
 
