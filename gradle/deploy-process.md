@@ -1,8 +1,8 @@
 # Public release
 
-Release is done via a merged pull request to main/v0 and then creating a release in GitHub UI.
+Release is done via a merged pull request to main/v0/v1 and then creating a release in GitHub UI.
 
-## Steps for v1
+## Steps for v2
 - update CHANGELOG.md
   - next version is with minor +1, or the manually updated version
 - merge a pull request to main. This creates a new tag with minor +=1.
@@ -17,7 +17,7 @@ Release is done via a merged pull request to main/v0 and then creating a release
 - Update version in `$projectRoot/gradle.properties` and call `./gradlew -Prelease :hmkit-fleet:publishToSonatype`.
 - Don't merge test version names to main
 
-## Steps for v0
+## Steps for v0 and v1
 
-- Same steps as in v1, but merge the PR to the `v0` branch.
-- Release the v0 first if releasing both. This way it shows up in the changelog before v1.
+- Same steps as in v2, but merge the PR to the `v0`/`v1` branch.
+- Release the v0 and v1 first if releasing all. This way the v2 is the latest in the Releases changelog.
