@@ -23,10 +23,10 @@
  */
 package com.highmobility.hmkitfleet.network
 
+import com.highmobility.hmkitfleet.utils.await
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.Logger
-import com.highmobility.hmkitfleet.utils.await
 import java.net.HttpURLConnection
 
 internal class VehicleDataRequests(
@@ -45,7 +45,7 @@ internal class VehicleDataRequests(
     val authToken = accessTokenRequests.getAccessToken()
 
     if (authToken.error != null) return Response(null, authToken.error)
-    println("auth: Bearer ${authToken.response?.accessToken}")
+
     val request = Request.Builder()
       .url("$baseUrl/vehicle-data/autoapi-13/$vin")
       .header("Content-Type", "application/json")

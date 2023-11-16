@@ -23,8 +23,9 @@
  */
 package com.highmobility.hmkitfleet.network
 
-import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.HMKitCredentials
+import com.highmobility.hmkitfleet.HMKitCredentials
 import com.highmobility.hmkitfleet.model.AccessToken
+import com.highmobility.hmkitfleet.utils.await
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -32,7 +33,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
-import com.highmobility.hmkitfleet.utils.await
 import java.net.HttpURLConnection
 import java.util.UUID
 

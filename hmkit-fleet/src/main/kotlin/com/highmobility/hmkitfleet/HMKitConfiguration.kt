@@ -1,4 +1,4 @@
-package com.highmobility.hmkitfleet.com.highmobility.hmkitfleet
+package com.highmobility.hmkitfleet
 
 import okhttp3.OkHttpClient
 

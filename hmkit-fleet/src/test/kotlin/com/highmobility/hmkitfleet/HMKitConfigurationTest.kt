@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.highmobility.hmkitfleet.com.highmobility.hmkitfleet
+package com.highmobility.hmkitfleet
 
-import com.highmobility.hmkitfleet.BaseTest
 import io.mockk.every
 import io.mockk.mockk
 import okhttp3.Call
@@ -51,7 +50,8 @@ class HMKitConfigurationTest : BaseTest() {
     }
     val hmkitConf = HMKitConfiguration.Builder()
       .client(client)
-      .credentials(privateKeyConfiguration.credentials)
+      .credentials(oauthCredentials.credentials)
+      .environment(HMKitFleet.Environment.SANDBOX)
       .build()
 
     val hmkit = HMKitFleet(hmkitConf)

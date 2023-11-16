@@ -73,7 +73,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     every { cache getProperty "accessToken" } returnsMany listOf(null, responseAccessToken)
 
     val response = runBlocking {
-      mockSuccessfulRequest(responseAccessToken).getAccessToken()
+      mockSuccessfulRequest(responseAccessToken, 200).getAccessToken()
     }
 
     val recordedRequest: RecordedRequest = mockWebServer.takeRequest()
@@ -93,7 +93,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
     val responseAccessToken = notExpiredAccessToken()
     // return null from cache at first, then on next call a new one
     every { cache getProperty "accessToken" } returns responseAccessToken
-    val response = runBlocking { mockSuccessfulRequest(responseAccessToken).getAccessToken() }
+    val response = runBlocking { mockSuccessfulRequest(responseAccessToken, 201).getAccessToken() }
 
     // this means request is not made
     verify(exactly = 0) { cache setProperty "accessToken" value any<AccessToken>() }
@@ -120,7 +120,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         client,
         mockLogger,
         baseUrl.toString(),
-        privateKeyConfiguration.credentials,
+        oauthCredentials.credentials,
         cache
       )
 
@@ -151,7 +151,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
         client,
         mockLogger,
         baseUrl.toString(),
-        privateKeyConfiguration.credentials,
+        oauthCredentials.credentials,
         cache
       )
 
@@ -163,12 +163,12 @@ internal class AccessTokenRequestsTest : BaseTest() {
     assertTrue(status.error!!.title == genericError.title)
   }
 
-  private fun mockSuccessfulRequest(responseAccessToken: AccessToken): AccessTokenRequests {
+  private fun mockSuccessfulRequest(responseAccessToken: AccessToken, responseCode: Int = 201): AccessTokenRequests {
     // return null from cache at first, then on next call a new one
     val json = Json.encodeToString(responseAccessToken)
 
     val mockResponse = MockResponse()
-      .setResponseCode(HttpURLConnection.HTTP_CREATED)
+      .setResponseCode(responseCode)
       .setBody(json)
 
     mockWebServer.enqueue(mockResponse)
@@ -178,7 +178,7 @@ internal class AccessTokenRequestsTest : BaseTest() {
       client,
       mockLogger,
       baseUrl.toString(),
-      privateKeyConfiguration.credentials,
+      privateKeyCredentials,
       cache
     )
   }

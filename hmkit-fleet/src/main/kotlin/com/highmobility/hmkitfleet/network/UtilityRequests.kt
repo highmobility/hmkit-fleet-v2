@@ -25,6 +25,7 @@ package com.highmobility.hmkitfleet.network
 
 import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.EligibilityStatus
+import com.highmobility.hmkitfleet.utils.await
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
@@ -35,7 +36,6 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.Logger
-import com.highmobility.hmkitfleet.utils.await
 import java.net.HttpURLConnection
 
 internal class UtilityRequests(

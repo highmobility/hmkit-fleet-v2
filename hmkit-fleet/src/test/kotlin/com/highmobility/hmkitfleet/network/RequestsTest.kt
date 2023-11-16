@@ -28,7 +28,7 @@ import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 internal class RequestsTest {
   @Test
@@ -88,5 +88,14 @@ internal class RequestsTest {
     assert(response.error?.title == "title")
     assert(response.error?.source == null)
     assert(response.error?.detail == "detail")
+  }
+
+  @Test
+  fun parsesUnknownResponse() {
+    val requests = Requests(mockk(), mockk(), "mockk()")
+    val body = "unknown"
+    val response = requests.parseError<Any>(body)
+
+    assert(response.error?.title == "Unknown server response")
   }
 }

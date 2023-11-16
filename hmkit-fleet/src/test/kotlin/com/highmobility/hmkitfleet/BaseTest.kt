@@ -24,8 +24,6 @@
 
 package com.highmobility.hmkitfleet
 
-import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.HMKitConfiguration
-import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.HMKitOAuthCredentials
 import com.highmobility.hmkitfleet.model.AccessToken
 import io.mockk.CapturingSlot
 import io.mockk.Runs
@@ -34,6 +32,9 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.BeforeEach
 import org.koin.test.KoinTest
 import org.slf4j.Logger
@@ -48,7 +49,25 @@ internal fun notExpiredAccessToken(): AccessToken {
 }
 
 open class BaseTest : KoinTest {
-  val privateKeyConfiguration = readPrivateKeyConfiguration()
+  val oauthCredentials = readOauthCredentials()
+  val privateKeyCredentials = readPrivateKeyCredentials()
+
+  private fun readPrivateKeyCredentials(): HMKitPrivateKeyCredentials {
+    val jsonString = readPrivateKeyJsonString()
+    val json = Json.parseToJsonElement(jsonString) as JsonObject
+
+    val privateKey = json["private_key"]!!.jsonPrimitive.content
+    val privateKeyId = json["id"]!!.jsonPrimitive.content
+
+    val credentials =
+      HMKitPrivateKeyCredentials(
+        "client_id",
+        privateKey,
+        privateKeyId
+      )
+
+    return credentials
+  }
 
   internal fun readPrivateKeyJsonString(): String {
     val homeDir = System.getProperty("user.home")
@@ -67,7 +86,7 @@ open class BaseTest : KoinTest {
     return credentialsContent
   }
 
-  private fun readPrivateKeyConfiguration(): HMKitConfiguration {
+  private fun readOauthCredentials(): HMKitConfiguration {
     val credentialsContent = readPrivateKeyJsonString()
 
     val configuration = spyk(

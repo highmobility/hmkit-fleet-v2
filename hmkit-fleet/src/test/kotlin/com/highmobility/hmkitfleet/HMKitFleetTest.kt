@@ -23,8 +23,6 @@
  */
 package com.highmobility.hmkitfleet
 
-import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.HMKitFleet
-import com.highmobility.hmkitfleet.com.highmobility.hmkitfleet.Koin
 import com.highmobility.hmkitfleet.model.Brand
 import com.highmobility.hmkitfleet.model.ClearanceStatus
 import com.highmobility.hmkitfleet.model.RequestClearanceResponse
@@ -90,7 +88,7 @@ class HMKitFleetTest : BaseTest() {
       clearanceRequests.deleteClearance(any())
     } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.REVOKING), null)
 
-    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val hmkit = HMKitFleet(oauthCredentials)
     val delete = hmkit.deleteClearance("vin1").get()
     assertTrue(delete.response?.vin == "vin1")
     assertTrue(delete.response?.status == ClearanceStatus.Status.REVOKING)
@@ -102,10 +100,33 @@ class HMKitFleetTest : BaseTest() {
       clearanceRequests.getClearanceStatus("vin1")
     } returns Response(ClearanceStatus("vin1", ClearanceStatus.Status.REVOKING), null)
 
-    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val hmkit = HMKitFleet(oauthCredentials)
     val clearance = hmkit.getClearanceStatus("vin1").get()
     assertTrue(clearance.response?.vin == "vin1")
     assertTrue(clearance.response?.status == ClearanceStatus.Status.REVOKING)
+  }
+
+  @Test
+  fun requestClearance() = runBlocking {
+    coEvery {
+      clearanceRequests.requestClearance("vin1", Brand.SANDBOX, null)
+    } returns Response(RequestClearanceResponse("vin1", ClearanceStatus.Status.APPROVED), null)
+
+    val hmkit = HMKitFleet(oauthCredentials)
+    val clearance = hmkit.requestClearance("vin1", Brand.SANDBOX).get()
+    assertTrue(clearance.response?.vin == "vin1")
+    assertTrue(clearance.response?.status == ClearanceStatus.Status.APPROVED)
+  }
+
+  @Test
+  fun requestClearanceStatuses() = runBlocking {
+    coEvery {
+      clearanceRequests.getClearanceStatuses()
+    } returns Response(listOf(), null)
+
+    val hmkit = HMKitFleet(oauthCredentials)
+    val clearance = hmkit.getClearanceStatuses().get()
+    assertTrue(clearance.response?.isEmpty() == true)
   }
 
   @Test
@@ -118,7 +139,7 @@ class HMKitFleetTest : BaseTest() {
       null
     )
 
-    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val hmkit = HMKitFleet(oauthCredentials)
     val vehicleStatus = hmkit.getVehicleState("vin1").get()
     val json = Json.decodeFromString<JsonObject>(vehicleStatus.response ?: "")
     assertTrue(json["vin"]?.jsonPrimitive?.content == "vin1")
@@ -142,7 +163,7 @@ class HMKitFleetTest : BaseTest() {
     HMKitFleet.Environment.webUrl = fakeUrl
     assertTrue(HMKitFleet.Environment.webUrl == fakeUrl)
 
-    val hmkit = HMKitFleet(privateKeyConfiguration)
+    val hmkit = HMKitFleet(oauthCredentials)
     hmkit.getEligibility("vin1", Brand.SANDBOX).get()
 
     val recordedRequest = mockWebServer.takeRequest()
