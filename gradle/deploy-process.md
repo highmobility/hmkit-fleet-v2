@@ -20,4 +20,5 @@ Release is done via a merged pull request to main/v0/v1 and then creating a rele
 ## Steps for v0 and v1
 
 - Same steps as in v2, but merge the PR to the `v0`/`v1` branch.
+- The new tag task will fail. So you need to create the tag manually and push it. Create the release from this manual tag.
 - Release the v0 and v1 first if releasing all. This way the v2 is the latest in the Releases changelog.
