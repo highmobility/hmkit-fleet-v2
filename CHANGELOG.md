@@ -1,19 +1,24 @@
 # Changelog
 
-This is the changelog for v1 releases. See v0 changelog in the [v0 branch](https://github.com/highmobility/hmkit-fleet/tree/v0).
+This is the changelog for v2 releases. See v0/v1 releases in appropriate branches.
 
-## [1.0.0] - 2023-05-22
+## [2.0.0] - 2023-16-11
 
 ### Added
+- new `HMKitFleet` constructor with OAuth/OAuth private key credentials
 
-- Initialize HMKitFleet with the `new` keyword. [PR](https://github.com/highmobility/hmkit-fleet/pull/19)
 ```java
-HMKitFleet hmkit = new HMKitFleet(
-  apiConfiguration,
-  HMKitFleet.Environment.SANDBOX
+HMKitCredentials credentials = new HMKitOAuthCredentials(
+  "client_id",
+  "client_secret"
 );
+
+HMKitConfiguration configuration = new HMKitConfiguration.Builder()
+  .credentials(credentials)
+  .environment(HMKitFleet.Environment.SANDBOX)
+  .build();
+
+HMKitFleet hmkit = new HMKitFleet(configuration);
 ```
 
-### Removed
-
-- Remove the singleton variant of HMKitFleet
+- Tesla brand
