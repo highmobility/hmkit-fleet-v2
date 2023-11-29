@@ -1,11 +1,12 @@
 name: Update version
 
 on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - main
+# disabled until we don't support v0 and v1 anymore. Read more: `./gradle/deploy-process.md`
+#  pull_request:
+#    types:
+#      - closed
+#    branches:
+#      - main
 
 jobs:
   create-new-tag:
