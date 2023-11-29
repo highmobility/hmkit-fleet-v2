@@ -11,14 +11,18 @@ Release is done via a merged pull request to main/v0/v1 and then creating a rele
     - Action starts that pushes the package to MavenCentral.
     - You can check OSSRH whether release was successful or not.
 
+## Steps for v0 and v1
+
+- update CHANGELOG.md
+- update the version in `gradle.properties`. Needs to be done manually because the new tag task works for main branch only. 
+- merge the PR to the `v0`/`v1` branch
+- Create release tag manually
+- Create a release from this tag 
+
+❗Release the v0 and v1 first if releasing all versions. This way the v2 is the latest in the Releases changelog.
+
 ## Make a test release locally to staging
 
 - comment out line `useInMemoryPgpKeys(signingKey, signingPassword)` in deploy-ossrh.gradle
 - Update version in `$projectRoot/gradle.properties` and call `./gradlew -Prelease :hmkit-fleet:publishToSonatype`.
 - Don't merge test version names to main
-
-## Steps for v0 and v1
-
-- Same steps as in v2, but merge the PR to the `v0`/`v1` branch.
-- The new tag task will fail. So you need to create the tag manually and push it. Create the release from this manual tag.
-- ❗Release the v0 and v1 first if releasing all. This way the v2 is the latest in the Releases changelog.
