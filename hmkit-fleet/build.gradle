@@ -59,3 +59,11 @@ detekt {
     config = files("$rootDir/detekt.yaml")
     buildUponDefaultConfig = true
 }
+
+dokkaHtml {
+    outputDirectory.set(file("$buildDir/dokka/html/v2"))
+}
+
+dokkaJavadoc {
+    outputDirectory.set(file("$buildDir/dokka/html/v2/javadoc"))
+}

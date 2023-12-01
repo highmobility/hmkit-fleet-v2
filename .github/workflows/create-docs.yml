@@ -8,6 +8,7 @@ on:
     branches:
       - main
       - v2
+      - dokka
 
 jobs:
   docs:
@@ -22,7 +23,6 @@ jobs:
           java-version: 17
           cache: gradle
 
-
       - name: Setup SSH Keys and known_hosts to access submodules
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -36,11 +36,13 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Create docs
-        run: ./gradlew :hmkit-fleet:dokkaJavadoc
+        run: |
+          ./gradlew :hmkit-fleet:dokkaJavadoc
+          ./gradlew :hmkit-fleet:dokkaHtml
 
       - name: Deploy to Github Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: hmkit-fleet/build/dokka/javadoc
+          FOLDER: hmkit-fleet/build/dokka/html

@@ -9,7 +9,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 @Suppress("TooGenericExceptionCaught", "SwallowedException")
-suspend fun Call.await(): Response {
+internal suspend fun Call.await(): Response {
   return suspendCancellableCoroutine { continuation ->
     enqueue(object : Callback {
       override fun onResponse(call: Call, response: Response) {
